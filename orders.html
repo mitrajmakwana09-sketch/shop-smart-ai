@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders | Admin | Shop Smart AI</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0f172a">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Segoe UI", Arial, sans-serif; background: #f1f5f9; color: #1f2937; }
+    a { text-decoration: none; color: inherit; }
+    button, select, input { font-family: inherit; }
+
+    /* ================= LAYOUT ================= */
+    .layout { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+    .side {
+      background: linear-gradient(180deg, #0b1220, #0f172a 60%, #0c4a6e 160%); color: #cbd5e1;
+      padding: 22px 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column;
+    }
+    .brand { font-size: 21px; font-weight: 800; color: #38bdf8; padding: 4px 10px 18px; }
+    .brand span { color: #4ade80; }
+    .brand small { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-top: 2px; letter-spacing: 1px; }
+    .menu { list-style: none; flex: 1; }
+    .menu a, .menu button {
+      display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; margin-bottom: 4px;
+      border-radius: 12px; font-size: 15px; font-weight: 600; color: #cbd5e1; background: none; border: none; cursor: pointer; transition: background .2s, color .2s;
+    }
+    .menu a:hover, .menu button:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .menu a.active { background: linear-gradient(90deg, #0284c7, #0369a1); color: #fff; box-shadow: 0 6px 16px rgba(2,132,199,.4); }
+    .menu .sep { height: 1px; background: rgba(255,255,255,.1); margin: 12px 4px; }
+    .menu .logout { color: #fca5a5; }
+    .menu .logout:hover { background: rgba(220,38,38,.2); color: #fff; }
+    .menu .cnt { margin-left: auto; background: #ef4444; color: #fff; font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px; }
+
+    .main { padding: 22px 24px 50px; min-width: 0; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+    .topbar h1 { font-size: 26px; }
+    .topbar p { color: #64748b; font-size: 14px; margin-top: 2px; }
+    .top-right { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .menu-btn { display: none; background: #0f172a; color: #fff; border: none; border-radius: 10px; width: 42px; height: 42px; font-size: 20px; cursor: pointer; }
+    .tbtn { height: 42px; padding: 0 16px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; font-weight: 700; font-size: 13px; cursor: pointer; color: #374151; transition: all .2s; }
+    .tbtn:hover { background: #f8fafc; border-color: #94a3b8; }
+    .tbtn.on { background: #fef3c7; border-color: #fbbf24; color: #92400e; }
+    .tbtn.green { background: #16a34a; border-color: #16a34a; color: #fff; }
+
+    .banner-demo { display: none; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; border-radius: 12px; padding: 11px 16px; font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+    .banner-demo.show { display: block; }
+
+    /* ================= TABS ================= */
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab {
+      display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff;
+      font-weight: 700; font-size: 14px; color: #475569; cursor: pointer; transition: all .2s;
+    }
+    .tab:hover { border-color: #94a3b8; }
+    .tab b { background: #eef2f7; color: #475569; font-size: 12px; padding: 2px 9px; border-radius: 999px; }
+    .tab.active { background: #0284c7; border-color: #0284c7; color: #fff; box-shadow: 0 6px 16px rgba(2,132,199,.3); }
+    .tab.active b { background: rgba(255,255,255,.25); color: #fff; }
+
+    /* ================= TOOLBAR ================= */
+    .toolbar { background: #fff; border-radius: 16px; padding: 14px; box-shadow: 0 2px 10px rgba(15,23,42,.06); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+    .search { flex: 1; min-width: 240px; position: relative; }
+    .search input { width: 100%; height: 44px; padding: 0 38px 0 14px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; outline: none; transition: border .2s, box-shadow .2s; }
+    .search input:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+    .search .x { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: none; background: none; font-size: 16px; cursor: pointer; color: #9ca3af; padding: 6px; display: none; }
+    .toolbar select { height: 44px; padding: 0 10px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; background: #fff; outline: none; cursor: pointer; font-weight: 600; max-width: 100%; }
+    .toolbar select:focus { border-color: #0284c7; }
+    .reset { background: none; border: none; color: #dc2626; font-weight: 700; cursor: pointer; font-size: 13px; padding: 0 6px; }
+    .reset:hover { text-decoration: underline; }
+
+    /* Bulk bar */
+    .bulk { display: none; align-items: center; gap: 10px; flex-wrap: wrap; background: #0f172a; color: #fff; border-radius: 14px; padding: 12px 16px; margin-bottom: 14px; animation: rise .3s ease; }
+    .bulk.show { display: flex; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .bulk strong { margin-right: auto; }
+    .bulk button { border: none; border-radius: 9px; padding: 9px 14px; font-weight: 700; font-size: 13px; cursor: pointer; color: #fff; }
+    .bk-s { background: #f59e0b; } .bk-d { background: #16a34a; } .bk-c { background: #dc2626; } .bk-e { background: #0284c7; } .bk-x { background: rgba(255,255,255,.15); }
+
+    /* ================= TABLE ================= */
+    .panel { background: #fff; border-radius: 16px; box-shadow: 0 2px 10px rgba(15,23,42,.06); overflow: hidden; }
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    th, td { padding: 13px 12px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; vertical-align: middle; }
+    th { background: #f8fafc; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background .15s; }
+    tbody tr:hover td { background: #fafcff; }
+    tr.sel td { background: #eff6ff; }
+    td input[type="checkbox"], th input[type="checkbox"] { width: 17px; height: 17px; accent-color: #0284c7; cursor: pointer; }
+    .oid { font-weight: 800; color: #0284c7; cursor: pointer; }
+    .oid:hover { text-decoration: underline; }
+    .cust small, .muted { color: #64748b; font-size: 12px; display: block; margin-top: 2px; }
+    .items-txt { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .st { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; border: 1px solid transparent; cursor: pointer; outline: none; }
+    .st.placed { background: #e0f2fe; color: #0369a1; } .st.shipped { background: #fef3c7; color: #b45309; }
+    .st.delivered { background: #dcfce7; color: #15803d; } .st.cancelled { background: #fee2e2; color: #b91c1c; }
+    .acts { display: flex; gap: 6px; }
+    .ib { width: 34px; height: 34px; border-radius: 9px; border: none; cursor: pointer; font-size: 15px; background: #eef2f7; transition: all .15s; }
+    .ib:hover { background: #dbeafe; transform: translateY(-2px); }
+    .ib.del:hover { background: #fecaca; }
+
+    .empty { text-align: center; color: #94a3b8; padding: 50px 16px; font-size: 14px; }
+    .empty b { display: block; font-size: 44px; margin-bottom: 8px; }
+
+    /* Pagination */
+    .pager { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px; border-top: 1px solid #f1f5f9; font-size: 14px; color: #64748b; }
+    .pgs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pgs button { min-width: 36px; height: 36px; padding: 0 10px; border-radius: 9px; border: 1px solid #e2e8f0; background: #fff; font-weight: 700; cursor: pointer; color: #374151; }
+    .pgs button:hover:not(:disabled) { border-color: #0284c7; color: #0284c7; }
+    .pgs button.active { background: #0284c7; border-color: #0284c7; color: #fff; }
+    .pgs button:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ================= MODAL ================= */
+    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 300; padding: 16px; }
+    .overlay.show { display: flex; animation: fade .2s ease; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .modal { background: #fff; border-radius: 18px; padding: 24px; width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; animation: pop .3s cubic-bezier(.2,.9,.3,1.2); }
+    @keyframes pop { from { opacity: 0; transform: scale(.92) translateY(14px); } to { opacity: 1; transform: none; } }
+    .modal h3 { font-size: 21px; margin-bottom: 2px; }
+    .modal .sub { color: #64748b; font-size: 13px; margin-bottom: 16px; }
+
+    .track { display: flex; justify-content: space-between; position: relative; margin: 6px 0 18px; }
+    .track::before { content: ""; position: absolute; top: 14px; left: 14%; right: 14%; height: 3px; background: #e5e7eb; }
+    .tk { position: relative; flex: 1; text-align: center; font-size: 12px; font-weight: 700; color: #9ca3af; }
+    .tk i { display: flex; width: 30px; height: 30px; border-radius: 50%; background: #e5e7eb; color: #fff; margin: 0 auto 5px; align-items: center; justify-content: center; font-style: normal; font-size: 13px; position: relative; }
+    .tk.done { color: #16a34a; } .tk.done i { background: #16a34a; }
+    .cancel-note { background: #fee2e2; color: #b91c1c; border-radius: 12px; padding: 12px 14px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+
+    .m-item { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+    .m-box { background: #f8fafc; border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 14px; line-height: 1.65; }
+    .m-row { display: flex; justify-content: space-between; padding: 3px 0; }
+    .m-row.t { font-size: 18px; font-weight: 800; border-top: 2px dashed #e2e8f0; margin-top: 6px; padding-top: 10px; }
+    .m-btns { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 16px; }
+    .m-btns .b { height: 44px; border: none; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center; transition: opacity .2s; }
+    .m-btns .b:hover { opacity: .88; }
+    .b-print { background: #0284c7; } .b-wa { background: #16a34a; } .b-next { background: #f59e0b; }
+    .b-del { background: #fee2e2; color: #b91c1c !important; } .b-close { background: #0f172a; grid-column: 1 / -1; }
+
+    /* Invoice (fakt print mate) */
+    #invoice { display: none; font-family: "Segoe UI", Arial, sans-serif; color: #111; padding: 24px; max-width: 760px; margin: 0 auto; }
+    #invoice h1 { font-size: 26px; } #invoice h1 span { color: #16a34a; }
+    #invoice .inv-top { display: flex; justify-content: space-between; border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 16px; }
+    #invoice table { width: 100%; border-collapse: collapse; min-width: 0; margin: 14px 0; }
+    #invoice th, #invoice td { border: 1px solid #ccc; padding: 8px 10px; font-size: 13px; background: none; color: #111; text-transform: none; letter-spacing: 0; }
+    #invoice .tot { text-align: right; font-size: 15px; line-height: 1.8; }
+    #invoice .thanks { text-align: center; margin-top: 26px; color: #555; font-size: 13px; }
+
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px; opacity: 0; transition: all .3s; pointer-events: none; z-index: 500; max-width: 92%; text-align: center; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .scrim { display: none; }
+
+    @media print {
+      .layout, .overlay, #toast, .scrim { display: none !important; }
+      body { background: #fff; }
+      #invoice { display: block !important; }
+    }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; z-index: 200; transform: translateX(-102%); transition: transform .3s; }
+      .side.open { transform: none; }
+      .scrim.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; }
+      .menu-btn { display: block; }
+      .main { padding: 16px 14px 40px; }
+    }
+    @media (max-width: 520px) {
+      .topbar h1 { font-size: 22px; }
+      .m-btns { grid-template-columns: 1fr; }
+      .bulk strong { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+
+<script>
+  /* Fakt admin j aa page joi shake */
+  (function () {
+    let ok = false;
+    try { ok = !!sessionStorage.getItem("adminSession"); } catch (e) {}
+    if (!ok) location.replace("admin-login.html?redirect=orders.html");
+  })();
+</script>
+
+<div class="layout">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="side" id="side">
+    <div class="brand">Shop <span>Smart AI</span><small>ADMIN PANEL</small></div>
+    <ul class="menu">
+      <li><a href="index.html">🏠 Admin Home</a></li>
+      <li><a href="dashboard.html">📊 Dashboard</a></li>
+      <li><a href="orders.html" class="active">📦 Orders <span class="cnt" id="pendCnt" style="display:none">0</span></a></li>
+      <li><a href="add-product.html">➕ Add Product</a></li>
+      <li class="sep"></li>
+      <li><a href="../index.html">🌐 Website Juo</a></li>
+      <li><button type="button" class="logout" id="logoutBtn">🚪 Logout</button></li>
+    </ul>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;gap:12px;align-items:center">
+        <button class="menu-btn" id="menuBtn" aria-label="Menu" type="button">☰</button>
+        <div>
+          <h1>📦 Orders</h1>
+          <p id="subText">Badha customer orders manage karo</p>
+        </div>
+      </div>
+      <div class="top-right">
+        <button class="tbtn" id="demoBtn" type="button">🧪 Demo Data</button>
+        <button class="tbtn green" id="csvBtn" type="button">⬇ CSV Export</button>
+      </div>
+    </div>
+
+    <div class="banner-demo" id="demoBanner">🧪 <strong>Demo mode chalu chhe:</strong> aa nakli data chhe (save nathi thatu). Sacho data jova mate "Demo Band Karo" dabavo.</div>
+
+    <div class="tabs" id="tabs"></div>
+
+    <div class="toolbar">
+      <div class="search">
+        <input type="search" id="searchBox" placeholder="🔍 Order ID, naam, mobile, email, city ke product..." autocomplete="off">
+        <button class="x" id="searchClear" type="button" aria-label="Clear">✕</button>
+      </div>
+      <select id="rangeSel" aria-label="Samay">
+        <option value="0">📅 Badha samay</option>
+        <option value="1">Aaj</option>
+        <option value="7">Chhella 7 divas</option>
+        <option value="30">Chhella 30 divas</option>
+      </select>
+      <select id="paySel" aria-label="Payment"><option value="all">💳 Badha Payment</option></select>
+      <select id="sortSel" aria-label="Sort">
+        <option value="new">🆕 Navu pehela</option>
+        <option value="old">Junu pehela</option>
+        <option value="high">💎 Total: Vadhu thi Ochhu</option>
+        <option value="low">Total: Ochhu thi Vadhu</option>
+      </select>
+      <button class="reset" id="resetBtn" type="button">✕ Reset</button>
+    </div>
+
+    <div class="bulk" id="bulk">
+      <strong id="bulkTxt">0 select karya</strong>
+      <button class="bk-s" data-bulk="shipped" type="button">🚚 Shipped</button>
+      <button class="bk-d" data-bulk="delivered" type="button">✔ Delivered</button>
+      <button class="bk-c" data-bulk="cancelled" type="button">✕ Cancel</button>
+      <button class="bk-e" id="bulkCsv" type="button">⬇ CSV</button>
+      <button class="bk-x" id="bulkClear" type="button">Clear</button>
+    </div>
+
+    <div class="panel">
+      <div class="tbl-wrap" id="tableBox"></div>
+      <div class="pager" id="pager"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Order details -->
+<div class="overlay" id="modalBg"><div class="modal" id="modalBody"></div></div>
+
+<!-- Invoice (print) -->
+<div id="invoice"></div>
+
+<div id="toast"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const rupee = n => "₹" + Math.round(Number(n) || 0).toLocaleString("en-IN");
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function showToast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2400);
+  }
+
+  /* =========================================================
+     DATA
+     ========================================================= */
+  const LABEL = { placed: "Placed", shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled" };
+  const PAGE = 10;
+  const state = { tab: "all", q: "", pay: "all", range: 0, sort: "new", page: 1, demo: false };
+  const selected = new Set();
+  let DEMO = null, openId = null;
+
+  function readOrders() {
+    try { const l = JSON.parse(localStorage.getItem("orders")); return Array.isArray(l) ? l.filter(o => o && o.id) : []; } catch (e) { return []; }
+  }
+  function getOrders() { return state.demo ? DEMO : readOrders(); }
+  function saveOrders(list) {
+    if (state.demo) return true;
+    try { localStorage.setItem("orders", JSON.stringify(list)); return true; } catch (e) { showToast("Save na thayu (browser storage block chhe)"); return false; }
+  }
+  const statusOf = o => ["placed", "shipped", "delivered", "cancelled"].includes(o.status) ? o.status : "placed";
+  const timeOf = o => { const t = new Date(o.date).getTime(); return isNaN(t) ? 0 : t; };
+  const orderTotal = o => Number(o.total) > 0 ? Number(o.total) : (o.items || []).reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+  const itemCount = o => (o.items || []).reduce((s, i) => s + (Number(i.qty) || 1), 0);
+  const fmtDate = o => timeOf(o) ? new Date(o.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "-";
+  const idText = o => "#" + String(o.id).replace("#", "");
+
+  function makeDemo() {
+    const names = ["Rahul Patel", "Priya Shah", "Amit Mehta", "Neha Joshi", "Karan Desai", "Pooja Trivedi", "Vishal Rana", "Hetal Parmar"];
+    const prods = [["Wireless Bluetooth Headphones", 1499], ["Men's Cotton Casual Shirt (Size M · Blue)", 1199], ["Women's Cotton Kurti (Size L · Pink)", 1299],
+      ["Running Sports Shoes", 1999], ["5G Smartphone 8GB / 128GB 50MP", 9999], ["Fitness Smart Band", 1499], ["Leather Casual Backpack", 1199]];
+    const stat = ["placed", "placed", "shipped", "delivered", "delivered", "cancelled"];
+    const pays = ["Cash on Delivery", "UPI (rahul@okaxis)", "Credit / Debit Card", "Net Banking (SBI)"];
+    const r = n => Math.floor(Math.random() * n);
+    return Array.from({ length: 27 }, (_, i) => {
+      const items = Array.from({ length: 1 + r(3) }, () => { const p = prods[r(prods.length)]; return { id: 1, name: p[0], price: p[1], qty: 1 + r(2) }; });
+      const nm = names[r(names.length)];
+      return {
+        id: "SS" + (40000000 + i * 173), date: new Date(Date.now() - r(35) * 86400000 - r(70000000)).toISOString(),
+        status: stat[r(stat.length)], payment: pays[r(pays.length)], items, total: items.reduce((s, x) => s + x.price * x.qty, 0),
+        address: { name: nm, phone: "98" + String(10000000 + r(89999999)), email: nm.split(" ")[0].toLowerCase() + "@example.com", address: (10 + r(90)) + ", Demo Society, Main Road", city: ["Rajkot", "Ahmedabad", "Surat"][r(3)], pin: "360001", state: "Gujarat" }
+      };
+    });
+  }
+
+  /* =========================================================
+     FILTER + SORT
+     ========================================================= */
+  function filtered() {
+    const q = state.q.toLowerCase();
+    let from = 0;
+    if (state.range === 1) { const d = new Date(); d.setHours(0, 0, 0, 0); from = d.getTime(); }
+    else if (state.range > 1) from = Date.now() - state.range * 86400000;
+
+    const list = getOrders().filter(o => {
+      if (state.tab !== "all" && statusOf(o) !== state.tab) return false;
+      if (state.pay !== "all" && (o.payment || "") !== state.pay) return false;
+      if (from && timeOf(o) < from) return false;
+      if (q) {
+        const a = o.address || {};
+        const hay = [o.id, a.name, a.phone, a.email, a.city, o.payment, (o.items || []).map(i => i.name).join(" ")].join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    const sorts = {
+      new: (a, b) => timeOf(b) - timeOf(a), old: (a, b) => timeOf(a) - timeOf(b),
+      high: (a, b) => orderTotal(b) - orderTotal(a), low: (a, b) => orderTotal(a) - orderTotal(b)
+    };
+    return list.sort(sorts[state.sort] || sorts.new);
+  }
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
+  function renderTabs() {
+    const all = getOrders();
+    const c = { all: all.length, placed: 0, shipped: 0, delivered: 0, cancelled: 0 };
+    all.forEach(o => c[statusOf(o)]++);
+    const names = { all: "Badha", placed: "Placed", shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled" };
+    $("tabs").innerHTML = Object.keys(names).map(k =>
+      `<button class="tab ${state.tab === k ? "active" : ""}" data-tab="${k}" type="button">${names[k]}<b>${c[k]}</b></button>`).join("");
+    $("pendCnt").style.display = c.placed ? "inline-block" : "none";
+    $("pendCnt").textContent = c.placed;
+    $("subText").textContent = c.all + " kul orders · " + c.placed + " ship karva baki";
+  }
+
+  function renderPayOptions() {
+    const pays = [...new Set(getOrders().map(o => o.payment).filter(Boolean))];
+    if (state.pay !== "all" && !pays.includes(state.pay)) state.pay = "all";
+    $("paySel").innerHTML = `<option value="all">💳 Badha Payment</option>` +
+      pays.map(p => `<option value="${esc(p)}" ${state.pay === p ? "selected" : ""}>${esc(p)}</option>`).join("");
+  }
+
+  function render() {
+    renderTabs();
+    const list = filtered();
+    const pages = Math.max(1, Math.ceil(list.length / PAGE));
+    if (state.page > pages) state.page = pages;
+    const start = (state.page - 1) * PAGE;
+    const rows = list.slice(start, start + PAGE);
+
+    if (!rows.length) {
+      $("tableBox").innerHTML = `<div class="empty"><b>📭</b>${getOrders().length ? "Aa filter ma koi order malyo nahi." : "Haju koi order nathi. Test mate <strong>🧪 Demo Data</strong> dabavo."}</div>`;
+      $("pager").innerHTML = ""; renderBulk(); return;
+    }
+    const allOnPage = rows.every(o => selected.has(String(o.id)));
+
+    $("tableBox").innerHTML = `<table>
+      <thead><tr>
+        <th><input type="checkbox" id="chkAll" ${allOnPage ? "checked" : ""} aria-label="Badha select karo"></th>
+        <th>Order</th><th>Customer</th><th>Date</th><th>Items</th><th>Payment</th><th>Total</th><th>Status</th><th>Action</th>
+      </tr></thead><tbody>
+      ${rows.map(o => {
+        const st = statusOf(o), a = o.address || {}, id = String(o.id);
+        return `<tr class="${selected.has(id) ? "sel" : ""}">
+          <td><input type="checkbox" data-chk="${esc(id)}" ${selected.has(id) ? "checked" : ""} aria-label="Select"></td>
+          <td><span class="oid" data-view="${esc(id)}">${esc(idText(o))}</span></td>
+          <td class="cust">${esc(a.name || "Guest")}<small>${esc(a.phone || "")}${a.city ? " · " + esc(a.city) : ""}</small></td>
+          <td>${fmtDate(o)}</td>
+          <td><div class="items-txt" title="${esc((o.items || []).map(i => i.name).join(", "))}">${itemCount(o)} item${itemCount(o) === 1 ? "" : "s"}<span class="muted">${esc((o.items || [])[0] ? o.items[0].name : "")}</span></div></td>
+          <td>${esc(o.payment || "-")}</td>
+          <td><strong>${rupee(orderTotal(o))}</strong></td>
+          <td><select class="st ${st}" data-oid="${esc(id)}" aria-label="Status">
+            ${Object.keys(LABEL).map(k => `<option value="${k}" ${k === st ? "selected" : ""}>${LABEL[k]}</option>`).join("")}</select></td>
+          <td><div class="acts">
+            <button class="ib" data-view="${esc(id)}" title="Details" aria-label="Details" type="button">👁</button>
+            <button class="ib" data-print="${esc(id)}" title="Invoice print" aria-label="Print" type="button">🖨</button>
+            <button class="ib del" data-del="${esc(id)}" title="Delete" aria-label="Delete" type="button">🗑</button>
+          </div></td></tr>`;
+      }).join("")}</tbody></table>`;
+
+    /* Pagination */
+    const pgBtns = [];
+    for (let p = 1; p <= pages; p++) {
+      if (pages > 7 && p !== 1 && p !== pages && Math.abs(p - state.page) > 1) { if (pgBtns[pgBtns.length - 1] !== "…") pgBtns.push("…"); continue; }
+      pgBtns.push(p);
+    }
+    $("pager").innerHTML = `<span>${start + 1}-${Math.min(start + PAGE, list.length)} / ${list.length} orders</span>
+      <div class="pgs">
+        <button data-pg="${state.page - 1}" ${state.page === 1 ? "disabled" : ""} type="button">‹</button>
+        ${pgBtns.map(p => p === "…" ? `<button disabled>…</button>` : `<button data-pg="${p}" class="${p === state.page ? "active" : ""}" type="button">${p}</button>`).join("")}
+        <button data-pg="${state.page + 1}" ${state.page === pages ? "disabled" : ""} type="button">›</button>
+      </div>`;
+    renderBulk();
+  }
+
+  function renderBulk() {
+    const n = selected.size;
+    $("bulk").classList.toggle("show", n > 0);
+    $("bulkTxt").textContent = n + " order select karya";
+  }
+
+  /* =========================================================
+     ACTIONS
+     ========================================================= */
+  function setStatus(ids, status) {
+    const set = new Set(ids.map(String));
+    const list = getOrders();
+    let n = 0;
+    list.forEach(o => { if (set.has(String(o.id))) { o.status = status; o.updatedAt = new Date().toISOString(); n++; } });
+    if (!n) return;
+    if (!saveOrders(list)) return;
+    showToast(n + " order → " + LABEL[status]);
+  }
+
+  /* Table events */
+  $("tableBox").addEventListener("change", e => {
+    const s = e.target.closest("select[data-oid]");
+    if (s) { setStatus([s.dataset.oid], s.value); render(); if (openId === s.dataset.oid) openOrder(openId); return; }
+
+    const c = e.target.closest("input[data-chk]");
+    if (c) { c.checked ? selected.add(c.dataset.chk) : selected.delete(c.dataset.chk); render(); return; }
+
+    if (e.target.id === "chkAll") {
+      const list = filtered().slice((state.page - 1) * PAGE, state.page * PAGE);
+      list.forEach(o => e.target.checked ? selected.add(String(o.id)) : selected.delete(String(o.id)));
+      render();
+    }
+  });
+  $("tableBox").addEventListener("click", e => {
+    const v = e.target.closest("[data-view]"); if (v) return openOrder(v.dataset.view);
+    const p = e.target.closest("[data-print]"); if (p) return printInvoice(p.dataset.print);
+    const d = e.target.closest("[data-del]"); if (d) deleteOrder(d.dataset.del);
+  });
+
+  $("tabs").addEventListener("click", e => {
+    const t = e.target.closest("[data-tab]"); if (!t) return;
+    state.tab = t.dataset.tab; state.page = 1; render();
+  });
+  $("pager").addEventListener("click", e => {
+    const b = e.target.closest("[data-pg]"); if (!b || b.disabled) return;
+    state.page = Number(b.dataset.pg); render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  /* Toolbar */
+  let st;
+  $("searchBox").addEventListener("input", e => {
+    $("searchClear").style.display = e.target.value ? "block" : "none";
+    clearTimeout(st);
+    st = setTimeout(() => { state.q = e.target.value.trim(); state.page = 1; render(); }, 200);
+  });
+  $("searchClear").onclick = () => { $("searchBox").value = ""; $("searchClear").style.display = "none"; state.q = ""; state.page = 1; render(); };
+  $("rangeSel").onchange = e => { state.range = Number(e.target.value); state.page = 1; render(); };
+  $("paySel").onchange = e => { state.pay = e.target.value; state.page = 1; render(); };
+  $("sortSel").onchange = e => { state.sort = e.target.value; state.page = 1; render(); };
+  $("resetBtn").onclick = () => {
+    Object.assign(state, { tab: "all", q: "", pay: "all", range: 0, sort: "new", page: 1 });
+    $("searchBox").value = ""; $("searchClear").style.display = "none";
+    $("rangeSel").value = "0"; $("sortSel").value = "new";
+    renderPayOptions(); render();
+  };
+
+  /* Bulk */
+  $("bulk").addEventListener("click", e => {
+    const b = e.target.closest("[data-bulk]"); if (!b) return;
+    const status = b.dataset.bulk, ids = [...selected];
+    if (status === "cancelled" && !confirm(ids.length + " order cancel karva chho?")) return;
+    setStatus(ids, status); selected.clear(); render();
+  });
+  $("bulkClear").onclick = () => { selected.clear(); render(); };
+  $("bulkCsv").onclick = () => exportCSV(getOrders().filter(o => selected.has(String(o.id))));
+  $("csvBtn").onclick = () => exportCSV(filtered());
+
+  function deleteOrder(id) {
+    const o = getOrders().find(x => String(x.id) === String(id)); if (!o) return;
+    if (!confirm(idText(o) + " order delete karvo chhe? Aa pachhu nahi aave.")) return;
+    const left = getOrders().filter(x => String(x.id) !== String(id));
+    if (state.demo) DEMO = left; else if (!saveOrders(left)) return;
+    selected.delete(String(id)); closeModal(); render(); renderPayOptions();
+    showToast("Order delete thayo");
+  }
+
+  /* =========================================================
+     ORDER DETAILS MODAL
+     ========================================================= */
+  function waLink(o) {
+    const a = o.address || {};
+    let ph = String(a.phone || "").replace(/\D/g, "");
+    if (ph.length === 10) ph = "91" + ph;
+    if (ph.length < 10) return "";
+    const text = "Namaste " + (a.name || "") + ", Shop Smart AI order " + idText(o) + " (" + rupee(orderTotal(o)) + ") ni status: " + LABEL[statusOf(o)] + ". Aabhar!";
+    return "https://wa.me/" + ph + "?text=" + encodeURIComponent(text);
+  }
+
+  function openOrder(id) {
+    const o = getOrders().find(x => String(x.id) === String(id)); if (!o) return;
+    openId = String(id);
+    const a = o.address || {}, st = statusOf(o);
+    const sub = (o.items || []).reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+    const steps = ["placed", "shipped", "delivered"], idx = steps.indexOf(st);
+    const wa = waLink(o);
+    const next = st === "placed" ? "shipped" : st === "shipped" ? "delivered" : "";
+
+    $("modalBody").innerHTML = `
+      <h3>Order ${esc(idText(o))}</h3>
+      <p class="sub">${timeOf(o) ? esc(new Date(o.date).toLocaleString("en-IN")) : ""} · <span class="st ${st}" style="cursor:default">${LABEL[st]}</span></p>
+      ${st === "cancelled" ? `<div class="cancel-note">✕ Aa order cancel thayelo chhe</div>` : `
+      <div class="track">${steps.map((s, i) => `<div class="tk ${i <= idx ? "done" : ""}"><i>${i <= idx ? "✔" : i + 1}</i>${LABEL[s]}</div>`).join("")}</div>`}
+      ${(o.items || []).map(i => `<div class="m-item"><span>${esc(i.name || "Product")} × ${Number(i.qty) || 1}</span><strong>${rupee((Number(i.price) || 0) * (Number(i.qty) || 1))}</strong></div>`).join("") || "<p class='sub'>Items ni details nathi.</p>"}
+      <div class="m-box">
+        <div class="m-row"><span>Subtotal</span><span>${rupee(sub)}</span></div>
+        ${Number(o.discount) ? `<div class="m-row"><span>Discount ${o.coupon ? "(" + esc(o.coupon) + ")" : ""}</span><span>-${rupee(o.discount)}</span></div>` : ""}
+        <div class="m-row"><span>Delivery</span><span>${Number(o.delivery) ? rupee(o.delivery) : "FREE"}</span></div>
+        <div class="m-row t"><span>Total</span><span>${rupee(orderTotal(o))}</span></div>
+      </div>
+      <div class="m-box"><strong>📍 Delivery Address</strong><br>${esc(a.name || "-")} · ${esc(a.phone || "")}<br>${esc(a.address || "")}<br>${esc(a.city || "")} ${esc(a.pin || "")}, ${esc(a.state || "")}<br>✉️ ${esc(a.email || "-")}</div>
+      <div class="m-box"><strong>💳 Payment:</strong> ${esc(o.payment || "-")}${o.paymentStatus ? " (" + esc(o.paymentStatus) + ")" : ""}${o.transactionId ? "<br>🔖 " + esc(o.transactionId) : ""}${o.note ? "<br>📝 " + esc(o.note) : ""}</div>
+      <div class="m-btns">
+        ${next ? `<button class="b b-next" data-next="${next}" type="button">${next === "shipped" ? "🚚 Shipped karo" : "✔ Delivered karo"}</button>` : ""}
+        <button class="b b-print" data-mprint type="button">🖨 Invoice Print</button>
+        ${wa ? `<a class="b b-wa" href="${wa}" target="_blank" rel="noopener">💬 WhatsApp</a>` : ""}
+        ${st !== "cancelled" && st !== "delivered" ? `<button class="b b-del" data-cancel type="button">✕ Order Cancel</button>` : ""}
+        <button class="b b-del" data-mdel type="button">🗑 Delete</button>
+        <button class="b b-close" data-mclose type="button">Band Karo</button>
+      </div>`;
+    $("modalBg").classList.add("show");
+  }
+  function closeModal() { openId = null; $("modalBg").classList.remove("show"); }
+  $("modalBg").addEventListener("click", e => {
+    if (e.target === $("modalBg") || e.target.closest("[data-mclose]")) return closeModal();
+    const n = e.target.closest("[data-next]");
+    if (n) { setStatus([openId], n.dataset.next); render(); return openOrder(openId); }
+    if (e.target.closest("[data-cancel]")) { if (!confirm("Aa order cancel karvo chhe?")) return; setStatus([openId], "cancelled"); render(); return openOrder(openId); }
+    if (e.target.closest("[data-mprint]")) return printInvoice(openId);
+    if (e.target.closest("[data-mdel]")) deleteOrder(openId);
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+  /* =========================================================
+     INVOICE PRINT
+     ========================================================= */
+  function printInvoice(id) {
+    const o = getOrders().find(x => String(x.id) === String(id)); if (!o) return;
+    const a = o.address || {};
+    const sub = (o.items || []).reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+    $("invoice").innerHTML = `
+      <div class="inv-top">
+        <div><h1>Shop <span>Smart AI</span></h1><div>support@shopsmartai.com · +91 98765 43210</div></div>
+        <div style="text-align:right"><strong>INVOICE</strong><br>${esc(idText(o))}<br>${esc(fmtDate(o))}</div>
+      </div>
+      <div><strong>Bill To:</strong><br>${esc(a.name || "-")}<br>${esc(a.address || "")}<br>${esc(a.city || "")} ${esc(a.pin || "")}, ${esc(a.state || "")}<br>Mobile: ${esc(a.phone || "-")}</div>
+      <table><tr><th>#</th><th>Product</th><th>Qty</th><th>Price</th><th>Amount</th></tr>
+      ${(o.items || []).map((i, n) => `<tr><td>${n + 1}</td><td>${esc(i.name || "Product")}</td><td>${Number(i.qty) || 1}</td><td>${rupee(i.price)}</td><td>${rupee((Number(i.price) || 0) * (Number(i.qty) || 1))}</td></tr>`).join("")}</table>
+      <div class="tot">Subtotal: ${rupee(sub)}<br>${Number(o.discount) ? "Discount: -" + rupee(o.discount) + "<br>" : ""}Delivery: ${Number(o.delivery) ? rupee(o.delivery) : "FREE"}<br><strong style="font-size:18px">Total: ${rupee(orderTotal(o))}</strong></div>
+      <div style="margin-top:10px">Payment: ${esc(o.payment || "-")} ${o.transactionId ? "(" + esc(o.transactionId) + ")" : ""}</div>
+      <div class="thanks">Kharidi karva badal aabhar! 🙏 · Shop Smart AI</div>`;
+    setTimeout(() => window.print(), 150);
+  }
+
+  /* =========================================================
+     CSV
+     ========================================================= */
+  function exportCSV(list) {
+    if (!list.length) return showToast("Export karva mate koi order nathi");
+    const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""').replace(/^([=+\-@])/, "'$1") + '"';
+    const rows = [["Order ID", "Date", "Customer", "Phone", "Email", "City", "Items", "Payment", "Status", "Total"]];
+    list.forEach(o => {
+      const a = o.address || {};
+      rows.push([o.id, timeOf(o) ? new Date(o.date).toLocaleString("en-IN") : "", a.name, a.phone, a.email, a.city,
+        (o.items || []).map(i => (i.name || "") + " x" + (Number(i.qty) || 1)).join("; "), o.payment, statusOf(o), orderTotal(o)]);
+    });
+    const blob = new Blob(["\ufeff" + rows.map(r => r.map(q).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "shop-smart-orders.csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    showToast(list.length + " orders CSV ma download thaya ✔");
+  }
+
+  /* =========================================================
+     DEMO, SIDEBAR, LOGOUT
+     ========================================================= */
+  $("demoBtn").onclick = () => {
+    state.demo = !state.demo;
+    if (state.demo) DEMO = makeDemo();
+    selected.clear(); state.page = 1; state.pay = "all";
+    $("demoBtn").classList.toggle("on", state.demo);
+    $("demoBtn").textContent = state.demo ? "🧪 Demo Band Karo" : "🧪 Demo Data";
+    $("demoBanner").classList.toggle("show", state.demo);
+    renderPayOptions(); render();
+  };
+
+  const side = $("side"), scrim = $("scrim");
+  const toggleSide = open => { side.classList.toggle("open", open); scrim.classList.toggle("show", open); };
+  $("menuBtn").onclick = () => toggleSide(!side.classList.contains("open"));
+  scrim.onclick = () => toggleSide(false);
+
+  $("logoutBtn").onclick = () => {
+    if (!confirm("Admin logout karvu chhe?")) return;
+    try { sessionStorage.removeItem("adminSession"); } catch (e) {}
+    location.href = "admin-login.html";
+  };
+
+  /* Biji tab ma navo order aave to ahi update thay */
+  window.addEventListener("storage", e => {
+    if (e.key === "orders" && !state.demo) { renderPayOptions(); render(); }
+  });
+
+  /* ?status=placed jevi link thi seedho tab */
+  (function () {
+    const s = new URLSearchParams(location.search).get("status");
+    if (["placed", "shipped", "delivered", "cancelled"].includes(s)) state.tab = s;
+  })();
+
+  renderPayOptions();
+  render();
+</script>
+</body>
+</html>

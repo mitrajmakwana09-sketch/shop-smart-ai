@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistant | Shop Smart AI</title>
+  <meta name="description" content="Shop Smart AI no smart shopping assistant: product, price, cart ane delivery vishe puchho.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    :root {
+      --bg: #f1f5fb; --surface: #ffffff; --soft: #f8fafc; --text: #1f2937; --muted: #6b7280;
+      --border: #e5e7eb; --bot: #ffffff; --header-bg: rgba(255,255,255,.88);
+      --primary: #0284c7; --primary-d: #0369a1; --green: #16a34a;
+      --shadow: 0 18px 50px rgba(2,132,199,.16);
+    }
+    [data-theme="dark"] {
+      --bg: #0a1120; --surface: #111a2e; --soft: #0d1527; --text: #e5e7eb; --muted: #94a3b8;
+      --border: #23304b; --bot: #17223b; --header-bg: rgba(17,26,46,.88);
+      --shadow: 0 18px 50px rgba(0,0,0,.55);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; overflow-x: hidden;
+      transition: background .3s, color .3s;
+    }
+    a { text-decoration: none; color: inherit; }
+    button, input, select { font-family: inherit; }
+
+    /* Animated background blobs */
+    .blob { position: fixed; border-radius: 50%; filter: blur(70px); opacity: .45; z-index: -1; animation: blobMove 16s ease-in-out infinite alternate; }
+    .blob.b1 { width: 380px; height: 380px; background: #38bdf8; top: -120px; left: -100px; }
+    .blob.b2 { width: 340px; height: 340px; background: #4ade80; bottom: -120px; right: -80px; animation-delay: 4s; }
+    .blob.b3 { width: 260px; height: 260px; background: #a78bfa; top: 40%; left: 55%; opacity: .25; animation-delay: 8s; }
+    [data-theme="dark"] .blob { opacity: .22; }
+    @keyframes blobMove { to { transform: translate(60px, 50px) scale(1.18); } }
+
+    /* Header */
+    header {
+      background: var(--header-bg); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: var(--primary); }
+    .logo span { color: var(--green); }
+    nav { display: flex; align-items: center; gap: 22px; }
+    nav a { color: var(--text); font-weight: 500; opacity: .85; }
+    nav a:hover, nav a.active { color: var(--primary); opacity: 1; }
+    .cart-badge { background: var(--green); color: #fff; border-radius: 999px; padding: 1px 8px; font-size: 12px; margin-left: 4px; }
+    .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; color: var(--text); }
+
+    /* App / chat shell */
+    .app { max-width: 980px; margin: 16px auto; padding: 0 14px; }
+    .chat {
+      position: relative; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 24px; overflow: hidden; box-shadow: var(--shadow);
+      display: flex; flex-direction: column;
+      height: calc(100vh - 100px); height: calc(100dvh - 100px); min-height: 520px;
+      animation: rise .6s ease both;
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+    .chat-head {
+      background: linear-gradient(120deg, #0284c7, #0369a1, #16a34a, #0284c7); background-size: 300% 100%;
+      animation: headMove 12s ease infinite; color: #fff; padding: 14px 18px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    @keyframes headMove { 50% { background-position: 100% 0; } }
+    .head-av { position: relative; width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.22); display: flex; align-items: center; justify-content: center; font-size: 26px; }
+    .head-av::after { content: ""; position: absolute; right: 1px; bottom: 1px; width: 12px; height: 12px; border-radius: 50%; background: #86efac; border: 2px solid #0369a1; animation: ping 2s infinite; }
+    .head-av.off::after { background: #fcd34d; animation: none; }
+    @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(134,239,172,.7); } 70% { box-shadow: 0 0 0 9px rgba(134,239,172,0); } 100% { box-shadow: 0 0 0 0 rgba(134,239,172,0); } }
+    .head-t { flex: 1; min-width: 0; }
+    .head-t strong { display: block; font-size: 17px; }
+    .head-t small { opacity: .92; font-size: 13px; }
+    .icon-btn { background: rgba(255,255,255,.18); border: none; color: #fff; width: 40px; height: 40px; border-radius: 12px; font-size: 17px; cursor: pointer; transition: background .2s, transform .15s; }
+    .icon-btn:hover { background: rgba(255,255,255,.32); transform: translateY(-2px); }
+
+    /* Messages */
+    .messages { flex: 1; overflow-y: auto; padding: 20px 18px 10px; scroll-behavior: smooth; background: var(--soft); }
+    .messages::-webkit-scrollbar { width: 8px; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+
+    /* Welcome */
+    .welcome { text-align: center; padding: 10px 6px 20px; animation: fade .6s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .orb { position: relative; width: 110px; height: 110px; margin: 6px auto 16px; display: flex; align-items: center; justify-content: center; font-size: 52px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #7dd3fc, #0284c7 55%, #16a34a); box-shadow: 0 14px 34px rgba(2,132,199,.45); animation: orbFloat 4s ease-in-out infinite; }
+    .orb::before, .orb::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(2,132,199,.45); animation: ring 2.8s ease-out infinite; }
+    .orb::after { animation-delay: 1.4s; }
+    @keyframes ring { from { transform: scale(1); opacity: .8; } to { transform: scale(1.7); opacity: 0; } }
+    @keyframes orbFloat { 50% { transform: translateY(-10px); } }
+    .welcome h1 { font-size: 26px; margin-bottom: 6px; }
+    .welcome h1 span { background: linear-gradient(90deg, #0284c7, #16a34a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .welcome p { color: var(--muted); line-height: 1.6; max-width: 520px; margin: 0 auto 22px; }
+    .sugg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 720px; margin: 0 auto; }
+    .sg {
+      text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 14px; cursor: pointer; color: var(--text); transition: transform .2s, box-shadow .2s, border-color .2s;
+      animation: fade .6s ease both;
+    }
+    .sg:hover { transform: translateY(-5px); box-shadow: 0 12px 26px rgba(2,132,199,.18); border-color: #7dd3fc; }
+    .sg .i { font-size: 26px; display: block; margin-bottom: 6px; }
+    .sg strong { display: block; font-size: 14px; margin-bottom: 2px; }
+    .sg small { color: var(--muted); font-size: 12px; line-height: 1.4; display: block; }
+
+    /* Message rows */
+    .msg { display: flex; gap: 10px; margin-bottom: 16px; animation: msgIn .3s ease; }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .msg.user { justify-content: flex-end; }
+    .av { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, #0284c7, #16a34a); display: flex; align-items: center; justify-content: center; font-size: 19px; box-shadow: 0 4px 10px rgba(2,132,199,.3); }
+    .bw { max-width: 80%; min-width: 0; }
+    .msg.user .bw { display: flex; flex-direction: column; align-items: flex-end; }
+    .bubble { padding: 12px 16px; border-radius: 18px; line-height: 1.6; font-size: 15px; word-wrap: break-word; overflow-wrap: anywhere; }
+    .msg.bot .bubble { background: var(--bot); border: 1px solid var(--border); border-top-left-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+    .msg.user .bubble { background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; border-top-right-radius: 6px; box-shadow: 0 6px 16px rgba(2,132,199,.3); }
+    .txt { white-space: pre-wrap; }
+    .bubble a { color: var(--primary); font-weight: 700; text-decoration: underline; }
+    .msg.user .bubble a { color: #fff; }
+    .note { display: none; margin-top: 8px; font-size: 12px; color: #b45309; background: rgba(245,158,11,.12); border-radius: 8px; padding: 5px 9px; }
+    .meta { display: flex; gap: 10px; align-items: center; font-size: 11px; color: var(--muted); margin: 4px 6px 0; }
+    .copy { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; padding: 2px 4px; border-radius: 6px; }
+    .copy:hover { color: var(--primary); background: rgba(2,132,199,.1); }
+
+    /* Product cards in chat */
+    .cards { display: grid; gap: 10px; margin-top: 10px; }
+    .cards:empty { display: none; }
+    .pcard { display: flex; gap: 12px; align-items: center; background: var(--soft); border: 1px solid var(--border); border-radius: 14px; padding: 10px; flex-wrap: wrap; transition: box-shadow .2s, transform .2s; }
+    .pcard:hover { box-shadow: 0 8px 20px rgba(0,0,0,.1); transform: translateY(-2px); }
+    .pcard img { width: 72px; height: 72px; object-fit: contain; background: #fff; border-radius: 10px; flex-shrink: 0; }
+    .pi { flex: 1; min-width: 150px; }
+    .pi strong { display: block; font-size: 14px; line-height: 1.35; }
+    .pi .pr { font-weight: 800; font-size: 16px; }
+    .pi .pr small { color: var(--muted); text-decoration: line-through; font-weight: 400; font-size: 12px; margin-left: 6px; }
+    .pi .off { display: inline-block; background: #fee2e2; color: #b91c1c; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; margin-left: 6px; }
+    .pi .stk { display: block; font-size: 12px; font-weight: 700; margin-top: 2px; }
+    .stk.in { color: var(--green); } .stk.out { color: #dc2626; }
+    .pb { display: flex; gap: 6px; flex-wrap: wrap; width: 100%; }
+    .pb button, .pb a { flex: 1; min-width: 78px; padding: 8px 10px; border-radius: 9px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none !important; transition: opacity .2s, transform .1s; }
+    .pb button:hover, .pb a:hover { opacity: .88; }
+    .pb button:active { transform: scale(.95); }
+    .pb button:disabled { background: #9ca3af !important; cursor: not-allowed; }
+    .b-cart { background: var(--primary); color: #fff; }
+    .b-buy { background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; }
+    .b-view { background: rgba(2,132,199,.12); color: var(--primary) !important; }
+
+    /* Typing dots */
+    .typing .bubble { display: flex; gap: 6px; padding: 16px 18px; }
+    .typing i { width: 9px; height: 9px; border-radius: 50%; background: var(--primary); opacity: .4; animation: bounce 1.2s infinite ease-in-out; }
+    .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); opacity: .35; } 40% { transform: translateY(-7px); opacity: 1; } }
+
+    /* Scroll down */
+    .down { position: absolute; right: 22px; bottom: 150px; width: 42px; height: 42px; border-radius: 50%; border: none; background: var(--primary); color: #fff; font-size: 18px; cursor: pointer; box-shadow: 0 8px 20px rgba(2,132,199,.45); opacity: 0; pointer-events: none; transform: translateY(10px); transition: all .25s; z-index: 5; }
+    .down.show { opacity: 1; pointer-events: auto; transform: none; }
+
+    /* Chips */
+    .chips { display: none; gap: 8px; padding: 10px 16px; overflow-x: auto; background: var(--surface); border-top: 1px solid var(--border); }
+    .chips.show { display: flex; }
+    .chips::-webkit-scrollbar { height: 0; }
+    .chip { white-space: nowrap; padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(2,132,199,.35); background: rgba(2,132,199,.08); color: var(--primary); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; }
+    .chip:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+
+    /* Composer */
+    .composer { display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--surface); border-top: 1px solid var(--border); }
+    .field { flex: 1; display: flex; align-items: center; gap: 6px; background: var(--soft); border: 1.5px solid var(--border); border-radius: 999px; padding: 0 8px 0 18px; transition: border .2s, box-shadow .2s; }
+    .field:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(2,132,199,.15); }
+    .field input { flex: 1; min-width: 0; height: 50px; border: none; outline: none; background: transparent; color: var(--text); font-size: 15px; }
+    .field input::placeholder { color: var(--muted); }
+    .mic { width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; font-size: 19px; cursor: pointer; color: var(--muted); transition: all .2s; }
+    .mic:hover { background: rgba(2,132,199,.12); }
+    .mic.on { background: #fee2e2; color: #dc2626; animation: micPulse 1.2s infinite; }
+    @keyframes micPulse { 0% { box-shadow: 0 0 0 0 rgba(220,38,38,.5); } 100% { box-shadow: 0 0 0 14px rgba(220,38,38,0); } }
+    .send { width: 52px; height: 52px; border: none; border-radius: 50%; background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; font-size: 20px; cursor: pointer; box-shadow: 0 6px 16px rgba(22,163,74,.4); transition: transform .15s, opacity .2s; }
+    .send:hover { transform: scale(1.08) rotate(-8deg); }
+    .send:active { transform: scale(.94); }
+    .send:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .disclaimer { text-align: center; font-size: 11px; color: var(--muted); padding: 0 12px 10px; background: var(--surface); }
+
+    /* Modal */
+    .overlay { position: fixed; inset: 0; background: rgba(2,6,23,.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 300; padding: 16px; }
+    .overlay.show { display: flex; animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal { background: var(--surface); color: var(--text); border-radius: 20px; padding: 26px; width: 100%; max-width: 450px; animation: pop .3s cubic-bezier(.2,.9,.3,1.2); border: 1px solid var(--border); }
+    @keyframes pop { from { opacity: 0; transform: scale(.9) translateY(14px); } to { opacity: 1; transform: none; } }
+    .modal h3 { margin-bottom: 6px; font-size: 20px; }
+    .modal p { color: var(--muted); font-size: 14px; line-height: 1.55; margin-bottom: 14px; }
+    .modal label { display: block; font-weight: 700; font-size: 13px; margin-bottom: 5px; }
+    .modal input, .modal select { width: 100%; height: 46px; padding: 0 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; background: var(--soft); color: var(--text); outline: none; margin-bottom: 14px; }
+    .modal input:focus, .modal select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+    .warn { background: rgba(245,158,11,.14); color: #b45309; border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.5; margin-bottom: 14px; }
+    [data-theme="dark"] .warn { color: #fbbf24; }
+    .m-btns { display: flex; gap: 10px; }
+    .m-btns button { flex: 1; height: 44px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; }
+    .m-save { background: var(--primary); color: #fff; }
+    .m-del { background: #fee2e2; color: #b91c1c; }
+    .m-close { background: var(--soft); color: var(--text); border: 1px solid var(--border) !important; }
+
+    /* Toast */
+    #toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px; opacity: 0; transition: all .3s; pointer-events: none; z-index: 400; max-width: 90%; text-align: center; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 760px) {
+      .menu-btn { display: block; }
+      nav { position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); flex-direction: column; align-items: flex-start; padding: 0 24px; gap: 0; max-height: 0; overflow: hidden; transition: max-height .3s; border-bottom: 1px solid var(--border); }
+      nav.open { max-height: 380px; padding: 10px 24px 16px; }
+      nav a { padding: 10px 0; width: 100%; }
+      .app { margin: 8px auto; padding: 0 8px; }
+      .chat { border-radius: 18px; height: calc(100vh - 80px); height: calc(100dvh - 80px); }
+      .sugg { grid-template-columns: 1fr 1fr; }
+      .bw { max-width: 90%; }
+      .welcome h1 { font-size: 22px; }
+      .orb { width: 90px; height: 90px; font-size: 42px; }
+    }
+    @media (max-width: 420px) {
+      .sugg { grid-template-columns: 1fr; }
+      .av { display: none; }
+      .bw { max-width: 96%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <nav id="nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="ai-assistant.html" class="active">AI Assistant</a>
+      <a href="my-order.html">My Orders</a>
+      <a href="cart.html">Cart<span class="cart-badge" id="cartCount">0</span></a>
+      <a href="login.html" id="loginLink">Login</a>
+    </nav>
+  </header>
+
+  <main class="app">
+    <section class="chat">
+
+      <div class="chat-head">
+        <div class="head-av" id="headAv">🤖</div>
+        <div class="head-t">
+          <strong>Smart Assistant</strong>
+          <small id="statusText">Online</small>
+        </div>
+        <button class="icon-btn" id="themeBtn" title="Dark / Light mode" aria-label="Theme">🌙</button>
+        <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">⚙️</button>
+        <button class="icon-btn" id="clearBtn" title="Chat clear karo" aria-label="Clear chat">🗑</button>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="welcome" id="welcome">
+          <div class="orb">🤖</div>
+          <h1 id="hello">Namaste! Hu chhu <span>Smart Assistant</span></h1>
+          <p>Product shodhvu, price sarkhavvi, cart ma add karvu ke delivery vishe puchhvu, badhu ahi thi thai jase. Niche thi pasand karo ke potano prashn lakho.</p>
+          <div class="sugg" id="sugg"></div>
+        </div>
+      </div>
+
+      <button class="down" id="downBtn" type="button" aria-label="Niche jao">↓</button>
+
+      <div class="chips" id="chips"></div>
+
+      <form class="composer" id="chatForm" autocomplete="off">
+        <div class="field">
+          <input type="text" id="chatInput" placeholder="Tamaro prashn lakho..." maxlength="300" aria-label="Message">
+          <button type="button" class="mic" id="micBtn" title="Bolo (voice)" aria-label="Voice input">🎤</button>
+        </div>
+        <button type="submit" class="send" id="sendBtn" aria-label="Send">➤</button>
+      </form>
+      <div class="disclaimer">AI jawab ma bhul hoi shake. Price ane stock products page par pharithi check karo.</div>
+    </section>
+  </main>
+
+  <!-- Settings -->
+  <div class="overlay" id="modalBg">
+    <div class="modal">
+      <h3>⚙️ Settings</h3>
+      <p>Real AI jawab mate API key nakho. Key na hoy to assistant <strong>Smart Mode (offline)</strong> ma chale chhe.</p>
+      <div class="warn">⚠️ Key aa browser ma save thay chhe. Public website par key kyarey aa rite na vaparvi, server (backend) thi vaparvi.</div>
+      <label for="keyInput">API Key</label>
+      <input type="password" id="keyInput" placeholder="API key ahi paste karo" autocomplete="off">
+      <label for="langSel">Voice Language</label>
+      <select id="langSel">
+        <option value="en-IN">English (India)</option>
+        <option value="gu-IN">ગુજરાતી</option>
+        <option value="hi-IN">हिन्दी</option>
+      </select>
+      <div class="m-btns">
+        <button class="m-save" id="saveKey" type="button">Save</button>
+        <button class="m-del" id="delKey" type="button">Key Hatavo</button>
+        <button class="m-close" id="closeModal" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    /* =========================================================
+       API SETTINGS
+       Real AI mate key ahi nakho (ya ⚙️ Settings ma paste karo).
+       "YOUR_API_KEY_HERE" jem chhe tem rahe to Smart Mode (offline) chalse.
+       ========================================================= */
+    const API_KEY = "YOUR_API_KEY_HERE";
+    const API_URL = "https://api.anthropic.com/v1/messages";
+    const MODEL = "claude-sonnet-5-5";
+
+    const $ = id => document.getElementById(id);
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const rupee = n => "₹" + Number(n).toLocaleString("en-IN");
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const placeholder = "data:image/svg+xml;utf8," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'><rect width='100%' height='100%' fill='#f4f6fa'/></svg>");
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    /* =========================================================
+       STORE DATA (products.html sathe same rakho)
+       ========================================================= */
+    const PRODUCTS = [
+      { id: 1, name: "Wireless Bluetooth Headphones", category: "Electronics", price: 1499, oldPrice: 2999, rating: 4.5, reviews: 1280, stock: 25,
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300", keys: ["headphone", "earphone", "bluetooth", "audio", "music"] },
+      { id: 2, name: "Smart Watch Series X", category: "Wearables", price: 2999, oldPrice: 5999, rating: 4.3, reviews: 860, stock: 12,
+        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300", keys: ["watch", "smartwatch", "ghadiyal"] },
+      { id: 3, name: "Running Sports Shoes", category: "Fashion", price: 1999, oldPrice: 3499, rating: 4.4, reviews: 540, stock: 40,
+        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300", keys: ["shoe", "joota", "jutta", "running", "sports"] },
+      { id: 4, name: "Portable Power Bank 20000mAh", category: "Accessories", price: 1299, oldPrice: 1999, rating: 4.6, reviews: 2100, stock: 0,
+        image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=300", keys: ["power", "powerbank", "charger", "battery"] },
+      { id: 5, name: "Mirrorless Digital Camera", category: "Electronics", price: 8999, oldPrice: 12999, rating: 4.7, reviews: 310, stock: 6,
+        image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300", keys: ["camera", "mirrorless", "photo"] },
+      { id: 6, name: "Leather Casual Backpack", category: "Accessories", price: 1199, oldPrice: 2199, rating: 4.2, reviews: 720, stock: 33,
+        image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300", keys: ["backpack", "bag", "bagpack"] },
+      { id: 7, name: "Ceramic Table Lamp", category: "Home", price: 799, oldPrice: 1499, rating: 4.1, reviews: 190, stock: 18,
+        image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=300", keys: ["lamp", "table lamp", "light"] },
+      { id: 8, name: "Fitness Smart Band", category: "Wearables", price: 1499, oldPrice: 2499, rating: 4.0, reviews: 410, stock: 52,
+        image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=300", keys: ["band", "fitness", "tracker"] }
+    ];
+
+    /* add-product.html mathi add karela products pan umero */
+    try {
+      const extra = JSON.parse(localStorage.getItem("customProducts")) || [];
+      extra.forEach(p => {
+        if (p && p.id && p.name && Number(p.price) > 0 && !PRODUCTS.some(x => x.id === p.id)) {
+          PRODUCTS.push(Object.assign(
+            { category: "General", brand: "Generic", rating: 4, reviews: 0, stock: 0, oldPrice: p.price },
+            p,
+            { keys: String(p.name).toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 2) }
+          ));
+        }
+      });
+    } catch (e) {}
+
+    const byId = id => PRODUCTS.find(p => p.id === Number(id));
+    const discOf = p => p.oldPrice > p.price ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+
+    const FREE_DELIVERY_ABOVE = 999;
+    const DELIVERY_FEE = 49;
+    const PAGES = ["index.html", "products.html", "cart.html", "checkout.html", "my-order.html", "compare.html", "contact.html",
+                   "profile.html", "login.html", "register.html", "about.html", "ai-assistant.html", "add-product.html", "product-details.html"];
+
+    /* ---------- Storage helpers (error vagar) ---------- */
+    function getCart() {
+      try { const c = JSON.parse(localStorage.getItem("cart")); return Array.isArray(c) ? c : []; } catch (e) { return []; }
+    }
+    function saveCart(c) { try { localStorage.setItem("cart", JSON.stringify(c)); } catch (e) {} }
+    function getOrders() {
+      try { const o = JSON.parse(localStorage.getItem("orders")); return Array.isArray(o) ? o : []; } catch (e) { return []; }
+    }
+    function getUser() {
+      try { return JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser") || "null"); } catch (e) { return null; }
+    }
+    function getKey() {
+      let k = "";
+      try { k = (localStorage.getItem("aiApiKey") || "").trim(); } catch (e) {}
+      if (!k && API_KEY && API_KEY !== "YOUR_API_KEY_HERE") k = API_KEY.trim();
+      return k;
+    }
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2300);
+    }
+
+    /* ---------- Text formatting (safe) ---------- */
+    function fmt(s) {
+      let h = esc(s);
+      /* [text](page.html) links */
+      h = h.replace(/\[([^\]]+)\]\(([a-z-]+\.html(?:\?[a-z0-9=,]*)?)\)/g,
+        (m, t, u) => PAGES.includes(u.split("?")[0]) ? `<a href="${u}">${t}</a>` : t);
+      /* bare page names (jem ke cart.html) */
+      h = h.replace(/(<a [^>]*>.*?<\/a>)|\b([a-z-]+\.html)\b/g,
+        (m, a, p) => a ? a : (PAGES.includes(p) ? `<a href="${p}">${p}</a>` : m));
+      return h.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
+    }
+    function plainText(s) {
+      return String(s).replace(/\*\*/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
+    }
+
+    /* =========================================================
+       CART ACTIONS
+       ========================================================= */
+    function updateCartCount() {
+      $("cartCount").textContent = getCart().reduce((s, i) => s + (Number(i.qty) || 0), 0);
+    }
+    function addToCart(id, silent) {
+      const p = byId(id);
+      if (!p || !(p.stock > 0)) { if (!silent) showToast("Aa product stock ma nathi"); return false; }
+      const cart = getCart();
+      const item = cart.find(i => Number(i.id) === p.id);
+      const limit = Math.min(10, p.stock);
+      if (item) {
+        if ((Number(item.qty) || 0) >= limit) { if (!silent) showToast("Aa thi vadhu quantity upalabdh nathi"); return false; }
+        item.qty = (Number(item.qty) || 0) + 1;
+      } else {
+        cart.push({ id: p.id, name: p.name, price: p.price, image: p.image, qty: 1 });
+      }
+      saveCart(cart);
+      updateCartCount();
+      if (!silent) showToast("Cart ma add thai gayu ✔");
+      return true;
+    }
+    /* Buy Now: cart ne haath lagadya vagar fakt aa ek product checkout par jay chhe */
+    function buyNow(id) {
+      const p = byId(id);
+      if (!p || !(p.stock > 0)) return showToast("Aa product stock ma nathi");
+      try {
+        localStorage.setItem("buyNowItem", JSON.stringify({
+          id: p.id, name: p.name, price: p.price, image: p.image, stock: p.stock, qty: 1
+        }));
+      } catch (e) { return showToast("Browser storage block chhe, Buy Now chalshe nahi"); }
+      showToast("Checkout par jaie chhie... ⚡");
+      setTimeout(() => { location.href = "checkout.html?mode=buynow"; }, 500);
+    }
+    function rememberProduct(id) {
+      const p = byId(id);
+      if (p) { try { localStorage.setItem("selectedProduct", JSON.stringify(p)); } catch (e) {} }
+    }
+
+    /* =========================================================
+       UI: scroll helpers
+       ========================================================= */
+    const box = $("messages");
+    const nearBottom = () => box.scrollHeight - box.scrollTop - box.clientHeight < 140;
+    function scrollDown(force) {
+      if (force || nearBottom()) box.scrollTop = box.scrollHeight;
+    }
+    box.addEventListener("scroll", () => {
+      $("downBtn").classList.toggle("show", !nearBottom());
+    });
+    $("downBtn").onclick = () => { box.scrollTop = box.scrollHeight; };
+
+    /* =========================================================
+       CHAT RENDERING
+       ========================================================= */
+    let history = [];
+    let busy = false;
+
+    const nowTime = () => new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+
+    function cardsHTML(ids) {
+      const items = [...new Set(ids || [])].map(byId).filter(Boolean);
+      return items.map(p => {
+        const d = discOf(p), ok = p.stock > 0;
+        return `
+          <div class="pcard">
+            <img src="${esc(p.image || placeholder)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${placeholder}'">
+            <div class="pi">
+              <strong>${esc(p.name)}</strong>
+              <span class="pr">${rupee(p.price)}${p.oldPrice > p.price ? `<small>${rupee(p.oldPrice)}</small>` : ""}${d ? `<span class="off">${d}% OFF</span>` : ""}</span>
+              <span class="stk ${ok ? "in" : "out"}">${ok ? "✔ In Stock" : "✖ Out of Stock"}</span>
+            </div>
+            <div class="pb">
+              <button class="b-cart" onclick="addToCart(${p.id})" ${ok ? "" : "disabled"}>🛒 Add</button>
+              <button class="b-buy" onclick="buyNow(${p.id})" ${ok ? "" : "disabled"}>⚡ Buy Now</button>
+              <a class="b-view" href="product-details.html?id=${p.id}" onclick="rememberProduct(${p.id})">View</a>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    function hideWelcome() {
+      $("welcome").style.display = "none";
+      $("chips").classList.add("show");
+    }
+    function showWelcome() {
+      $("welcome").style.display = "block";
+      $("chips").classList.remove("show");
+    }
+
+    function copyText(text, btn) {
+      const done = () => { btn.textContent = "✔ Copied"; setTimeout(() => { btn.textContent = "📋 Copy"; }, 1500); };
+      const t = plainText(text);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(done).catch(() => showToast("Copy na thayu"));
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = t; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); done(); } catch (e) { showToast("Copy na thayu"); }
+        ta.remove();
+      }
+    }
+
+    function addMessage(m, opts) {
+      const animate = !!(opts && opts.animate) && m.role === "bot" && !reduceMotion && m.text;
+      const save = !(opts && opts.save === false);
+      hideWelcome();
+
+      const row = document.createElement("div");
+      row.className = "msg " + m.role;
+      if (m.role === "bot") {
+        const av = document.createElement("div");
+        av.className = "av"; av.textContent = "🤖";
+        row.appendChild(av);
+      }
+      const bw = document.createElement("div"); bw.className = "bw";
+      const bubble = document.createElement("div"); bubble.className = "bubble";
+      const txt = document.createElement("div"); txt.className = "txt";
+      const cards = document.createElement("div"); cards.className = "cards";
+      const note = document.createElement("div"); note.className = "note";
+      bubble.append(txt, cards, note);
+
+      const meta = document.createElement("div"); meta.className = "meta";
+      const time = document.createElement("span"); time.textContent = m.time || "";
+      meta.appendChild(time);
+      if (m.role === "bot") {
+        const cp = document.createElement("button");
+        cp.type = "button"; cp.className = "copy"; cp.textContent = "📋 Copy";
+        cp.onclick = () => copyText(m.text, cp);
+        meta.appendChild(cp);
+      }
+      bw.append(bubble, meta);
+      row.appendChild(bw);
+
+      const stick = nearBottom();
+      box.appendChild(row);
+
+      const finalize = () => {
+        if (m.role === "bot") txt.innerHTML = fmt(m.text); else txt.textContent = m.text;
+        cards.innerHTML = m.role === "bot" ? cardsHTML(m.ids) : "";
+        if (m.note) { note.textContent = m.note; note.style.display = "block"; }
+        scrollDown(true);
+      };
+
+      if (animate) {
+        /* Typewriter effect (bubble par click karo to turant puru) */
+        const plain = plainText(m.text);
+        const step = Math.max(1, Math.ceil(plain.length / 80));
+        let i = 0, ended = false;
+        const end = () => { if (ended) return; ended = true; clearInterval(timer); finalize(); };
+        const timer = setInterval(() => {
+          i += step;
+          txt.textContent = plain.slice(0, i);
+          if (stick) scrollDown(true);
+          if (i >= plain.length) end();
+        }, 16);
+        bubble.addEventListener("click", end, { once: true });
+      } else {
+        finalize();
+        if (stick) scrollDown(true);
+      }
+
+      if (save) {
+        history.push({ role: m.role, text: m.text, ids: m.ids || [], note: m.note || "", time: m.time || "" });
+        try { localStorage.setItem("aiChat", JSON.stringify(history.slice(-40))); } catch (e) {}
+      }
+    }
+
+    function showTyping() {
+      const row = document.createElement("div");
+      row.className = "msg bot typing"; row.id = "typing";
+      row.innerHTML = `<div class="av">🤖</div><div class="bw"><div class="bubble"><i></i><i></i><i></i></div></div>`;
+      box.appendChild(row);
+      scrollDown(true);
+    }
+    function hideTyping() { const t = $("typing"); if (t) t.remove(); }
+
+    /* =========================================================
+       SUGGESTIONS + CHIPS
+       ========================================================= */
+    const SUGGESTIONS = [
+      { i: "🔥", t: "Sauthi sasto product", s: "Best bhav vala products", q: "Sauthi sasto product kayu chhe?" },
+      { i: "⭐", t: "Best rating products", s: "Loko ne sauthi vadhu gamya", q: "Best rating vala products batavo" },
+      { i: "💰", t: "₹2000 ni andar", s: "Budget ma shu malse", q: "₹2000 ni andar shu malse?" },
+      { i: "🎁", t: "Offers ane coupons", s: "Bachat karvano rasto", q: "Aaje kai offer ke coupon chhe?" },
+      { i: "🛒", t: "Maro cart", s: "Cart ma shu chhe te juo", q: "Maro cart batavo" },
+      { i: "🚚", t: "Delivery ane return", s: "Ketla divas ma ane policy", q: "Delivery ketla divas ma thay chhe?" }
+    ];
+    const CHIPS = [
+      { t: "🔥 Sauthi sasto", q: "Sauthi sasto product kayu chhe?" },
+      { t: "⭐ Best products", q: "Best rating vala products batavo" },
+      { t: "💰 ₹2000 ni andar", q: "₹2000 ni andar shu malse?" },
+      { t: "🛒 Maro cart", q: "Maro cart batavo" },
+      { t: "📦 Maro order", q: "Maro chhello order kyan chhe?" },
+      { t: "🚚 Delivery", q: "Delivery ketla divas ma thay chhe?" },
+      { t: "↩️ Return", q: "Return policy shu chhe?" },
+      { t: "💳 Payment", q: "Payment na kya options chhe?" }
+    ];
+
+    $("sugg").innerHTML = SUGGESTIONS.map((s, k) => `
+      <button type="button" class="sg" data-q="${esc(s.q)}" style="animation-delay:${k * 70}ms">
+        <span class="i">${s.i}</span><strong>${esc(s.t)}</strong><small>${esc(s.s)}</small>
+      </button>`).join("");
+    $("chips").innerHTML = CHIPS.map(c => `<button type="button" class="chip" data-q="${esc(c.q)}">${esc(c.t)}</button>`).join("");
+
+    function onQuick(e) {
+      const b = e.target.closest("[data-q]");
+      if (b) send(b.dataset.q);
+    }
+    $("sugg").addEventListener("click", onQuick);
+    $("chips").addEventListener("click", onQuick);
+
+    /* =========================================================
+       OFFLINE SMART MODE (API key vagar pan chale)
+       ========================================================= */
+    function matchProducts(t) {
+      return PRODUCTS.filter(p =>
+        t.includes(p.name.toLowerCase()) ||
+        p.keys.some(k => new RegExp("(^|[^a-z0-9])" + k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "s?([^a-z0-9]|$)").test(t)));
+    }
+
+    function localReply(raw) {
+      const t = raw.toLowerCase();
+      const has = (...ws) => ws.some(w => new RegExp("(^|[^a-z0-9])" + w + "([^a-z0-9]|$)").test(t));
+      const inStock = PRODUCTS.filter(p => p.stock > 0);
+      const matched = matchProducts(t);
+
+      /* 1) "headphones cart ma add karo" */
+      if (matched.length && has("add", "umero", "nakho", "nakhi", "mukho", "mukvo") && has("cart", "tokri")) {
+        const p = matched[0];
+        if (!(p.stock > 0)) return { text: `😔 **${p.name}** atyare stock ma nathi. Bijo similar product jovo?`, ids: [p.id] };
+        return addToCart(p.id, true)
+          ? { text: `✅ **${p.name}** cart ma add thai gayu!\nCheckout karva mate cart.html par jao.`, ids: [p.id] }
+          : { text: `Aa product nu maximum quantity cart ma pehela thi chhe. Cart juo: cart.html`, ids: [p.id] };
+      }
+
+      /* 2) Buy intent */
+      if (matched.length && has("buy", "kharido", "kharidvu", "kharid", "levu", "lavu", "joie")) {
+        const p = matched[0];
+        return { text: p.stock > 0
+          ? `⚡ **${p.name}** ${rupee(p.price)} ma upalabdh chhe. Niche **Buy Now** dabavo, fakt aa j product checkout ma jase.`
+          : `😔 **${p.name}** atyare stock ma nathi.`, ids: [p.id] };
+      }
+
+      /* 3) Compare */
+      if (has("compare", "sarkhav", "sarkhamani", "farak", "vs")) {
+        if (matched.length >= 2) {
+          const ids = matched.slice(0, 3).map(p => p.id);
+          return { text: `Aa products sarkhavva mate: [Compare karo](compare.html?ids=${ids.join(",")})`, ids };
+        }
+        return { text: "Products sarkhavva mate [Compare page](compare.html) vapro. Be product na naam lakho to hu seedhi link banavi aapu.", ids: [] };
+      }
+
+      /* 4) Product info */
+      if (matched.length) {
+        const p = matched[0];
+        return {
+          text: `**${p.name}**: price ${rupee(p.price)} (${discOf(p)}% off), rating ${p.rating} ★ (${(p.reviews || 0).toLocaleString("en-IN")} reviews). ${p.stock > 0 ? "Stock ma upalabdh chhe ✔" : "Atyare stock ma nathi ✖"}`,
+          ids: matched.slice(0, 3).map(x => x.id)
+        };
+      }
+
+      /* 5) Budget */
+      const num = (t.match(/\d[\d,]*/g) || []).map(n => Number(n.replace(/,/g, ""))).find(n => n >= 100);
+      if (num && has("andar", "under", "budget", "below", "within", "sudhi", "less", "ma", "max", "upto")) {
+        const list = inStock.filter(p => p.price <= num).sort((a, b) => b.rating - a.rating).slice(0, 4);
+        return list.length
+          ? { text: `${rupee(num)} ni andar aa ${list.length} saras product malse:`, ids: list.map(p => p.id) }
+          : { text: `${rupee(num)} ni andar atyare koi product nathi. Budget thodu vadharo to option malse.`, ids: [] };
+      }
+
+      if (has("sasto", "sasta", "cheap", "cheapest", "lowest", "ochha", "ochhu", "low")) {
+        const list = [...inStock].sort((a, b) => a.price - b.price).slice(0, 3);
+        return { text: `Sauthi sasto product: **${list[0].name}** fakt ${rupee(list[0].price)} ma. Biji sasti pasandgi pan juo:`, ids: list.map(p => p.id) };
+      }
+      if (has("best", "rating", "top", "saru", "saras", "popular", "recommend", "suggest", "salah")) {
+        const list = [...inStock].sort((a, b) => b.rating - a.rating || (b.reviews || 0) - (a.reviews || 0)).slice(0, 3);
+        return { text: "Sauthi vadhu rating vala products 🏆", ids: list.map(p => p.id) };
+      }
+      if (has("offer", "offers", "discount", "deal", "sale", "off", "coupon", "coupons", "promo", "code", "voucher")) {
+        const list = [...inStock].sort((a, b) => discOf(b) - discOf(a)).slice(0, 3);
+        return { text: "Sauthi vadhu discount vala products 🎉\nCoupons (checkout par apply karo):\n• **SMART10**: 10% off\n• **SAVE100**: ₹100 off (₹1000 ni upar)\n• **FIRST50**: ₹50 off", ids: list.map(p => p.id) };
+      }
+
+      /* Cart / order */
+      if (has("cart", "tokri")) {
+        const cart = getCart();
+        if (!cart.length) return { text: "Tamaro cart khali chhe 🛒. Koi product pasand karo, hu madad karu!", ids: [] };
+        const sub = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+        const del = sub >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
+        return {
+          text: `Cart ma ${cart.length} product chhe:\n` + cart.map(i => `• ${i.name} × ${i.qty}`).join("\n") +
+                `\nSubtotal **${rupee(sub)}**, delivery ${del ? rupee(del) : "FREE"}, total **${rupee(sub + del)}**.\nCart par jao: cart.html`,
+          ids: []
+        };
+      }
+      if (has("delivery", "ship", "shipping", "kyare", "divas", "aavse", "pahonch")) {
+        return { text: `Delivery 3-5 divas ma thay chhe 🚚. ${rupee(FREE_DELIVERY_ABOVE)} ni upar na order par delivery FREE, nahitar ${rupee(DELIVERY_FEE)}.`, ids: [] };
+      }
+      if (has("order", "orders", "track", "status", "parcel")) {
+        const o = getOrders();
+        return o.length
+          ? { text: `Tamara ${o.length} order chhe. Chhello order **#${esc(o[0].id)}** (${o[0].status || "placed"}), total ${rupee(o[0].total || 0)}.\nBadha orders: my-order.html`, ids: [] }
+          : { text: "Tamae haju koi order nathi karyo. Pehela koi product pasand karo 😊", ids: [] };
+      }
+      if (has("return", "refund", "pachu", "pachhu", "exchange")) {
+        return { text: "Product malya pachi **7 divas** ma return kari shako chho (unused ane original packing ma). My Orders page par thi request karo: my-order.html", ids: [] };
+      }
+      if (has("cancel", "radd")) {
+        return { text: "Order ship thay te pehela My Orders page ma **Cancel Order** button thi cancel kari shako chho: my-order.html", ids: [] };
+      }
+      if (has("payment", "pay", "upi", "cod", "card", "cash", "netbanking")) {
+        return { text: "Payment options: 💵 **Cash on Delivery**, 📱 **UPI**, 💳 **Card**, 🏦 **Net Banking** ane 👛 **Wallet**. Checkout par pasand karo.", ids: [] };
+      }
+      if (has("contact", "support", "phone", "email", "help", "madad", "number", "whatsapp")) {
+        return { text: "Amne sampark karo: 📞 +91 98765 43210, ✉️ support@shopsmartai.com\nAthva message mokalo: contact.html", ids: [] };
+      }
+      if (has("about", "store", "shop") || has("kon", "chho") && has("tame")) {
+        return { text: "**Shop Smart AI** ek smart online store chhe: best products, best prices ane fast delivery. Vadhu jano: about.html", ids: [] };
+      }
+      if (has("thank", "thanks", "aabhar", "dhanyavad", "shukriya")) {
+        return { text: "Tamaro aabhar! 😊 Koi bija prashn hoy to puchho.", ids: [] };
+      }
+      if (t.split(/\s+/).length <= 3 && has("hi", "hello", "hey", "namaste", "kem", "hii", "hy")) {
+        return { text: "Namaste! 😊 Hu tamari kai rite madad kari shaku? Product, price, cart ke delivery vishe puchho.", ids: [] };
+      }
+
+      return {
+        text: "Mane aa barabar samajaayu nahi 😅\nAa vishe puchi shako chho: product ke tenu naam, ₹ budget, sauthi sasto / best product, offers, cart, order, delivery, return ke payment.",
+        ids: []
+      };
+    }
+
+    /* =========================================================
+       REAL AI (API key hoy tyare)
+       ========================================================= */
+    function systemPrompt() {
+      const list = PRODUCTS.map(p =>
+        `[[${p.id}]] ${p.name} | ${p.category} | ${rupee(p.price)} (MRP ${rupee(p.oldPrice)}) | rating ${p.rating} | ${p.stock > 0 ? "In Stock (" + p.stock + ")" : "Out of Stock"}`
+      ).join("\n");
+
+      return `Tu "Shop Smart AI" online store no friendly shopping assistant chhe.
+Customer ni bhasha ma jawab aapo (romanized Gujarati, Hindi ke English). Jawab nanu ane saral rakho (max 5-6 line).
+
+Store na products:
+${list}
+
+Store ni policy:
+- Delivery 3-5 divas, ${rupee(FREE_DELIVERY_ABOVE)} ni upar FREE, nahitar ${rupee(DELIVERY_FEE)}.
+- Return 7 divas ma (unused, original packing).
+- Payment: Cash on Delivery, UPI, Card, Net Banking, Wallet.
+- Coupons: SMART10 (10% off), SAVE100 (₹100 off, ₹1000 ni upar), FIRST50 (₹50 off).
+- Order ship thay te pehela cancel kari shakay.
+- Pages: products.html, cart.html, checkout.html, my-order.html, compare.html, contact.html, profile.html.
+
+Niyamo:
+- Fakt upar na products vishe vaat karo. Navi products ke khoti price na banavo.
+- Koi product suggest karo to tena id ne [[id]] format ma lakho (jem ke [[1]]), jethi card dekhay. Max 3 products.
+- Out of Stock product vishe spasht kaho.
+- Store sivay na prashno mate vinamrata thi kaho ke tu fakt shopping ma madad kari shake.`;
+    }
+
+    function buildApiMessages(userText) {
+      const msgs = [];
+      history.slice(-14).forEach(m => {
+        if (!m.text) return;
+        const role = m.role === "user" ? "user" : "assistant";
+        if (msgs.length && msgs[msgs.length - 1].role === role) msgs[msgs.length - 1].content += "\n" + m.text;
+        else msgs.push({ role, content: m.text });
+      });
+      while (msgs.length && msgs[0].role !== "user") msgs.shift();
+      if (!msgs.length || msgs[msgs.length - 1].role !== "user") msgs.push({ role: "user", content: userText });
+      return msgs;
+    }
+
+    async function askAI(userText) {
+      const key = getKey();
+      if (!key) return null;
+
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 25000);
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          signal: ctrl.signal,
+          headers: {
+            "content-type": "application/json",
+            "x-api-key": key,
+            "anthropic-version": "2023-06-01",
+            "anthropic-dangerous-direct-browser-access": "true"
+          },
+          body: JSON.stringify({ model: MODEL, max_tokens: 500, system: systemPrompt(), messages: buildApiMessages(userText) })
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n").trim();
+        if (!text) throw new Error("Empty reply");
+
+        const ids = [...text.matchAll(/\[\[(\d+)\]\]/g)].map(m => Number(m[1])).filter(id => byId(id)).slice(0, 3);
+        return { text: text.replace(/\[\[\d+\]\]/g, "").replace(/[ \t]+\n/g, "\n").trim(), ids };
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    /* =========================================================
+       SEND FLOW
+       ========================================================= */
+    function setStatus() {
+      const live = !!getKey();
+      $("statusText").textContent = live ? "AI Online · Real AI jawab" : "Smart Mode (offline) · Key vagar pan chale";
+      $("headAv").classList.toggle("off", !live);
+    }
+    function setBusy(b) {
+      busy = b;
+      $("sendBtn").disabled = b;
+    }
+
+    async function send(text) {
+      text = String(text || "").trim().slice(0, 300);
+      if (!text || busy) return;
+      setBusy(true);
+
+      addMessage({ role: "user", text, time: nowTime() });
+      $("chatInput").value = "";
+      showTyping();
+
+      let reply = null, note = "";
+      try {
+        reply = await askAI(text);
+      } catch (e) {
+        const m = String(e && e.message || "");
+        note = m.indexOf("HTTP 401") === 0 ? "API key khotu lage chhe, etle Smart Mode vaparyo."
+             : m.indexOf("HTTP 429") === 0 ? "AI atyare vyast chhe, etle Smart Mode vaparyo."
+             : "AI sathe jodaan na thayu, etle Smart Mode vaparyo.";
+      }
+      if (!reply) {
+        await sleep(450 + Math.random() * 350);
+        reply = localReply(text);
+      }
+
+      hideTyping();
+      addMessage({ role: "bot", text: reply.text, ids: reply.ids || [], note, time: nowTime() }, { animate: true });
+      setBusy(false);
+      if (window.matchMedia("(pointer:fine)").matches) $("chatInput").focus();
+    }
+
+    $("chatForm").addEventListener("submit", e => { e.preventDefault(); send($("chatInput").value); });
+
+    function loadHistory() {
+      try {
+        const h = JSON.parse(localStorage.getItem("aiChat"));
+        if (Array.isArray(h) && h.length) {
+          history = h.filter(m => m && m.text && (m.role === "user" || m.role === "bot"));
+          history.forEach(m => addMessage(m, { save: false }));
+          scrollDown(true);
+          return;
+        }
+      } catch (e) {}
+      showWelcome();
+    }
+
+    $("clearBtn").onclick = () => {
+      if (!history.length) return showToast("Chat pehela thi khali chhe");
+      if (!confirm("Shu tame chat clear karva mango chho?")) return;
+      history = [];
+      try { localStorage.removeItem("aiChat"); } catch (e) {}
+      box.querySelectorAll(".msg").forEach(n => n.remove());
+      showWelcome();
+      showToast("Chat clear thai gayu");
+    };
+
+    /* =========================================================
+       THEME
+       ========================================================= */
+    function applyTheme(t) {
+      document.documentElement.setAttribute("data-theme", t);
+      $("themeBtn").textContent = t === "dark" ? "☀️" : "🌙";
+    }
+    (function initTheme() {
+      let t = "";
+      try { t = localStorage.getItem("aiTheme") || ""; } catch (e) {}
+      if (!t) t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      applyTheme(t);
+    })();
+    $("themeBtn").onclick = () => {
+      const t = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      applyTheme(t);
+      try { localStorage.setItem("aiTheme", t); } catch (e) {}
+    };
+
+    /* =========================================================
+       SETTINGS (API key + voice language)
+       ========================================================= */
+    let voiceLang = "en-IN";
+    try { voiceLang = localStorage.getItem("aiVoiceLang") || "en-IN"; } catch (e) {}
+
+    $("settingsBtn").onclick = () => {
+      let k = "";
+      try { k = localStorage.getItem("aiApiKey") || ""; } catch (e) {}
+      $("keyInput").value = k;
+      $("langSel").value = voiceLang;
+      $("modalBg").classList.add("show");
+    };
+    const closeModal = () => $("modalBg").classList.remove("show");
+    $("closeModal").onclick = closeModal;
+    $("modalBg").addEventListener("click", e => { if (e.target === $("modalBg")) closeModal(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+    $("saveKey").onclick = () => {
+      const k = $("keyInput").value.trim();
+      voiceLang = $("langSel").value;
+      try {
+        localStorage.setItem("aiVoiceLang", voiceLang);
+        if (k) localStorage.setItem("aiApiKey", k);
+      } catch (e) {}
+      setStatus(); closeModal();
+      showToast(k ? "Save thayu ✔ AI mode chalu" : "Language save thai ✔");
+    };
+    $("delKey").onclick = () => {
+      try { localStorage.removeItem("aiApiKey"); } catch (e) {}
+      $("keyInput").value = "";
+      setStatus(); closeModal(); showToast("Key hatavi didhi");
+    };
+
+    /* =========================================================
+       VOICE INPUT
+       ========================================================= */
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let rec = null, listening = false;
+    if (!SR) {
+      $("micBtn").style.display = "none";
+    } else {
+      $("micBtn").onclick = () => {
+        if (busy) return;
+        if (listening && rec) { rec.stop(); return; }
+        try {
+          rec = new SR();
+          rec.lang = voiceLang;
+          rec.interimResults = true;
+          rec.maxAlternatives = 1;
+          rec.onstart = () => { listening = true; $("micBtn").classList.add("on"); $("chatInput").placeholder = "Sambhalu chhu... boli shako chho 🎤"; };
+          rec.onresult = e => {
+            let txt = "", final = false;
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+              txt += e.results[i][0].transcript;
+              if (e.results[i].isFinal) final = true;
+            }
+            $("chatInput").value = txt.slice(0, 300);
+            if (final) { rec.stop(); send($("chatInput").value); }
+          };
+          rec.onerror = e => {
+            if (e.error === "not-allowed" || e.error === "service-not-allowed") showToast("Microphone ni permission aapo");
+            else if (e.error !== "no-speech" && e.error !== "aborted") showToast("Voice input ma samasya aavi");
+          };
+          rec.onend = () => { listening = false; $("micBtn").classList.remove("on"); $("chatInput").placeholder = "Tamaro prashn lakho..."; };
+          rec.start();
+        } catch (err) { showToast("Voice input chalu na thayu"); }
+      };
+    }
+
+    /* =========================================================
+       HEADER + START
+       ========================================================= */
+    function updateLoginLink() {
+      const u = getUser();
+      if (u && u.name) {
+        $("loginLink").textContent = "Hi, " + u.name.split(" ")[0];
+        $("loginLink").href = "profile.html";
+        $("hello").innerHTML = "Namaste " + esc(u.name.split(" ")[0]) + "! Hu chhu <span>Smart Assistant</span>";
+      }
+    }
+    $("menuBtn").onclick = () => $("nav").classList.toggle("open");
+    window.addEventListener("storage", e => { if (e.key === "cart") updateCartCount(); });
+
+    updateCartCount();
+    updateLoginLink();
+    setStatus();
+    loadHistory();
+  </script>
+</body>
+</html>

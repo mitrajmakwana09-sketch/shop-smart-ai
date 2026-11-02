@@ -1,0 +1,85 @@
+
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "Electronics",
+      "slug": "electronics",
+      "description": "Smartphones, laptops, headphones and electronic gadgets.",
+      "icon": "fa-solid fa-laptop",
+      "image": "https://images.unsplash.com/photo-1498049794561-7780e7231661",
+      "status": "active",
+      "featured": true
+    },
+    {
+      "id": 2,
+      "name": "Men's Clothing",
+      "slug": "mens-clothing",
+      "description": "T-shirts, shirts, jeans and men's fashion products.",
+      "icon": "fa-solid fa-shirt",
+      "image": "https://images.unsplash.com/photo-148998 rom",
+      "status": "active",
+      "featured": true
+    },
+    {
+      "id": 3,
+      "name": "Women's Clothing",
+      "slug": "womens-clothing",
+      "description": "Dresses, tops, jackets and women's fashion.",
+      "icon": "fa-solid fa-person-dress",
+      "image": "https://images.unsplash.com/photo-1483985988355-763728e1935b",
+      "status": "active",
+      "featured": true
+    },
+    {
+      "id": 4,
+      "name": "Jewelry",
+      "slug": "jewelry",
+      "description": "Rings, bracelets, necklaces and fashion accessories.",
+      "icon": "fa-solid fa-gem",
+      "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338",
+      "status": "active",
+      "featured": true
+    },
+    {
+      "id": 5,
+      "name": "Home & Living",
+      "slug": "home-living",
+      "description": "Home decor, furniture and household essentials.",
+      "icon": "fa-solid fa-house",
+      "image": "https://images.unsplash.com/photo- home",
+      "status": "active",
+      "featured": false
+    },
+    {
+      "id": 6,
+      "name": "Sports",
+      "slug": "sports",
+      "description": "Sports equipment, fitness accessories and outdoor products.",
+      "icon": "fa-solid fa-football",
+      "image": "https://images.unsplash.com/photo-1461896836934-ffe607ba8211",
+      "status": "active",
+      "featured": false
+    },
+    {
+      "id": 7,
+      "name": "Beauty & Personal Care",
+      "slug": "beauty-personal-care",
+      "description": "Skincare, cosmetics and personal care products.",
+      "icon": "fa-solid fa-spa",
+      "image": "https://images.unsplash.com/photo-1596462502278-27bfdc403348",
+      "status": "active",
+      "featured": false
+    },
+    {
+      "id": 8,
+      "name": "Footwear",
+      "slug": "footwear",
+      "description": "Sneakers, formal shoes, sandals and casual footwear.",
+      "icon": "fa-solid fa-shoe-prints",
+      "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+      "status": "active",
+      "featured": true
+    }
+  ]
+}

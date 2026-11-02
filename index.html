@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Home | Shop Smart AI</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0f172a">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif; color: #e5e7eb; min-height: 100vh;
+      display: flex; flex-direction: column; overflow-x: hidden;
+      background: radial-gradient(circle at 15% 0%, #0c4a6e 0%, #0b1220 45%, #0b1220 100%);
+    }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; }
+    .hidden { display: none !important; }
+
+    /* animated glow */
+    .glow { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; animation: move 14s ease-in-out infinite alternate; }
+    .glow.g1 { width: 380px; height: 380px; background: rgba(56,189,248,.26); top: -110px; left: -90px; }
+    .glow.g2 { width: 330px; height: 330px; background: rgba(74,222,128,.18); bottom: -110px; right: -70px; animation-delay: 4s; }
+    .glow.g3 { width: 240px; height: 240px; background: rgba(167,139,250,.16); top: 45%; right: 20%; animation-delay: 8s; }
+    @keyframes move { to { transform: translate(60px, 50px) scale(1.2); } }
+
+    /* Header */
+    header {
+      background: rgba(15,23,42,.78); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: #38bdf8; }
+    .logo span { color: #4ade80; }
+    .logo small { color: #64748b; font-size: 12px; font-weight: 700; letter-spacing: 1px; margin-left: 8px; }
+    .hnav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .hnav a, .hnav button {
+      padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer;
+      background: rgba(255,255,255,.08); color: #e2e8f0; border: 1px solid rgba(255,255,255,.12); transition: all .2s;
+    }
+    .hnav a:hover, .hnav button:hover { background: rgba(255,255,255,.18); color: #fff; }
+    .hnav .out { color: #fca5a5; }
+    .hnav .out:hover { background: rgba(220,38,38,.3); color: #fff; }
+
+    main { flex: 1; width: 100%; max-width: 1100px; margin: 0 auto; padding: 30px 20px 40px; }
+
+    /* ================= GATE (login nathi tyare) ================= */
+    .gate { max-width: 460px; margin: 40px auto; text-align: center; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 22px; padding: 40px 28px; backdrop-filter: blur(14px); box-shadow: 0 24px 60px rgba(0,0,0,.45); animation: rise .6s ease both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    .shield { width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 16px; font-size: 42px; display: flex; align-items: center; justify-content: center; position: relative; background: linear-gradient(135deg, #0284c7, #16a34a); box-shadow: 0 10px 28px rgba(2,132,199,.5); }
+    .shield::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(56,189,248,.6); animation: ring 2.4s ease-out infinite; }
+    @keyframes ring { from { transform: scale(1); opacity: .8; } to { transform: scale(1.6); opacity: 0; } }
+    .gate h1 { font-size: 26px; color: #fff; margin-bottom: 8px; }
+    .gate p { color: #94a3b8; line-height: 1.6; margin-bottom: 22px; }
+    .btn {
+      display: inline-block; width: 100%; padding: 14px; border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+      background: linear-gradient(90deg, #0284c7, #16a34a, #0284c7); background-size: 200% 100%; animation: btnMove 5s linear infinite; transition: transform .1s, opacity .2s;
+    }
+    @keyframes btnMove { to { background-position: 200% 0; } }
+    .btn:hover { opacity: .93; }
+    .btn:active { transform: scale(.98); }
+    .btn.ghost { background: rgba(255,255,255,.1); animation: none; margin-top: 10px; }
+
+    /* ================= HUB (login hoy tyare) ================= */
+    .hero { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 26px; animation: rise .6s ease both; }
+    .hero h1 { font-size: 34px; color: #fff; line-height: 1.2; }
+    .hero h1 span { background: linear-gradient(90deg, #38bdf8, #4ade80); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero p { color: #94a3b8; margin-top: 6px; }
+    .clock { text-align: right; }
+    .clock b { display: block; font-size: 30px; color: #fff; font-variant-numeric: tabular-nums; }
+    .clock small { color: #94a3b8; }
+
+    /* Alerts */
+    .alerts { display: grid; gap: 10px; margin-bottom: 22px; }
+    .al { display: flex; gap: 12px; align-items: center; padding: 13px 16px; border-radius: 14px; font-size: 14px; font-weight: 600; border: 1px solid; animation: rise .5s ease both; }
+    .al a { margin-left: auto; padding: 6px 14px; border-radius: 999px; background: rgba(255,255,255,.14); font-size: 13px; white-space: nowrap; }
+    .al a:hover { background: rgba(255,255,255,.26); }
+    .al.warn { background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.4); color: #fcd34d; }
+    .al.bad { background: rgba(220,38,38,.14); border-color: rgba(220,38,38,.4); color: #fca5a5; }
+    .al.good { background: rgba(22,163,74,.14); border-color: rgba(22,163,74,.4); color: #86efac; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+    .stat {
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 18px;
+      display: flex; gap: 14px; align-items: center; backdrop-filter: blur(8px); transition: transform .2s, border-color .2s; animation: rise .5s ease both;
+    }
+    .stat:hover { transform: translateY(-4px); border-color: rgba(56,189,248,.5); }
+    .stat .ic { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 25px; background: rgba(255,255,255,.1); flex-shrink: 0; }
+    .stat small { color: #94a3b8; font-size: 13px; font-weight: 600; }
+    .stat strong { display: block; font-size: 26px; color: #fff; font-variant-numeric: tabular-nums; margin-top: 2px; }
+
+    /* Quick links */
+    h2.sec { font-size: 19px; color: #fff; margin: 4px 0 14px; }
+    .links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .lk {
+      position: relative; display: block; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 22px 20px;
+      overflow: hidden; transition: transform .25s, border-color .25s, background .25s; animation: rise .5s ease both;
+    }
+    .lk::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(56,189,248,.18), rgba(74,222,128,.14)); opacity: 0; transition: opacity .25s; }
+    .lk:hover { transform: translateY(-6px); border-color: rgba(56,189,248,.55); }
+    .lk:hover::before { opacity: 1; }
+    .lk > * { position: relative; }
+    .lk .ic { font-size: 34px; display: block; margin-bottom: 10px; transition: transform .3s; }
+    .lk:hover .ic { transform: scale(1.15) rotate(-6deg); }
+    .lk b { display: block; font-size: 17px; color: #fff; margin-bottom: 4px; }
+    .lk span { color: #94a3b8; font-size: 13px; line-height: 1.5; display: block; }
+    .lk .badge { position: absolute; top: 14px; right: 14px; background: #ef4444; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; }
+
+    .tip { margin-top: 26px; text-align: center; color: #64748b; font-size: 13px; line-height: 1.6; }
+    footer { text-align: center; padding: 16px; color: #64748b; font-size: 13px; }
+
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px; opacity: 0; transition: all .3s; pointer-events: none; z-index: 400; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 860px) { .stats, .links { grid-template-columns: repeat(2, 1fr); } .clock { text-align: left; } }
+    @media (max-width: 520px) {
+      .stats, .links { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 26px; }
+      header { padding: 12px 14px; }
+      .logo small { display: none; }
+      .hnav a, .hnav button { padding: 7px 12px; font-size: 13px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span><small>ADMIN</small></a>
+    <div class="hnav">
+      <a href="../index.html" target="_blank" rel="noopener">🌐 Website</a>
+      <button class="out hidden" id="logoutBtn" type="button">🚪 Logout</button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- LOGIN NATHI -->
+    <section class="gate hidden" id="gate">
+      <div class="shield">🔐</div>
+      <h1>Admin Area</h1>
+      <p>Aa page fakt authorised admin mate chhe. Orders, products ane customers manage karva pehela login karo.</p>
+      <a class="btn" href="admin-login.html?redirect=index.html">Admin Login</a>
+      <a class="btn ghost" href="../index.html">← Website par pachha jao</a>
+    </section>
+
+    <!-- LOGIN HOY -->
+    <section class="hidden" id="hub">
+      <div class="hero">
+        <div>
+          <h1><span id="greet">Namaste</span>, <span id="hiName">Admin</span> 👋</h1>
+          <p>Aaj no business ek nazar ma. Niche thi koi pan kaam sharu karo.</p>
+        </div>
+        <div class="clock"><b id="clock">--:--</b><small id="dateText"></small></div>
+      </div>
+
+      <div class="alerts" id="alerts"></div>
+
+      <div class="stats" id="stats"></div>
+
+      <h2 class="sec">⚡ Quick Actions</h2>
+      <div class="links" id="links"></div>
+
+      <p class="tip">💡 Tip: Orders ni status badalva mate <strong>Dashboard</strong> ma jao. Navo product umervo hoy to <strong>Add Product</strong> vapro.</p>
+    </section>
+  </main>
+
+  <footer>© 2026 Shop Smart AI · Admin Panel</footer>
+  <div id="toast"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const rupee = n => "₹" + Math.round(Number(n) || 0).toLocaleString("en-IN");
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    function showToast(msg) {
+      const t = $("toast"); t.textContent = msg; t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2300);
+    }
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* ---------- Storage (error vagar) ---------- */
+    function readList(key) {
+      try { const l = JSON.parse(localStorage.getItem(key)); return Array.isArray(l) ? l : []; } catch (e) { return []; }
+    }
+    function adminUser() {
+      try {
+        const s = JSON.parse(sessionStorage.getItem("adminSession"));
+        return s && s.user ? String(s.user) : "";
+      } catch (e) { return ""; }
+    }
+
+    /* products.html na stock (id 1-27 na kram ma) */
+    const BASE_STOCK = [25,12,40,0,6,33,18,52,21,15,45,38,60,22,50,28,14,35,26,41,9,12,60,44,4,80,17];
+    function lowStockCount() {
+      let low = BASE_STOCK.filter(s => s <= 5).length;
+      readList("customProducts").forEach(p => { if (p && p.name && Number(p.stock) <= 5) low++; });
+      return low;
+    }
+
+    const orderTotal = o => {
+      if (Number(o.total) > 0) return Number(o.total);
+      return (o.items || []).reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+    };
+
+    /* ---------- Count-up animation ---------- */
+    function countUp(el, target, isMoney) {
+      const fmt = v => isMoney ? rupee(v) : Math.round(v).toLocaleString("en-IN");
+      if (reduceMotion || !target) { el.textContent = fmt(target); return; }
+      const t0 = performance.now(), dur = 1100;
+      (function tick(now) {
+        const p = Math.min(1, (now - t0) / dur);
+        el.textContent = fmt(target * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(tick);
+      })(t0);
+    }
+
+    /* =========================================================
+       HUB RENDER
+       ========================================================= */
+    function renderHub() {
+      const user = adminUser();
+      const h = new Date().getHours();
+      $("greet").textContent = h < 12 ? "Suprabhat" : h < 17 ? "Namaste" : h < 21 ? "Shubh Sandhya" : "Shubh Ratri";
+      $("hiName").textContent = user || "Admin";
+
+      const orders = readList("orders").filter(o => o && o.id);
+      const active = orders.filter(o => o.status !== "cancelled");
+      const pending = orders.filter(o => !o.status || o.status === "placed").length;
+      const revenue = active.reduce((s, o) => s + orderTotal(o), 0);
+      const users = readList("users").filter(u => u && u.email).length;
+      const msgs = readList("contactMessages").filter(m => m && m.id).length;
+      const low = lowStockCount();
+
+      /* Alerts */
+      const alerts = [];
+      if (pending) alerts.push({ c: "warn", t: "⏳ " + pending + " order ship karva baki chhe", href: "dashboard.html#orders", b: "Orders Juo" });
+      if (low) alerts.push({ c: "bad", t: "⚠️ " + low + " product nu stock ochhu / khatam chhe", href: "dashboard.html#stock", b: "Stock Juo" });
+      if (msgs) alerts.push({ c: "warn", t: "✉️ " + msgs + " customer message tamari raah joi rahya chhe", href: "dashboard.html#messages", b: "Messages Juo" });
+      if (!alerts.length) alerts.push({ c: "good", t: "✅ Badhu barabar chhe. Koi pending kaam nathi.", href: "", b: "" });
+      $("alerts").innerHTML = alerts.map((a, i) =>
+        `<div class="al ${a.c}" style="animation-delay:${i * 80}ms"><span>${esc(a.t)}</span>${a.href ? `<a href="${a.href}">${esc(a.b)} →</a>` : ""}</div>`).join("");
+
+      /* Stats */
+      const cards = [
+        { ic: "💰", t: "Kul Kamaani", v: revenue, money: true },
+        { ic: "📦", t: "Kul Orders", v: orders.length },
+        { ic: "⏳", t: "Pending Orders", v: pending },
+        { ic: "👥", t: "Customers", v: users },
+        { ic: "⚠️", t: "Ochhu Stock", v: low },
+        { ic: "✉️", t: "Messages", v: msgs }
+      ];
+      $("stats").innerHTML = cards.map((c, i) => `
+        <div class="stat" style="animation-delay:${i * 70}ms">
+          <div class="ic">${c.ic}</div>
+          <div><small>${c.t}</small><strong data-v="${c.v}" data-m="${c.money ? 1 : 0}">0</strong></div>
+        </div>`).join("");
+      document.querySelectorAll(".stat strong").forEach(el => countUp(el, Number(el.dataset.v) || 0, el.dataset.m === "1"));
+
+      /* Quick links (badhi links admin folder ni andar ni, ../ website mate) */
+      const links = [
+        { ic: "📊", t: "Dashboard", d: "Kamaani, charts ane order status ek jagya e.", href: "dashboard.html" },
+        { ic: "📦", t: "Orders", d: "Orders juo ane Shipped / Delivered karo.", href: "dashboard.html#orders", badge: pending },
+        { ic: "➕", t: "Add Product", d: "Navo product add karo, edit ke delete karo.", href: "add-product.html" },
+        { ic: "⚠️", t: "Stock Alert", d: "Ochhu ke khatam thayelu stock juo.", href: "dashboard.html#stock", badge: low },
+        { ic: "👥", t: "Customers", d: "Register thayela customers ni list.", href: "dashboard.html#customers" },
+        { ic: "✉️", t: "Messages", d: "Contact form na customer messages.", href: "dashboard.html#messages", badge: msgs },
+        { ic: "🛍️", t: "Products Page", d: "Customer ne products kevi rite dekhay chhe.", href: "../products.html" },
+        { ic: "🌐", t: "Website", d: "Home page par jao.", href: "../index.html" },
+        { ic: "🤖", t: "AI Assistant", d: "Customer no smart shopping assistant.", href: "../ai-assistant.html" }
+      ];
+      $("links").innerHTML = links.map((l, i) => `
+        <a class="lk" href="${l.href}" style="animation-delay:${i * 60}ms">
+          ${l.badge ? `<em class="badge" style="font-style:normal">${l.badge}</em>` : ""}
+          <span class="ic" style="color:inherit">${l.ic}</span><b>${esc(l.t)}</b><span>${esc(l.d)}</span>
+        </a>`).join("");
+    }
+
+    /* =========================================================
+       CLOCK
+       ========================================================= */
+    function tickClock() {
+      const d = new Date();
+      $("clock").textContent = d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+      $("dateText").textContent = d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    }
+
+    /* =========================================================
+       START (login check)
+       ========================================================= */
+    function start() {
+      const loggedIn = !!adminUser();
+      $("gate").classList.toggle("hidden", loggedIn);
+      $("hub").classList.toggle("hidden", !loggedIn);
+      $("logoutBtn").classList.toggle("hidden", !loggedIn);
+      if (loggedIn) { renderHub(); tickClock(); setInterval(tickClock, 15000); }
+    }
+
+    $("logoutBtn").onclick = () => {
+      if (!confirm("Admin logout karvu chhe?")) return;
+      try { sessionStorage.removeItem("adminSession"); } catch (e) {}
+      showToast("Logout thai gayu");
+      setTimeout(() => { location.href = "admin-login.html"; }, 600);
+    };
+
+    /* Biji tab ma order ave to ahi update thay */
+    window.addEventListener("storage", e => {
+      if (["orders", "users", "contactMessages", "customProducts"].includes(e.key) && adminUser()) renderHub();
+    });
+
+    start();
+  </script>
+</body>
+</html>

@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | Shop Smart AI</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; }
+
+    /* Header */
+    header {
+      background: rgba(255,255,255,.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: #0284c7; }
+    .logo span { color: #16a34a; }
+    nav { display: flex; align-items: center; gap: 22px; }
+    nav a { color: #374151; font-weight: 500; }
+    nav a:hover { color: #0284c7; }
+    .cart-badge {
+      background: #16a34a; color: #fff; border-radius: 999px;
+      padding: 1px 8px; font-size: 12px; margin-left: 4px;
+    }
+    .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; }
+
+    /* Steps */
+    .steps {
+      max-width: 700px; margin: 24px auto 0; padding: 0 20px;
+      display: flex; justify-content: space-between; position: relative;
+    }
+    .steps::before {
+      content: ""; position: absolute; top: 15px; left: 14%; right: 14%; height: 3px; background: #e5e7eb;
+    }
+    .step { position: relative; text-align: center; flex: 1; font-size: 13px; color: #9ca3af; font-weight: 600; }
+    .step .dot {
+      width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; color: #fff;
+      margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .step.done { color: #16a34a; }
+    .step.done .dot { background: #16a34a; }
+    .step.active { color: #0284c7; }
+    .step.active .dot { background: #0284c7; }
+
+    /* Layout */
+    .container {
+      max-width: 1100px; margin: 24px auto 40px; padding: 0 20px;
+      display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start;
+    }
+    .box {
+      background: #fff; border-radius: 16px; padding: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06); margin-bottom: 20px;
+    }
+    .box h2 { font-size: 19px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .box h2 .num {
+      background: #0284c7; color: #fff; width: 28px; height: 28px; border-radius: 50%;
+      font-size: 14px; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .box .sub { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+
+    /* Buy Now note */
+    .mode-note {
+      display: none; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;
+      border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 600; line-height: 1.5; margin-bottom: 14px;
+    }
+    .mode-note.show { display: block; }
+
+    /* Form */
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 0 14px; border: 1px solid #d1d5db; border-radius: 10px;
+      font-size: 15px; font-family: inherit; outline: none; background: #fff;
+      transition: border .2s, box-shadow .2s;
+    }
+    .field input, .field select { height: 48px; }
+    .field textarea { padding: 12px 14px; min-height: 80px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15);
+    }
+    .field .error { border-color: #dc2626; }
+    .err-msg { color: #dc2626; font-size: 13px; margin-top: 5px; }
+
+    /* Payment options */
+    .pay-option {
+      display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+      border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 12px; cursor: pointer;
+      transition: border .2s, background .2s;
+    }
+    .pay-option:hover { background: #f9fafb; }
+    .pay-option.selected { border-color: #0284c7; background: #f0f9ff; }
+    .pay-option input { width: 18px; height: 18px; cursor: pointer; }
+    .pay-option .ic { font-size: 26px; }
+    .pay-option .t strong { display: block; font-size: 15px; }
+    .pay-option .t small { color: #6b7280; }
+    .pay-info {
+      background: #e0f2fe; color: #0369a1; border-radius: 10px; padding: 10px 14px;
+      font-size: 13px; line-height: 1.5; display: none;
+    }
+    .pay-info.show { display: block; }
+
+    /* Summary */
+    .summary { position: sticky; top: 84px; }
+    .sum-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f2f6; }
+    .sum-item img { width: 54px; height: 54px; object-fit: contain; background: #f4f6fa; border-radius: 8px; }
+    .sum-item .nm { flex: 1; font-size: 14px; font-weight: 600; }
+    .sum-item .nm small { display: block; color: #6b7280; font-weight: 400; margin-top: 2px; }
+    .sum-item .am { font-weight: 700; font-size: 14px; }
+    .qty { display: inline-flex; align-items: center; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-top: 6px; }
+    .qty button { width: 30px; height: 30px; border: none; background: #fff; font-size: 16px; cursor: pointer; }
+    .qty button:hover { background: #f3f4f6; }
+    .qty span { width: 32px; text-align: center; font-weight: 700; font-size: 14px; }
+
+    .coupon { display: flex; gap: 8px; margin: 16px 0 6px; }
+    .coupon input {
+      flex: 1; height: 44px; padding: 0 12px; border: 1px solid #d1d5db; border-radius: 10px;
+      font-size: 14px; text-transform: uppercase; outline: none;
+    }
+    .coupon input:focus { border-color: #0284c7; }
+    .coupon button {
+      padding: 0 18px; border: none; border-radius: 10px; background: #16a34a; color: #fff;
+      font-weight: 700; cursor: pointer;
+    }
+    .coupon-msg { font-size: 13px; min-height: 18px; margin-bottom: 10px; }
+    .coupon-msg.ok { color: #16a34a; font-weight: 600; }
+    .coupon-msg.bad { color: #dc2626; }
+    .hint { font-size: 12px; color: #6b7280; margin-bottom: 12px; }
+
+    .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; }
+    .row.green { color: #16a34a; font-weight: 600; }
+    .row.total { font-size: 20px; font-weight: 800; border-top: 2px dashed #e5e7eb; margin-top: 8px; padding-top: 14px; }
+
+    .btn {
+      width: 100%; height: 52px; border: none; border-radius: 10px; background: #16a34a;
+      color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 14px;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:hover { opacity: .92; }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-blue {
+      display: inline-block; width: auto; padding: 0 28px; line-height: 52px; height: 52px;
+      text-align: center; border-radius: 10px; color: #fff; font-weight: 700; background: #0284c7;
+    }
+    .secure { text-align: center; font-size: 13px; color: #6b7280; margin-top: 12px; }
+    .back-link { display: block; text-align: center; margin-top: 10px; color: #0284c7; font-weight: 600; font-size: 14px; }
+
+    /* Empty */
+    .empty {
+      max-width: 520px; margin: 50px auto; background: #fff; border-radius: 16px; padding: 56px 20px;
+      text-align: center; box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+    .empty .icon { font-size: 60px; margin-bottom: 10px; }
+    .empty h2 { margin-bottom: 8px; }
+    .empty p { color: #6b7280; margin-bottom: 20px; }
+
+    footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 22px; font-size: 13px; margin-top: 40px; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px;
+      opacity: 0; transition: all .3s; pointer-events: none; z-index: 200;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+      .summary { position: static; }
+    }
+    @media (max-width: 640px) {
+      .menu-btn { display: block; }
+      nav {
+        position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column;
+        align-items: flex-start; padding: 0 24px; gap: 0; max-height: 0; overflow: hidden;
+        transition: max-height .3s; border-bottom: 1px solid #e5e7eb;
+      }
+      nav.open { max-height: 320px; padding: 10px 24px 16px; }
+      nav a { padding: 10px 0; width: 100%; }
+      .two { grid-template-columns: 1fr; gap: 0; }
+      .box { padding: 18px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <nav id="nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="my-order.html">My Orders</a>
+      <a href="cart.html">Cart<span class="cart-badge" id="cartCount">0</span></a>
+      <a href="login.html" id="loginLink">Login</a>
+    </nav>
+  </header>
+
+  <div class="steps" id="steps">
+    <div class="step done"><div class="dot">✔</div><span id="step1Label">Cart</span></div>
+    <div class="step active"><div class="dot">2</div>Checkout</div>
+    <div class="step"><div class="dot">3</div>Done</div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty" id="emptyBox" style="display:none">
+    <div class="icon">🛒</div>
+    <h2 id="emptyTitle">Checkout mate koi product nathi</h2>
+    <p id="emptyText">Pehela koi product pasand karo.</p>
+    <a class="btn-blue" href="products.html">Shopping Chalu Karo</a>
+  </div>
+
+  <main class="container" id="mainBox">
+
+    <!-- LEFT: Forms -->
+    <div>
+      <div class="mode-note" id="modeNote">
+        ⚡ <strong>Buy Now:</strong> aa order ma fakt niche batavelo ek j product chhe. Tamaro cart badlayo nathi, bija items cart ma safe chhe.
+      </div>
+
+      <form id="checkoutForm" novalidate>
+
+        <!-- Address -->
+        <section class="box">
+          <h2><span class="num">1</span> Delivery Address</h2>
+          <p class="sub">Product kya mokalvo te lakho.</p>
+
+          <div class="two">
+            <div class="field">
+              <label for="fName">Full Name</label>
+              <input type="text" id="fName" placeholder="Tamaru naam" autocomplete="name">
+              <div class="err-msg" id="fNameErr"></div>
+            </div>
+            <div class="field">
+              <label for="fPhone">Mobile Number</label>
+              <input type="tel" id="fPhone" placeholder="10 digit mobile number" maxlength="10" inputmode="numeric" autocomplete="tel">
+              <div class="err-msg" id="fPhoneErr"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="fEmail">Email</label>
+            <input type="email" id="fEmail" placeholder="tamaro@email.com" autocomplete="email">
+            <div class="err-msg" id="fEmailErr"></div>
+          </div>
+
+          <div class="field">
+            <label for="fAddress">Address (Ghar no., Society, Area)</label>
+            <textarea id="fAddress" placeholder="Pura address lakho" autocomplete="street-address"></textarea>
+            <div class="err-msg" id="fAddressErr"></div>
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label for="fCity">City</label>
+              <input type="text" id="fCity" placeholder="Shahar nu naam" autocomplete="address-level2">
+              <div class="err-msg" id="fCityErr"></div>
+            </div>
+            <div class="field">
+              <label for="fPin">Pincode</label>
+              <input type="text" id="fPin" placeholder="6 digit pincode" maxlength="6" inputmode="numeric" autocomplete="postal-code">
+              <div class="err-msg" id="fPinErr"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="fState">State</label>
+            <select id="fState">
+              <option>Gujarat</option><option>Maharashtra</option><option>Rajasthan</option>
+              <option>Madhya Pradesh</option><option>Delhi</option><option>Karnataka</option>
+              <option>Tamil Nadu</option><option>Uttar Pradesh</option><option>West Bengal</option>
+              <option>Punjab</option><option>Other</option>
+            </select>
+          </div>
+
+          <label style="display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer">
+            <input type="checkbox" id="saveAddr" checked> Aa address yaad rakho (bija order mate)
+          </label>
+        </section>
+
+        <!-- Payment -->
+        <section class="box">
+          <h2><span class="num">2</span> Payment Method</h2>
+          <p class="sub">Payment kai rite karsho te pasand karo.</p>
+
+          <label class="pay-option selected" data-pay="cod">
+            <input type="radio" name="pay" value="cod" checked>
+            <span class="ic">💵</span>
+            <span class="t"><strong>Cash on Delivery</strong><small>Product malya pachi paise aapo</small></span>
+          </label>
+
+          <label class="pay-option" data-pay="online">
+            <input type="radio" name="pay" value="online">
+            <span class="ic">💳</span>
+            <span class="t"><strong>Online Payment</strong><small>UPI, Card, Net Banking, Wallet</small></span>
+          </label>
+          <div class="pay-info" id="payInfo">🔒 "Proceed To Pay" dabavta tamne surakshit payment page par laI jaishu, tya UPI / Card / Net Banking pasand karo.</div>
+        </section>
+
+        <!-- Notes -->
+        <section class="box">
+          <h2><span class="num">3</span> Order Note (optional)</h2>
+          <p class="sub">Delivery mate koi khas suchna hoy to lakho.</p>
+          <div class="field" style="margin-bottom:0">
+            <textarea id="fNote" maxlength="200" placeholder="Jem ke: Sanje 6 pachi delivery karjo"></textarea>
+          </div>
+        </section>
+
+      </form>
+    </div>
+
+    <!-- RIGHT: Summary -->
+    <aside class="box summary">
+      <h2>Order Summary</h2>
+      <p class="sub" id="itemCount"></p>
+
+      <div id="sumItems"></div>
+
+      <div class="coupon">
+        <input type="text" id="couponInput" placeholder="Coupon code" maxlength="12">
+        <button type="button" id="applyCoupon">Apply</button>
+      </div>
+      <div class="coupon-msg" id="couponMsg"></div>
+      <div class="hint">Try: <strong>SMART10</strong> (10% off), <strong>SAVE100</strong> (₹100 off, ₹1000 ni upar), <strong>FIRST50</strong> (₹50 off)</div>
+
+      <div class="row"><span>Subtotal</span><span id="subTotal">₹0</span></div>
+      <div class="row green" id="discRow" style="display:none"><span>Discount</span><span id="discAmt">-₹0</span></div>
+      <div class="row"><span>Delivery</span><span id="delAmt">₹0</span></div>
+      <div class="row total"><span>Total</span><span id="grandTotal">₹0</span></div>
+
+      <button type="button" class="btn" id="placeBtn">Place Order</button>
+      <div class="secure">🔒 100% Secure Checkout</div>
+      <a class="back-link" id="backLink" href="cart.html">← Cart ma pachha jao</a>
+    </aside>
+  </main>
+
+  <footer>© 2026 Shop Smart AI. All rights reserved.</footer>
+  <div id="toast"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const rupee = n => "₹" + Number(n).toLocaleString("en-IN");
+    const placeholder = "data:image/svg+xml;utf8," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='54' height='54'><rect width='100%' height='100%' fill='#f4f6fa'/></svg>");
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    const FREE_DELIVERY_ABOVE = 999;
+    const DELIVERY_FEE = 49;
+    const MAX_QTY = 10;
+
+    /* =========================================================
+       MODE: ?mode=buynow  =>  fakt ek j product (cart ne haath nahi)
+             (bije)        =>  cart na badha items
+       ========================================================= */
+    const buyNowMode = new URLSearchParams(location.search).get("mode") === "buynow";
+
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2400);
+    }
+    function getCart() {
+      try {
+        const c = JSON.parse(localStorage.getItem("cart"));
+        return Array.isArray(c) ? c.filter(i => i && Number(i.qty) > 0) : [];
+      } catch (e) { return []; }
+    }
+    function getBuyNowItem() {
+      try {
+        const it = JSON.parse(localStorage.getItem("buyNowItem"));
+        if (it && it.id && Number(it.price) > 0) {
+          it.qty = Math.max(1, Number(it.qty) || 1);
+          return it;
+        }
+      } catch (e) {}
+      return null;
+    }
+    function getUser() {
+      try { return JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser") || "null"); }
+      catch (e) { return null; }
+    }
+
+    const buyItem = buyNowMode ? getBuyNowItem() : null;
+    const items = buyNowMode ? (buyItem ? [buyItem] : []) : getCart();
+    let coupon = null;   /* { code, type, value } */
+
+    /* ---------- Totals ---------- */
+    function rawSubtotal() {
+      return items.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+    }
+    function calcTotals() {
+      const subtotal = rawSubtotal();
+      let discount = 0;
+      if (coupon) {
+        discount = coupon.type === "percent" ? Math.round(subtotal * coupon.value / 100) : coupon.value;
+        discount = Math.min(discount, subtotal);
+      }
+      const after = subtotal - discount;
+      const delivery = after === 0 || after >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
+      return { subtotal, discount, delivery, total: after + delivery };
+    }
+
+    function setCouponMsg(text, type) {
+      $("couponMsg").textContent = text;
+      $("couponMsg").className = "coupon-msg " + (type || "");
+    }
+
+    function renderSummary() {
+      /* Quantity ghate to coupon ni minimum shart pharithi tapaso */
+      if (coupon) {
+        const c = COUPONS[coupon.code];
+        if (!c || rawSubtotal() < c.min) {
+          coupon = null;
+          setCouponMsg("Coupon hatavyo: minimum order ni shart pura nathi thati", "bad");
+        }
+      }
+
+      const count = items.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+      $("itemCount").textContent = buyNowMode ? "Buy Now: 1 product" : count + " item" + (count > 1 ? "s" : "");
+
+      $("sumItems").innerHTML = items.map(i => {
+        const qty = Number(i.qty) || 1, price = Number(i.price) || 0;
+        const stepper = buyNowMode ? `
+          <div class="qty">
+            <button type="button" onclick="changeQty(-1)" aria-label="Decrease">−</button>
+            <span>${qty}</span>
+            <button type="button" onclick="changeQty(1)" aria-label="Increase">+</button>
+          </div>` : "";
+        return `
+          <div class="sum-item">
+            <img src="${esc(i.image || placeholder)}" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+            <div class="nm">${esc(i.name || "Product")}<small>${buyNowMode ? rupee(price) + " / piece" : "Qty: " + qty + " × " + rupee(price)}</small>${stepper}</div>
+            <div class="am">${rupee(qty * price)}</div>
+          </div>`;
+      }).join("");
+
+      const t = calcTotals();
+      $("subTotal").textContent = rupee(t.subtotal);
+      $("discRow").style.display = t.discount ? "flex" : "none";
+      $("discAmt").textContent = "-" + rupee(t.discount);
+      $("delAmt").textContent = t.delivery ? rupee(t.delivery) : "FREE";
+      $("grandTotal").textContent = rupee(t.total);
+      updatePayBtn();
+    }
+
+    /* Buy Now mode ma quantity badlo (fakt aa ek product ni) */
+    function changeQty(delta) {
+      if (!buyNowMode || !items.length) return;
+      const it = items[0];
+      const limit = Math.min(MAX_QTY, Number(it.stock) > 0 ? Number(it.stock) : MAX_QTY);
+      const next = (Number(it.qty) || 1) + delta;
+      if (next < 1) return;
+      if (next > limit) return showToast("Aa thi vadhu quantity upalabdh nathi");
+      it.qty = next;
+      try { localStorage.setItem("buyNowItem", JSON.stringify(it)); } catch (e) {}
+      renderSummary();
+    }
+
+    /* ---------- Coupon ---------- */
+    const COUPONS = {
+      SMART10: { type: "percent", value: 10, min: 0 },
+      SAVE100: { type: "flat", value: 100, min: 1000 },
+      FIRST50: { type: "flat", value: 50, min: 0 }
+    };
+
+    $("applyCoupon").onclick = () => {
+      const code = $("couponInput").value.trim().toUpperCase();
+      const subtotal = rawSubtotal();
+
+      if (!code) return setCouponMsg("Coupon code lakho", "bad");
+      const c = COUPONS[code];
+      if (!c) { coupon = null; setCouponMsg("Aa coupon sacho nathi", "bad"); }
+      else if (subtotal < c.min) {
+        coupon = null;
+        setCouponMsg("Aa coupon mate minimum " + rupee(c.min) + " no order joie", "bad");
+      } else {
+        coupon = { code, type: c.type, value: c.value };
+        setCouponMsg("✔ " + code + " lagu padyo!", "ok");
+      }
+      renderSummary();
+    };
+
+    /* ---------- Payment toggle ---------- */
+    function currentPay() { return document.querySelector('input[name="pay"]:checked').value; }
+
+    function updatePayBtn() {
+      const total = rupee(calcTotals().total);
+      $("placeBtn").textContent = currentPay() === "online" ? "Proceed To Pay " + total + " →" : "Place Order (" + total + ")";
+    }
+
+    document.querySelectorAll(".pay-option").forEach(opt => {
+      opt.addEventListener("click", () => {
+        document.querySelectorAll(".pay-option").forEach(o => o.classList.remove("selected"));
+        opt.classList.add("selected");
+        opt.querySelector("input").checked = true;
+        $("payInfo").classList.toggle("show", opt.dataset.pay === "online");
+        updatePayBtn();
+      });
+    });
+
+    /* ---------- Input formatting ---------- */
+    $("fPhone").addEventListener("input", e => e.target.value = e.target.value.replace(/\D/g, ""));
+    $("fPin").addEventListener("input", e => e.target.value = e.target.value.replace(/\D/g, ""));
+
+    /* ---------- Prefill ---------- */
+    function prefill() {
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem("savedAddress")); } catch (e) {}
+      const src = Object.assign({}, getUser() || {}, saved || {});
+      if (src.name) $("fName").value = src.name;
+      if (src.phone) $("fPhone").value = src.phone;
+      if (src.email) $("fEmail").value = src.email;
+      if (src.address) $("fAddress").value = src.address;
+      if (src.city) $("fCity").value = src.city;
+      if (src.pin) $("fPin").value = src.pin;
+      if (src.state) $("fState").value = src.state;
+    }
+
+    /* ---------- Validation ---------- */
+    function setErr(inputId, errId, msg) {
+      $(errId).textContent = msg || "";
+      $(inputId).classList.toggle("error", !!msg);
+      return !msg;
+    }
+    const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+    function validate() {
+      const email = $("fEmail").value.trim();
+      const res = [
+        setErr("fName", "fNameErr", $("fName").value.trim().length < 2 ? "Potanu naam lakho" : ""),
+        setErr("fPhone", "fPhoneErr", !/^[6-9]\d{9}$/.test($("fPhone").value) ? "Sacho 10 digit mobile number lakho" : ""),
+        setErr("fEmail", "fEmailErr", !email ? "Email lakho" : !emailOk(email) ? "Sacho email lakho" : ""),
+        setErr("fAddress", "fAddressErr", $("fAddress").value.trim().length < 8 ? "Pura address lakho" : ""),
+        setErr("fCity", "fCityErr", $("fCity").value.trim().length < 2 ? "City lakho" : ""),
+        setErr("fPin", "fPinErr", !/^\d{6}$/.test($("fPin").value) ? "Sacho 6 digit pincode lakho" : "")
+      ];
+      return !res.includes(false);
+    }
+
+    /* =========================================================
+       PLACE ORDER
+       COD     => seedho order save, pachi order-success.html
+       Online  => pendingOrder save, pachi online-payment.html
+       Buy Now => cart ne haath nahi lagadvo (fakt buyNowItem hatavvo)
+       ========================================================= */
+    $("placeBtn").onclick = () => {
+      if (!items.length) return showToast("Checkout mate koi product nathi");
+
+      if (!validate()) {
+        showToast("Kripa kari ne lal rang ni jagya sudharo");
+        const first = document.querySelector(".error");
+        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      const btn = $("placeBtn");
+      btn.disabled = true;
+      btn.textContent = "Thodi vaar rukho...";
+
+      const t = calcTotals();
+      const payType = currentPay();
+      const address = {
+        name: $("fName").value.trim(),
+        phone: $("fPhone").value,
+        email: $("fEmail").value.trim().toLowerCase(),
+        address: $("fAddress").value.trim(),
+        city: $("fCity").value.trim(),
+        pin: $("fPin").value,
+        state: $("fState").value
+      };
+
+      const order = {
+        id: "SS" + Date.now().toString().slice(-8),
+        date: new Date().toISOString(),
+        status: "placed",
+        payment: payType === "cod" ? "Cash on Delivery" : "Online Payment",
+        items: items.map(i => ({
+          id: i.id, name: i.name, price: Number(i.price) || 0, image: i.image || "", qty: Number(i.qty) || 1
+        })),
+        subtotal: t.subtotal,
+        discount: t.discount,
+        coupon: coupon ? coupon.code : "",
+        delivery: t.delivery,
+        total: t.total,
+        address: address,
+        note: $("fNote").value.trim(),
+        buyNow: buyNowMode
+      };
+
+      try {
+        if ($("saveAddr").checked) localStorage.setItem("savedAddress", JSON.stringify(address));
+      } catch (e) {}
+
+      setTimeout(() => {
+        try {
+          if (payType === "online") {
+            /* Payment saflta thay tyare online-payment.html pote order save kare chhe */
+            localStorage.setItem("pendingOrder", JSON.stringify(order));
+          } else {
+            const history = JSON.parse(localStorage.getItem("orders")) || [];
+            history.unshift(order);
+            localStorage.setItem("orders", JSON.stringify(history));
+            localStorage.setItem("lastOrder", JSON.stringify(order));
+
+            if (buyNowMode) localStorage.removeItem("buyNowItem");   /* cart safe */
+            else localStorage.removeItem("cart");
+          }
+        } catch (e) {
+          btn.disabled = false;
+          updatePayBtn();
+          return showToast("Order save na thayo (browser storage block chhe)");
+        }
+        location.href = payType === "online" ? "online-payment.html" : "order-success.html";
+      }, 700);
+    };
+
+    /* ---------- Header helpers ---------- */
+    function updateCartCount() {
+      $("cartCount").textContent = getCart().reduce((s, i) => s + (Number(i.qty) || 0), 0);
+    }
+    function updateLoginLink() {
+      const u = getUser();
+      if (u && u.name) {
+        $("loginLink").textContent = "Hi, " + u.name.split(" ")[0];
+        $("loginLink").href = "profile.html";
+      }
+    }
+    $("menuBtn").onclick = () => $("nav").classList.toggle("open");
+
+    /* ---------- Start ---------- */
+    updateCartCount();     /* cart count hamesha asli cart no j batave chhe */
+    updateLoginLink();
+
+    if (buyNowMode) {
+      $("modeNote").classList.add("show");
+      $("step1Label").textContent = "Product";
+      $("backLink").textContent = "← Products par pachha jao";
+      $("backLink").href = "products.html";
+    }
+
+    if (!items.length) {
+      $("mainBox").style.display = "none";
+      $("steps").style.display = "none";
+      $("emptyBox").style.display = "block";
+      if (!buyNowMode) {
+        $("emptyTitle").textContent = "Tamaro cart khali chhe";
+        $("emptyText").textContent = "Checkout karva mate pehela cart ma products add karo.";
+      }
+    } else {
+      prefill();
+      renderSummary();
+    }
+  </script>
+</body>
+</html>

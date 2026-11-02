@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | Shop Smart AI</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #f4f6fa 50%, #dcfce7 100%);
+      min-height: 100vh;
+      color: #1f2937;
+      display: flex;
+      flex-direction: column;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; }
+
+    /* Header */
+    header {
+      background: #fff; border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: #0284c7; }
+    .logo span { color: #16a34a; }
+    nav a { margin-left: 18px; color: #374151; font-weight: 500; }
+    nav a:hover { color: #0284c7; }
+
+    /* Layout */
+    .wrapper { flex: 1; display: flex; align-items: center; justify-content: center; padding: 30px 16px; }
+    .auth {
+      width: 100%; max-width: 900px; background: #fff; border-radius: 20px; overflow: hidden;
+      display: grid; grid-template-columns: 1fr 1.15fr;
+      box-shadow: 0 12px 40px rgba(0,0,0,.12); animation: rise .6s ease both;
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+    /* Left side */
+    .side {
+      background: linear-gradient(160deg, #0284c7, #0369a1 60%, #16a34a 160%);
+      color: #fff; padding: 40px 30px; position: relative; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .side::before, .side::after {
+      content: ""; position: absolute; border-radius: 50%; background: rgba(255,255,255,.08);
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+    .side::before { width: 220px; height: 220px; top: -70px; right: -70px; }
+    .side::after { width: 160px; height: 160px; bottom: -50px; left: -40px; animation-delay: 2s; }
+    @keyframes drift { to { transform: translate(18px, 18px) scale(1.12); } }
+    .side > * { position: relative; z-index: 1; }
+    .side .big { font-size: 64px; margin-bottom: 10px; animation: float 3.5s ease-in-out infinite; }
+    @keyframes float { 50% { transform: translateY(-10px) rotate(4deg); } }
+    .side h2 { font-size: 26px; margin-bottom: 8px; }
+    .side p { opacity: .92; line-height: 1.6; margin-bottom: 20px; }
+    .perks { list-style: none; }
+    .perks li { padding: 7px 0; font-size: 15px; display: flex; gap: 10px; align-items: center; }
+    .perks li::before {
+      content: "✔"; width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.22);
+      display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;
+    }
+
+    /* Form side */
+    .form-side { padding: 34px 32px; }
+    .form-side h1 { font-size: 26px; margin-bottom: 4px; }
+    .form-side .sub { color: #6b7280; margin-bottom: 20px; font-size: 14px; }
+
+    .alert { display: none; padding: 12px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+    .alert.show { display: block; }
+    .alert.error { background: #fee2e2; color: #b91c1c; }
+    .alert.success { background: #dcfce7; color: #15803d; }
+
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { margin-bottom: 13px; }
+    .field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .input-wrap { position: relative; }
+    .input-wrap input {
+      width: 100%; height: 46px; padding: 0 14px; border: 1px solid #d1d5db; border-radius: 10px;
+      font-size: 15px; outline: none; transition: border .2s, box-shadow .2s;
+    }
+    .input-wrap input:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+    .input-wrap input.error { border-color: #dc2626; }
+    .input-wrap input.ok { border-color: #16a34a; }
+    .input-wrap.pw input { padding-right: 46px; }
+    .eye {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      border: none; background: none; cursor: pointer; font-size: 18px; padding: 6px;
+    }
+    .err-msg { color: #dc2626; font-size: 13px; margin-top: 5px; }
+
+    /* Password strength */
+    .strength { height: 6px; background: #e5e7eb; border-radius: 99px; margin-top: 8px; overflow: hidden; }
+    .strength i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width .3s, background .3s; }
+    .strength-text { font-size: 12px; margin-top: 4px; font-weight: 600; min-height: 16px; }
+    .rules { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; margin-top: 6px; }
+    .rules li { font-size: 12px; color: #9ca3af; transition: color .2s; }
+    .rules li.ok { color: #16a34a; }
+    .rules li::before { content: "○ "; }
+    .rules li.ok::before { content: "● "; }
+
+    .terms { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin: 6px 0 4px; cursor: pointer; line-height: 1.5; }
+    .terms input { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; flex-shrink: 0; }
+    .terms a { color: #0284c7; font-weight: 600; }
+    .terms a:hover { text-decoration: underline; }
+
+    .btn {
+      width: 100%; height: 50px; border: none; border-radius: 10px; margin-top: 12px;
+      background: linear-gradient(90deg, #16a34a, #22c55e, #16a34a); background-size: 200% 100%;
+      color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+      transition: transform .1s, opacity .2s; animation: btnMove 4s linear infinite;
+    }
+    @keyframes btnMove { to { background-position: 200% 0; } }
+    .btn:hover { opacity: .93; }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; animation: none; }
+
+    .switch { text-align: center; margin-top: 16px; font-size: 14px; color: #6b7280; }
+    .switch a { color: #0284c7; font-weight: 700; }
+    .switch a:hover { text-decoration: underline; }
+    .guest { display: block; text-align: center; margin-top: 8px; font-size: 13px; color: #6b7280; }
+    .guest:hover { color: #0284c7; }
+
+    footer { text-align: center; padding: 16px; color: #6b7280; font-size: 13px; }
+
+    /* Success overlay */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; z-index: 300; padding: 16px;
+    }
+    .overlay.show { display: flex; animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      background: #fff; border-radius: 20px; padding: 34px 28px; width: 100%; max-width: 380px; text-align: center;
+      animation: modalIn .45s cubic-bezier(.2,.9,.3,1.2);
+    }
+    @keyframes modalIn { from { opacity: 0; transform: scale(.85) translateY(20px); } to { opacity: 1; transform: none; } }
+    .tick {
+      width: 90px; height: 90px; border-radius: 50%; background: #16a34a; margin: 0 auto 16px; position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tick::before {
+      content: ""; position: absolute; inset: 0; border-radius: 50%; border: 3px solid #16a34a;
+      animation: ripple 1.6s ease-out infinite;
+    }
+    @keyframes ripple { from { transform: scale(1); opacity: .7; } to { transform: scale(1.8); opacity: 0; } }
+    .tick svg { width: 48px; height: 48px; }
+    .tick path {
+      stroke: #fff; stroke-width: 5; fill: none; stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw .5s .3s ease forwards;
+    }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .modal h3 { color: #16a34a; font-size: 22px; margin-bottom: 6px; }
+    .modal p { color: #6b7280; line-height: 1.6; }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+      .auth { grid-template-columns: 1fr; max-width: 480px; }
+      .side { padding: 24px 22px; }
+      .side .big { font-size: 44px; }
+      .perks { display: none; }
+      .form-side { padding: 26px 20px; }
+    }
+    @media (max-width: 480px) {
+      .two { grid-template-columns: 1fr; gap: 0; }
+      .rules { grid-template-columns: 1fr; }
+      nav a { margin-left: 12px; font-size: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <div class="wrapper">
+    <div class="auth">
+
+      <!-- Left -->
+      <div class="side">
+        <div class="big">🛍️</div>
+        <h2>Amara Parivaar Ma Joda Vo!</h2>
+        <p>Account banavo ane smart shopping no anand lo.</p>
+        <ul class="perks">
+          <li>Order track karvo saral</li>
+          <li>Address yaad rahe, checkout fast</li>
+          <li>Khas offers ane coupons</li>
+          <li>AI Assistant ni madad</li>
+        </ul>
+      </div>
+
+      <!-- Form -->
+      <div class="form-side">
+        <h1>Account Banavo</h1>
+        <p class="sub">Fakt 1 minute ma taiyar thai jase.</p>
+
+        <div class="alert" id="alertBox"></div>
+
+        <form id="registerForm" novalidate>
+          <div class="field">
+            <label for="regName">Full Name</label>
+            <div class="input-wrap"><input type="text" id="regName" placeholder="Tamaru naam" autocomplete="name" maxlength="50"></div>
+            <div class="err-msg" id="regNameErr"></div>
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label for="regEmail">Email</label>
+              <div class="input-wrap"><input type="email" id="regEmail" placeholder="tamaro@email.com" autocomplete="email"></div>
+              <div class="err-msg" id="regEmailErr"></div>
+            </div>
+            <div class="field">
+              <label for="regPhone">Mobile Number</label>
+              <div class="input-wrap"><input type="tel" id="regPhone" placeholder="10 digit number" maxlength="10" inputmode="numeric" autocomplete="tel"></div>
+              <div class="err-msg" id="regPhoneErr"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="regPass">Password</label>
+            <div class="input-wrap pw">
+              <input type="password" id="regPass" placeholder="Minimum 6 characters" autocomplete="new-password">
+              <button type="button" class="eye" data-target="regPass" aria-label="Show password">👁</button>
+            </div>
+            <div class="strength"><i id="strBar"></i></div>
+            <div class="strength-text" id="strText"></div>
+            <ul class="rules">
+              <li id="r-len">6+ akshar</li>
+              <li id="r-up">Motu akshar (A-Z)</li>
+              <li id="r-num">Ank (0-9)</li>
+              <li id="r-sym">Chinh (@, #, !)</li>
+            </ul>
+            <div class="err-msg" id="regPassErr"></div>
+          </div>
+
+          <div class="field">
+            <label for="regPass2">Confirm Password</label>
+            <div class="input-wrap pw">
+              <input type="password" id="regPass2" placeholder="Password fari lakho" autocomplete="new-password">
+              <button type="button" class="eye" data-target="regPass2" aria-label="Show password">👁</button>
+            </div>
+            <div class="err-msg" id="regPass2Err"></div>
+          </div>
+
+          <label class="terms">
+            <input type="checkbox" id="terms">
+            <span>Hu <a href="about.html" target="_blank">Terms</a> ane <a href="contact.html" target="_blank">Privacy Policy</a> sathe sahmat chhu.</span>
+          </label>
+          <div class="err-msg" id="termsErr"></div>
+
+          <button type="submit" class="btn" id="regBtn">Create Account</button>
+        </form>
+
+        <div class="switch">Pehela thi account chhe? <a href="login.html" id="loginLink">Login karo</a></div>
+        <a class="guest" href="products.html">Guest tarike Shopping karo</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2026 Shop Smart AI. All rights reserved.</footer>
+
+  <!-- Success -->
+  <div class="overlay" id="okOverlay">
+    <div class="modal">
+      <div class="tick"><svg viewBox="0 0 52 52"><path d="M14 27 L23 36 L39 17"/></svg></div>
+      <h3>Account Ban Gayu! 🎉</h3>
+      <p id="okText">Welcome!</p>
+    </div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    /* ---------- Storage (login.html sathe same "users" list) ---------- */
+    function getUsers() {
+      try { const u = JSON.parse(localStorage.getItem("users")); return Array.isArray(u) ? u : []; }
+      catch (e) { return []; }
+    }
+    function saveUsers(list) {
+      try { localStorage.setItem("users", JSON.stringify(list)); return true; } catch (e) { return false; }
+    }
+
+    /* Password plain text ma save nathi thato, login.html jevo j SHA-256 hash */
+    async function hashPass(text) {
+      try {
+        if (window.crypto && crypto.subtle) {
+          const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+          return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+      } catch (e) {}
+      return btoa(unescape(encodeURIComponent(text)));
+    }
+
+    function startSession(user) {
+      const data = JSON.stringify({ name: user.name, email: user.email, phone: user.phone });
+      try {
+        sessionStorage.removeItem("currentUser");
+        localStorage.setItem("currentUser", data);
+      } catch (e) {}
+    }
+
+    /* ?redirect=cart.html hoy to register pachi tya jao (fakt aapni j site ni .html file) */
+    function nextPage() {
+      const r = new URLSearchParams(location.search).get("redirect");
+      return r && /^[a-zA-Z0-9_\-]+\.html$/.test(r) ? r : "products.html";
+    }
+    (function keepRedirect() {
+      const r = new URLSearchParams(location.search).get("redirect");
+      if (r && /^[a-zA-Z0-9_\-]+\.html$/.test(r)) $("loginLink").href = "login.html?redirect=" + encodeURIComponent(r);
+    })();
+
+    /* ---------- UI helpers ---------- */
+    function showAlert(msg, type) {
+      const b = $("alertBox");
+      b.textContent = msg;
+      b.className = "alert show " + type;
+      b.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    function hideAlert() { $("alertBox").className = "alert"; }
+
+    function setErr(inputId, errId, msg) {
+      $(errId).textContent = msg || "";
+      if (inputId) {
+        $(inputId).classList.toggle("error", !!msg);
+        if (msg) $(inputId).classList.remove("ok");
+      }
+      return !msg;
+    }
+    const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+    /* Show / hide password */
+    document.querySelectorAll(".eye").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const input = $(btn.dataset.target);
+        const show = input.type === "password";
+        input.type = show ? "text" : "password";
+        btn.textContent = show ? "🙈" : "👁";
+      });
+    });
+
+    /* Mobile ma fakt digits */
+    $("regPhone").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, ""); });
+
+    /* ---------- Password strength ---------- */
+    function checkRules(p) {
+      return {
+        len: p.length >= 6,
+        up: /[A-Z]/.test(p),
+        num: /\d/.test(p),
+        sym: /[^A-Za-z0-9]/.test(p)
+      };
+    }
+    function updateStrength() {
+      const p = $("regPass").value;
+      const r = checkRules(p);
+      $("r-len").classList.toggle("ok", r.len);
+      $("r-up").classList.toggle("ok", r.up);
+      $("r-num").classList.toggle("ok", r.num);
+      $("r-sym").classList.toggle("ok", r.sym);
+
+      let score = [r.len, r.up, r.num, r.sym].filter(Boolean).length;
+      if (p.length >= 10 && score >= 3) score = 4;
+      if (!p.length) score = 0;
+
+      const levels = [
+        { w: "0%",   c: "#e5e7eb", t: "" },
+        { w: "25%",  c: "#dc2626", t: "Kamjor" },
+        { w: "50%",  c: "#f59e0b", t: "Theek" },
+        { w: "75%",  c: "#0284c7", t: "Saru" },
+        { w: "100%", c: "#16a34a", t: "Majboot 💪" }
+      ];
+      const L = levels[score];
+      $("strBar").style.width = L.w;
+      $("strBar").style.background = L.c;
+      $("strText").textContent = L.t ? "Password: " + L.t : "";
+      $("strText").style.color = L.c;
+    }
+    $("regPass").addEventListener("input", () => { updateStrength(); if ($("regPass2").value) checkMatch(); });
+
+    function checkMatch() {
+      const same = $("regPass").value === $("regPass2").value;
+      if (!$("regPass2").value) return;
+      setErr("regPass2", "regPass2Err", same ? "" : "Password match nathi thato");
+      if (same) $("regPass2").classList.add("ok");
+    }
+    $("regPass2").addEventListener("input", checkMatch);
+
+    /* Email pehela thi che ke nahi te live check */
+    $("regEmail").addEventListener("blur", () => {
+      const v = $("regEmail").value.trim().toLowerCase();
+      if (v && emailOk(v) && getUsers().some(u => u.email === v)) {
+        setErr("regEmail", "regEmailErr", "Aa email thi account pehela thi chhe. Login karo.");
+      }
+    });
+    ["regName", "regEmail", "regPhone", "regPass"].forEach(id =>
+      $(id).addEventListener("input", () => { $(id).classList.remove("error"); $(id + "Err").textContent = ""; }));
+    $("terms").addEventListener("change", () => { $("termsErr").textContent = ""; });
+
+    /* ---------- Submit ---------- */
+    $("registerForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      hideAlert();
+
+      const name = $("regName").value.trim();
+      const email = $("regEmail").value.trim().toLowerCase();
+      const phone = $("regPhone").value.trim();
+      const p1 = $("regPass").value;
+      const p2 = $("regPass2").value;
+
+      const ok = [
+        setErr("regName", "regNameErr", name.length < 2 ? "Potanu pūru naam lakho" : ""),
+        setErr("regEmail", "regEmailErr", !email ? "Email lakho" : !emailOk(email) ? "Sacho email lakho" : ""),
+        setErr("regPhone", "regPhoneErr", !/^[6-9]\d{9}$/.test(phone) ? "Sacho 10 digit mobile number lakho" : ""),
+        setErr("regPass", "regPassErr", p1.length < 6 ? "Minimum 6 characters joie" : ""),
+        setErr("regPass2", "regPass2Err", p1 !== p2 ? "Password match nathi thato" : ""),
+        setErr(null, "termsErr", $("terms").checked ? "" : "Aagal vadhva mate sahmati aapvi jaruri chhe")
+      ];
+      if (ok.includes(false)) {
+        const first = document.querySelector(".error");
+        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      const users = getUsers();
+      if (users.some(u => u.email === email)) {
+        setErr("regEmail", "regEmailErr", "Aa email thi account pehela thi chhe.");
+        showAlert("Aa email thi account pehela thi chhe. Login karo.", "error");
+        return;
+      }
+      if (users.some(u => u.phone === phone)) {
+        setErr("regPhone", "regPhoneErr", "Aa mobile number thi account pehela thi chhe.");
+        return;
+      }
+
+      $("regBtn").disabled = true;
+      $("regBtn").textContent = "Account ban rahyu chhe...";
+
+      const hash = await hashPass(p1);
+      const user = { name, email, phone, pass: hash, createdAt: new Date().toISOString() };
+      users.push(user);
+
+      if (!saveUsers(users)) {
+        $("regBtn").disabled = false;
+        $("regBtn").textContent = "Create Account";
+        showAlert("Account save na thayu (browser storage bharayu ke block chhe). Fari prayatna karo.", "error");
+        return;
+      }
+
+      startSession(user);
+      $("okText").textContent = "Welcome, " + name.split(" ")[0] + "! Tamne aagal laI jaie chhie...";
+      $("okOverlay").classList.add("show");
+      setTimeout(() => { location.href = nextPage(); }, 2000);
+    });
+
+    /* Pehela thi login hoy to seedhu aagal jao */
+    try {
+      if (localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser")) {
+        showAlert("Tame pehela thi login chho ✔", "success");
+        setTimeout(() => { location.href = nextPage(); }, 1200);
+      }
+    } catch (e) {}
+  </script>
+</body>
+</html>

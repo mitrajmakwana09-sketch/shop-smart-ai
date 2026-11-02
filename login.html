@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Shop Smart AI</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #f4f6fa 50%, #dcfce7 100%);
+      min-height: 100vh;
+      color: #1f2937;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo { font-size: 22px; font-weight: 700; color: #0284c7; text-decoration: none; }
+    .logo span { color: #16a34a; }
+    nav a { margin-left: 18px; text-decoration: none; color: #374151; font-weight: 500; }
+    nav a:hover { color: #0284c7; }
+
+    /* Layout */
+    .wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 16px;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      border-radius: 18px;
+      padding: 34px 30px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.09);
+    }
+    .auth-card h1 { font-size: 26px; text-align: center; margin-bottom: 6px; }
+    .auth-card .sub { text-align: center; color: #6b7280; margin-bottom: 22px; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      background: #f4f6fa;
+      border-radius: 12px;
+      padding: 5px;
+      margin-bottom: 22px;
+    }
+    .tab {
+      flex: 1; padding: 11px; border: none; background: transparent;
+      border-radius: 9px; font-size: 15px; font-weight: 700; color: #6b7280; cursor: pointer;
+      transition: all .2s;
+    }
+    .tab.active { background: #fff; color: #0284c7; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+
+    /* Form */
+    form { display: none; }
+    form.active { display: block; animation: fade .3s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .input-wrap { position: relative; }
+    .input-wrap input {
+      width: 100%; height: 48px; padding: 0 14px;
+      border: 1px solid #d1d5db; border-radius: 10px;
+      font-size: 15px; outline: none; transition: border .2s, box-shadow .2s;
+    }
+    .input-wrap input:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+    .input-wrap input.error { border-color: #dc2626; }
+    .input-wrap input[type="password"],
+    .input-wrap input.has-eye { padding-right: 48px; }
+    .eye {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      border: none; background: none; cursor: pointer; font-size: 18px; padding: 6px;
+    }
+    .err-msg { color: #dc2626; font-size: 13px; margin-top: 5px; min-height: 0; }
+
+    .row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 14px; margin-bottom: 20px; flex-wrap: wrap; gap: 8px;
+    }
+    .row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .row a { color: #0284c7; text-decoration: none; font-weight: 600; }
+    .row a:hover { text-decoration: underline; }
+
+    .btn {
+      width: 100%; height: 50px; border: none; border-radius: 10px;
+      font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:hover { opacity: .92; }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-blue { background: #0284c7; }
+    .btn-green { background: #16a34a; }
+
+    .alert {
+      display: none; padding: 12px 14px; border-radius: 10px;
+      font-size: 14px; font-weight: 600; margin-bottom: 16px;
+    }
+    .alert.show { display: block; }
+    .alert.error { background: #fee2e2; color: #b91c1c; }
+    .alert.success { background: #dcfce7; color: #15803d; }
+
+    .divider { text-align: center; color: #9ca3af; font-size: 13px; margin: 20px 0; position: relative; }
+    .divider::before, .divider::after {
+      content: ""; position: absolute; top: 50%; width: 38%; height: 1px; background: #e5e7eb;
+    }
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    .guest {
+      display: block; text-align: center; padding: 13px; border: 1px solid #d1d5db;
+      border-radius: 10px; color: #374151; text-decoration: none; font-weight: 600;
+    }
+    .guest:hover { background: #f9fafb; }
+
+    footer { text-align: center; padding: 16px; color: #6b7280; font-size: 13px; }
+
+    @media (max-width: 480px) {
+      .auth-card { padding: 26px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="cart.html">Cart</a>
+    </nav>
+  </header>
+
+  <div class="wrapper">
+    <div class="auth-card">
+      <h1>Welcome 👋</h1>
+      <p class="sub">Shop Smart AI ma login karo ke navu account banavo</p>
+
+      <div class="tabs">
+        <button class="tab active" id="tabLogin" type="button">Login</button>
+        <button class="tab" id="tabRegister" type="button">Register</button>
+      </div>
+
+      <div class="alert" id="alertBox"></div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" class="active" novalidate>
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <div class="input-wrap">
+            <input type="email" id="loginEmail" placeholder="tamaro@email.com" autocomplete="email">
+          </div>
+          <div class="err-msg" id="loginEmailErr"></div>
+        </div>
+
+        <div class="field">
+          <label for="loginPass">Password</label>
+          <div class="input-wrap">
+            <input type="password" id="loginPass" placeholder="Password lakho" autocomplete="current-password">
+            <button type="button" class="eye" data-target="loginPass" aria-label="Show password">👁</button>
+          </div>
+          <div class="err-msg" id="loginPassErr"></div>
+        </div>
+
+        <div class="row">
+          <label><input type="checkbox" id="remember"> Remember me</label>
+          <a href="#" id="forgotLink">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-blue" id="loginBtn">Login</button>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="registerForm" novalidate>
+        <div class="field">
+          <label for="regName">Full Name</label>
+          <div class="input-wrap">
+            <input type="text" id="regName" placeholder="Tamaru naam" autocomplete="name">
+          </div>
+          <div class="err-msg" id="regNameErr"></div>
+        </div>
+
+        <div class="field">
+          <label for="regEmail">Email</label>
+          <div class="input-wrap">
+            <input type="email" id="regEmail" placeholder="tamaro@email.com" autocomplete="email">
+          </div>
+          <div class="err-msg" id="regEmailErr"></div>
+        </div>
+
+        <div class="field">
+          <label for="regPhone">Mobile Number</label>
+          <div class="input-wrap">
+            <input type="tel" id="regPhone" placeholder="10 digit mobile number" maxlength="10" autocomplete="tel">
+          </div>
+          <div class="err-msg" id="regPhoneErr"></div>
+        </div>
+
+        <div class="field">
+          <label for="regPass">Password</label>
+          <div class="input-wrap">
+            <input type="password" id="regPass" placeholder="Minimum 6 characters" autocomplete="new-password">
+            <button type="button" class="eye" data-target="regPass" aria-label="Show password">👁</button>
+          </div>
+          <div class="err-msg" id="regPassErr"></div>
+        </div>
+
+        <div class="field">
+          <label for="regPass2">Confirm Password</label>
+          <div class="input-wrap">
+            <input type="password" id="regPass2" placeholder="Password fari lakho" autocomplete="new-password">
+          </div>
+          <div class="err-msg" id="regPass2Err"></div>
+        </div>
+
+        <button type="submit" class="btn btn-green" id="regBtn">Create Account</button>
+      </form>
+
+      <div class="divider">athva</div>
+      <a class="guest" href="products.html">Guest tarike Shopping karo</a>
+    </div>
+  </div>
+
+  <footer>© 2026 Shop Smart AI. All rights reserved.</footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    /* ---------- Storage helpers (error vagar) ---------- */
+    function getUsers() {
+      try { return JSON.parse(localStorage.getItem("users")) || []; } catch (e) { return []; }
+    }
+    function saveUsers(list) {
+      try { localStorage.setItem("users", JSON.stringify(list)); } catch (e) {}
+    }
+
+    /* Password ne plain text ma save nahi karvo, hash karine save karvo */
+    async function hashPass(text) {
+      try {
+        if (window.crypto && crypto.subtle) {
+          const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+          return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+      } catch (e) {}
+      return btoa(unescape(encodeURIComponent(text)));
+    }
+
+    /* ---------- UI helpers ---------- */
+    function showAlert(msg, type) {
+      const box = $("alertBox");
+      box.textContent = msg;
+      box.className = "alert show " + type;
+    }
+    function hideAlert() { $("alertBox").className = "alert"; }
+
+    function setErr(inputId, errId, msg) {
+      $(errId).textContent = msg || "";
+      $(inputId).classList.toggle("error", !!msg);
+      return !msg;
+    }
+
+    function switchTab(which) {
+      const isLogin = which === "login";
+      $("tabLogin").classList.toggle("active", isLogin);
+      $("tabRegister").classList.toggle("active", !isLogin);
+      $("loginForm").classList.toggle("active", isLogin);
+      $("registerForm").classList.toggle("active", !isLogin);
+      hideAlert();
+    }
+    $("tabLogin").onclick = () => switchTab("login");
+    $("tabRegister").onclick = () => switchTab("register");
+
+    /* Show / hide password */
+    document.querySelectorAll(".eye").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const input = $(btn.dataset.target);
+        const show = input.type === "password";
+        input.type = show ? "text" : "password";
+        btn.textContent = show ? "🙈" : "👁";
+      });
+    });
+
+    const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+    /* Redirect: ?redirect=cart.html hoy to tya jao, nahi to products */
+    function goNext() {
+      const r = new URLSearchParams(location.search).get("redirect");
+      const safe = r && /^[a-zA-Z0-9_\-]+\.html$/.test(r) ? r : "products.html";
+      setTimeout(() => { location.href = safe; }, 900);
+    }
+
+    function startSession(user, remember) {
+      const data = JSON.stringify({ name: user.name, email: user.email, phone: user.phone });
+      try {
+        localStorage.removeItem("currentUser");
+        sessionStorage.removeItem("currentUser");
+        (remember ? localStorage : sessionStorage).setItem("currentUser", data);
+      } catch (e) {}
+    }
+
+    /* ---------- LOGIN ---------- */
+    $("loginForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      hideAlert();
+
+      const email = $("loginEmail").value.trim().toLowerCase();
+      const pass = $("loginPass").value;
+
+      const a = setErr("loginEmail", "loginEmailErr", !email ? "Email lakho" : !emailOk(email) ? "Sacho email lakho" : "");
+      const b = setErr("loginPass", "loginPassErr", !pass ? "Password lakho" : "");
+      if (!a || !b) return;
+
+      $("loginBtn").disabled = true;
+      const hash = await hashPass(pass);
+      const user = getUsers().find(u => u.email === email && u.pass === hash);
+      $("loginBtn").disabled = false;
+
+      if (!user) {
+        showAlert("Email ke password khotu chhe. Fari try karo.", "error");
+        return;
+      }
+
+      startSession(user, $("remember").checked);
+      showAlert("Login safal! Welcome, " + user.name + " ✔", "success");
+      goNext();
+    });
+
+    /* ---------- REGISTER ---------- */
+    $("registerForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      hideAlert();
+
+      const name = $("regName").value.trim();
+      const email = $("regEmail").value.trim().toLowerCase();
+      const phone = $("regPhone").value.trim();
+      const p1 = $("regPass").value;
+      const p2 = $("regPass2").value;
+
+      const ok = [
+        setErr("regName", "regNameErr", name.length < 2 ? "Potanu naam lakho" : ""),
+        setErr("regEmail", "regEmailErr", !email ? "Email lakho" : !emailOk(email) ? "Sacho email lakho" : ""),
+        setErr("regPhone", "regPhoneErr", !/^[6-9]\d{9}$/.test(phone) ? "Sacho 10 digit mobile number lakho" : ""),
+        setErr("regPass", "regPassErr", p1.length < 6 ? "Minimum 6 characters joie" : ""),
+        setErr("regPass2", "regPass2Err", p1 !== p2 ? "Password match nathi thato" : "")
+      ];
+      if (ok.includes(false)) return;
+
+      const users = getUsers();
+      if (users.some(u => u.email === email)) {
+        showAlert("Aa email thi account pehela thi chhe. Login karo.", "error");
+        return;
+      }
+
+      $("regBtn").disabled = true;
+      const hash = await hashPass(p1);
+      const user = { name, email, phone, pass: hash };
+      users.push(user);
+      saveUsers(users);
+      $("regBtn").disabled = false;
+
+      startSession(user, true);
+      showAlert("Account ban gayu! Welcome, " + name + " 🎉", "success");
+      goNext();
+    });
+
+    /* Forgot password */
+    $("forgotLink").addEventListener("click", e => {
+      e.preventDefault();
+      showAlert("Password reset mate support ne sampark karo.", "success");
+    });
+
+    /* Pehela thi login hoy to seedhu aagal jao */
+    try {
+      if (localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser")) {
+        showAlert("Tame pehela thi login chho ✔", "success");
+        goNext();
+      }
+    } catch (e) {}
+  </script>
+</body>
+</html>

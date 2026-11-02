@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us | Shop Smart AI</title>
+  <meta name="description" content="Shop Smart AI vishe jano: amari vaarta, mission ane values.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    header {
+      background: rgba(255,255,255,.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: #0284c7; }
+    .logo span { color: #16a34a; }
+    nav { display: flex; align-items: center; gap: 22px; }
+    nav a { color: #374151; font-weight: 500; }
+    nav a:hover, nav a.active { color: #0284c7; }
+    .cart-badge {
+      background: #16a34a; color: #fff; border-radius: 999px;
+      padding: 1px 8px; font-size: 12px; margin-left: 4px;
+    }
+    .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 60%, #16a34a 150%);
+      color: #fff; text-align: center; padding: 70px 20px 100px; position: relative; overflow: hidden;
+    }
+    .hero::before, .hero::after {
+      content: ""; position: absolute; border-radius: 50%; background: rgba(255,255,255,.07);
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .hero::before { width: 340px; height: 340px; top: -120px; right: -80px; }
+    .hero::after  { width: 240px; height: 240px; bottom: -100px; left: -60px; animation-delay: 3s; }
+    @keyframes drift { to { transform: translate(28px, 28px) scale(1.12); } }
+    .hero h1 { font-size: 42px; margin-bottom: 12px; position: relative; z-index: 1; }
+    .hero h1 em { font-style: normal; color: #86efac; }
+    .hero p { max-width: 650px; margin: 0 auto; font-size: 18px; line-height: 1.6; opacity: .93; position: relative; z-index: 1; }
+
+    /* Stats */
+    .stats {
+      max-width: 1000px; margin: -50px auto 0; padding: 0 20px; position: relative; z-index: 2;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    }
+    .stat {
+      background: #fff; border-radius: 14px; padding: 24px 12px; text-align: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,.08); transition: transform .2s;
+    }
+    .stat:hover { transform: translateY(-5px); }
+    .stat strong { display: block; font-size: 32px; color: #0284c7; margin-bottom: 4px; }
+    .stat span { color: #6b7280; font-size: 14px; }
+
+    /* Sections */
+    .section { max-width: 1000px; margin: 0 auto; padding: 60px 20px 0; }
+    .section-title { font-size: 28px; text-align: center; margin-bottom: 6px; }
+    .section-sub { text-align: center; color: #6b7280; margin-bottom: 30px; }
+
+    .reveal { opacity: 0; transform: translateY(34px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.show { opacity: 1; transform: none; }
+
+    /* Story */
+    .story {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: center;
+      background: #fff; border-radius: 18px; padding: 34px; box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+    .story h2 { font-size: 26px; margin-bottom: 14px; }
+    .story p { color: #4b5563; line-height: 1.8; margin-bottom: 12px; }
+    .story-art {
+      background: linear-gradient(135deg, #e0f2fe, #dcfce7); border-radius: 16px;
+      min-height: 280px; display: flex; align-items: center; justify-content: center;
+      font-size: 110px; animation: float 3.5s ease-in-out infinite;
+    }
+    @keyframes float { 50% { transform: translateY(-14px) rotate(3deg); } }
+
+    /* Mission / Vision */
+    .mv { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .mv .card {
+      background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 4px 18px rgba(0,0,0,.06);
+      border-top: 4px solid #0284c7;
+    }
+    .mv .card:nth-child(2) { border-top-color: #16a34a; }
+    .mv .ic { font-size: 38px; margin-bottom: 10px; }
+    .mv h3 { margin-bottom: 8px; font-size: 20px; }
+    .mv p { color: #4b5563; line-height: 1.7; }
+
+    /* Values */
+    .values { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; }
+    .value {
+      background: #fff; border-radius: 14px; padding: 26px 18px; text-align: center;
+      box-shadow: 0 3px 14px rgba(0,0,0,.06); transition: transform .2s, box-shadow .2s;
+    }
+    .value:hover { transform: translateY(-6px); box-shadow: 0 12px 26px rgba(2,132,199,.15); }
+    .value .ic { font-size: 40px; margin-bottom: 10px; display: block; }
+    .value h4 { margin-bottom: 6px; }
+    .value p { color: #6b7280; font-size: 14px; line-height: 1.6; }
+
+    /* How it works */
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; position: relative; }
+    .step { background: #fff; border-radius: 14px; padding: 24px 16px; text-align: center; box-shadow: 0 3px 14px rgba(0,0,0,.06); }
+    .step .num {
+      width: 42px; height: 42px; border-radius: 50%; background: #0284c7; color: #fff;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-weight: 800;
+    }
+    .step:nth-child(even) .num { background: #16a34a; }
+    .step h4 { margin-bottom: 6px; }
+    .step p { color: #6b7280; font-size: 14px; line-height: 1.5; }
+
+    /* Timeline */
+    .timeline { position: relative; max-width: 700px; margin: 0 auto; padding-left: 30px; }
+    .timeline::before { content: ""; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 3px; background: #bae6fd; border-radius: 3px; }
+    .tl-item { position: relative; background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+    .tl-item::before {
+      content: ""; position: absolute; left: -29px; top: 20px; width: 15px; height: 15px;
+      border-radius: 50%; background: #0284c7; border: 3px solid #fff; box-shadow: 0 0 0 2px #0284c7;
+    }
+    .tl-item strong { color: #0284c7; display: block; margin-bottom: 4px; }
+    .tl-item p { color: #4b5563; font-size: 14px; line-height: 1.6; }
+
+    /* Team */
+    .team { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; }
+    .member {
+      background: #fff; border-radius: 14px; padding: 26px 16px; text-align: center;
+      box-shadow: 0 3px 14px rgba(0,0,0,.06); transition: transform .2s;
+    }
+    .member:hover { transform: translateY(-5px); }
+    .member .pic {
+      width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 12px;
+      background: linear-gradient(135deg, #0284c7, #16a34a); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800;
+    }
+    .member h4 { margin-bottom: 2px; }
+    .member span { color: #6b7280; font-size: 14px; }
+
+    /* CTA */
+    .cta {
+      max-width: 1000px; margin: 60px auto 0; border-radius: 18px; padding: 46px 24px; text-align: center;
+      background: linear-gradient(120deg, #16a34a, #0284c7); color: #fff;
+      background-size: 200% 200%; animation: gradMove 7s ease infinite;
+    }
+    @keyframes gradMove { 50% { background-position: 100% 50%; } }
+    .cta h2 { font-size: 28px; margin-bottom: 8px; }
+    .cta p { margin-bottom: 22px; opacity: .95; }
+    .btn {
+      display: inline-block; padding: 14px 30px; border-radius: 10px; font-weight: 700; font-size: 16px;
+      transition: transform .15s, box-shadow .2s; margin: 0 6px 8px;
+    }
+    .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+    .btn-white { background: #fff; color: #0284c7; }
+    .btn-line { border: 2px solid #fff; color: #fff; }
+
+    /* Footer */
+    footer { background: #0f172a; color: #cbd5e1; margin-top: 60px; padding: 40px 24px 20px; }
+    .foot-grid { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 28px; }
+    footer h4 { color: #fff; margin-bottom: 12px; }
+    footer a { display: block; margin-bottom: 8px; font-size: 14px; color: #94a3b8; }
+    footer a:hover { color: #fff; }
+    footer .about { font-size: 14px; line-height: 1.6; color: #94a3b8; }
+    .copy { text-align: center; border-top: 1px solid #1e293b; margin-top: 28px; padding-top: 16px; font-size: 13px; color: #64748b; }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .story, .mv { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .foot-grid { grid-template-columns: 1fr 1fr; }
+      .hero h1 { font-size: 32px; }
+    }
+    @media (max-width: 640px) {
+      .menu-btn { display: block; }
+      nav {
+        position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column;
+        align-items: flex-start; padding: 0 24px; gap: 0; max-height: 0; overflow: hidden;
+        transition: max-height .3s; border-bottom: 1px solid #e5e7eb;
+      }
+      nav.open { max-height: 380px; padding: 10px 24px 16px; }
+      nav a { padding: 10px 0; width: 100%; }
+      .story { padding: 22px 16px; }
+    }
+    @media (max-width: 480px) {
+      .steps, .foot-grid { grid-template-columns: 1fr; }
+      .hero { padding: 54px 16px 90px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <nav id="nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html" class="active">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="cart.html">Cart<span class="cart-badge" id="cartCount">0</span></a>
+      <a href="login.html" id="loginLink">Login</a>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Amara Vishe: <em>Smart Shopping</em> Sauna Mate</h1>
+    <p>Shop Smart AI ek aadhunik online store chhe jyaan AI ni madad thi tame saru product, saro bhav ane fast delivery ek j jagya e melavo chho.</p>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat reveal"><strong data-count="10000" data-suffix="+">0</strong><span>Khushi Grahako</span></div>
+    <div class="stat reveal"><strong data-count="500" data-suffix="+">0</strong><span>Products</span></div>
+    <div class="stat reveal"><strong data-count="50" data-suffix="+">0</strong><span>Shahero ma Delivery</span></div>
+    <div class="stat reveal"><strong data-count="24" data-suffix="/7">0</strong><span>AI Assistant Madad</span></div>
+  </div>
+
+  <!-- Story -->
+  <section class="section">
+    <div class="story reveal">
+      <div>
+        <h2>Amari Vaarta</h2>
+        <p>Amne dekhayu ke online shopping ma loko ne ghani vaar ghanu badhu shodhvu padtu hoy chhe: saru product, sacho bhav ane bharosapatra seller.</p>
+        <p>Aa mate amae <strong>Shop Smart AI</strong> banavyu, jyaan products sarkhavi shakay, AI assistant thi salah male ane order thi delivery sudhi badhu saral hoy.</p>
+        <p>Amaru lakshya chhe ke dar customer ne <strong>smart, sasto ane bharosapatra</strong> shopping no anubhav male.</p>
+      </div>
+      <div class="story-art">🛍️</div>
+    </div>
+  </section>
+
+  <!-- Mission / Vision -->
+  <section class="section">
+    <h2 class="section-title reveal">Mission &amp; Vision</h2>
+    <p class="section-sub reveal">Ame shu karvu chahiye chhiye ane kya pahonchvu chhe</p>
+    <div class="mv">
+      <div class="card reveal">
+        <div class="ic">🎯</div>
+        <h3>Amaru Mission</h3>
+        <p>Technology ane AI nu upayog kari dar vyakti mate online shopping saral, sasti ane bharosapatra banavvi.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ic">🔭</div>
+        <h3>Amari Vision</h3>
+        <p>Gujarat thi sharu kari ne puri deshma sauthi bharosapatra smart shopping platform banvu.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section class="section">
+    <h2 class="section-title reveal">Amara Mukhya Mulyo</h2>
+    <p class="section-sub reveal">Je vastuo par ame kaam karie chhie</p>
+    <div class="values">
+      <div class="value reveal"><span class="ic">🤝</span><h4>Bharoso</h4><p>Sachi price, sachi jaankari, koi chhupo kharch nahi.</p></div>
+      <div class="value reveal"><span class="ic">💰</span><h4>Sasta Bhav</h4><p>Best deals ane coupons thi tamari bachat.</p></div>
+      <div class="value reveal"><span class="ic">🚚</span><h4>Fast Delivery</h4><p>3-5 divas ma ghare, ₹999 ni upar FREE delivery.</p></div>
+      <div class="value reveal"><span class="ic">🤖</span><h4>Smart Madad</h4><p>AI Assistant thi product pasand karvu saral.</p></div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section">
+    <h2 class="section-title reveal">Kem Kaam Kare Chhe?</h2>
+    <p class="section-sub reveal">Fakt 4 saral pagla</p>
+    <div class="steps">
+      <div class="step reveal"><div class="num">1</div><h4>Product Shodho</h4><p>Category ke AI Assistant thi pasand karo.</p></div>
+      <div class="step reveal"><div class="num">2</div><h4>Sarkhavo</h4><p>Compare page par price ane features juo.</p></div>
+      <div class="step reveal"><div class="num">3</div><h4>Order Karo</h4><p>COD, UPI ke Card thi saral checkout.</p></div>
+      <div class="step reveal"><div class="num">4</div><h4>Ghare Melavo</h4><p>My Orders ma status track karo.</p></div>
+    </div>
+  </section>
+
+  <!-- Timeline (tamara real varso/ghatna thi badlo) -->
+  <section class="section">
+    <h2 class="section-title reveal">Amari Safar</h2>
+    <p class="section-sub reveal">Sharuaat thi atyar sudhi</p>
+    <div class="timeline">
+      <div class="tl-item reveal"><strong>2025</strong><p>Shop Smart AI nu vichar janmyu ane kaam sharu thayu.</p></div>
+      <div class="tl-item reveal"><strong>2026</strong><p>Website launch thai, AI Assistant, Compare ane saral checkout sathe.</p></div>
+      <div class="tl-item reveal"><strong>Aagal</strong><p>Vadhu products, vadhu shahero ane mobile app (PWA) support.</p></div>
+    </div>
+  </section>
+
+  <!-- Team (naam ane role tamara real team thi badlo) -->
+  <section class="section">
+    <h2 class="section-title reveal">Amari Team</h2>
+    <p class="section-sub reveal">Pachad kaam karnara loko</p>
+    <div class="team">
+      <div class="member reveal"><div class="pic">F</div><h4>Founder Nu Naam</h4><span>Founder &amp; CEO</span></div>
+      <div class="member reveal"><div class="pic">T</div><h4>Team Member</h4><span>Technology Head</span></div>
+      <div class="member reveal"><div class="pic">S</div><h4>Team Member</h4><span>Customer Support</span></div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta reveal">
+    <h2>Chalo Smart Shopping Sharu Karie!</h2>
+    <p>Atyare j products juo athva amari team sathe vaat karo.</p>
+    <a class="btn btn-white" href="products.html">Shop Now</a>
+    <a class="btn btn-line" href="contact.html">Contact Us</a>
+  </section>
+
+  <footer>
+    <div class="foot-grid">
+      <div>
+        <h4>Shop Smart AI</h4>
+        <p class="about">Smart online shopping platform. Best products, best prices ane fast delivery, badhu ek j jagya e.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="cart.html">Cart</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact Us</a>
+        <a href="login.html">Login / Register</a>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <a href="my-order.html">My Orders</a>
+        <a href="ai-assistant.html">AI Assistant</a>
+        <a href="#">Returns</a>
+      </div>
+    </div>
+    <div class="copy">© 2026 Shop Smart AI. All rights reserved.</div>
+  </footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    /* ---------- Header helpers ---------- */
+    function updateCartCount() {
+      try {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        $("cartCount").textContent = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+      } catch (e) { $("cartCount").textContent = 0; }
+    }
+    function updateLoginLink() {
+      try {
+        const u = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser") || "null");
+        if (u && u.name) {
+          $("loginLink").textContent = "Hi, " + u.name.split(" ")[0];
+          $("loginLink").href = "my-order.html";
+        }
+      } catch (e) {}
+    }
+    $("menuBtn").onclick = () => $("nav").classList.toggle("open");
+
+    /* ---------- Number count-up animation ---------- */
+    function countUp(el) {
+      const target = Number(el.dataset.count) || 0;
+      const suffix = el.dataset.suffix || "";
+      const duration = 1600;
+      const start = performance.now();
+
+      function tick(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased).toLocaleString("en-IN") + (p === 1 ? suffix : "");
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    /* ---------- Scroll reveal ---------- */
+    function startReveal() {
+      const items = document.querySelectorAll(".reveal");
+      const showAll = () => {
+        items.forEach(i => i.classList.add("show"));
+        document.querySelectorAll("[data-count]").forEach(el => {
+          el.textContent = Number(el.dataset.count).toLocaleString("en-IN") + (el.dataset.suffix || "");
+        });
+      };
+      if (!("IntersectionObserver" in window)) return showAll();
+
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(en => {
+          if (!en.isIntersecting) return;
+          en.target.classList.add("show");
+          const num = en.target.querySelector("[data-count]");
+          if (num) countUp(num);
+          io.unobserve(en.target);
+        });
+      }, { threshold: .15 });
+
+      items.forEach((el, i) => {
+        el.style.transitionDelay = (i % 4) * 90 + "ms";
+        io.observe(el);
+      });
+    }
+
+    updateCartCount();
+    updateLoginLink();
+    startReveal();
+  </script>
+</body>
+</html>

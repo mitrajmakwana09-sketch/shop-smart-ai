@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products | Admin | Shop Smart AI</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0f172a">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Segoe UI", Arial, sans-serif; background: #f1f5f9; color: #1f2937; }
+    a { text-decoration: none; color: inherit; }
+    button, select, input { font-family: inherit; }
+
+    /* ================= LAYOUT ================= */
+    .layout { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+    .side {
+      background: linear-gradient(180deg, #0b1220, #0f172a 60%, #0c4a6e 160%); color: #cbd5e1;
+      padding: 22px 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column;
+    }
+    .brand { font-size: 21px; font-weight: 800; color: #38bdf8; padding: 4px 10px 18px; }
+    .brand span { color: #4ade80; }
+    .brand small { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-top: 2px; letter-spacing: 1px; }
+    .menu { list-style: none; flex: 1; }
+    .menu a, .menu button {
+      display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; margin-bottom: 4px;
+      border-radius: 12px; font-size: 15px; font-weight: 600; color: #cbd5e1; background: none; border: none; cursor: pointer; transition: background .2s, color .2s;
+    }
+    .menu a:hover, .menu button:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .menu a.active { background: linear-gradient(90deg, #0284c7, #0369a1); color: #fff; box-shadow: 0 6px 16px rgba(2,132,199,.4); }
+    .menu .sep { height: 1px; background: rgba(255,255,255,.1); margin: 12px 4px; }
+    .menu .logout { color: #fca5a5; }
+    .menu .logout:hover { background: rgba(220,38,38,.2); color: #fff; }
+
+    .main { padding: 22px 24px 50px; min-width: 0; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+    .topbar h1 { font-size: 26px; }
+    .topbar p { color: #64748b; font-size: 14px; margin-top: 2px; }
+    .top-right { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .menu-btn { display: none; background: #0f172a; color: #fff; border: none; border-radius: 10px; width: 42px; height: 42px; font-size: 20px; cursor: pointer; }
+    .tbtn { height: 42px; padding: 0 16px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; font-weight: 700; font-size: 13px; cursor: pointer; color: #374151; display: inline-flex; align-items: center; transition: all .2s; }
+    .tbtn:hover { background: #f8fafc; border-color: #94a3b8; }
+    .tbtn.green { background: #16a34a; border-color: #16a34a; color: #fff; }
+    .tbtn.blue { background: #0284c7; border-color: #0284c7; color: #fff; }
+
+    /* ================= STATS ================= */
+    .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 18px; }
+    .stat { background: #fff; border-radius: 16px; padding: 16px; display: flex; gap: 12px; align-items: center; box-shadow: 0 2px 10px rgba(15,23,42,.06); transition: transform .2s; animation: rise .45s ease both; }
+    .stat:hover { transform: translateY(-3px); }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .stat .ic { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .ic.a { background: #e0f2fe; } .ic.b { background: #dcfce7; } .ic.c { background: #fef3c7; } .ic.d { background: #fee2e2; } .ic.e { background: #ede9fe; }
+    .stat small { color: #64748b; font-size: 12px; font-weight: 600; }
+    .stat strong { display: block; font-size: 22px; margin-top: 1px; font-variant-numeric: tabular-nums; }
+
+    /* ================= TABS + TOOLBAR ================= */
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; font-weight: 700; font-size: 14px; color: #475569; cursor: pointer; transition: all .2s; }
+    .tab:hover { border-color: #94a3b8; }
+    .tab b { background: #eef2f7; color: #475569; font-size: 12px; padding: 2px 9px; border-radius: 999px; }
+    .tab.active { background: #0284c7; border-color: #0284c7; color: #fff; box-shadow: 0 6px 16px rgba(2,132,199,.3); }
+    .tab.active b { background: rgba(255,255,255,.25); color: #fff; }
+
+    .toolbar { background: #fff; border-radius: 16px; padding: 14px; box-shadow: 0 2px 10px rgba(15,23,42,.06); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+    .search { flex: 1; min-width: 240px; position: relative; }
+    .search input { width: 100%; height: 44px; padding: 0 38px 0 14px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; outline: none; transition: border .2s, box-shadow .2s; }
+    .search input:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+    .search .x { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: none; background: none; font-size: 16px; cursor: pointer; color: #9ca3af; padding: 6px; display: none; }
+    .toolbar select { height: 44px; padding: 0 10px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; background: #fff; outline: none; cursor: pointer; font-weight: 600; max-width: 100%; }
+    .reset { background: none; border: none; color: #dc2626; font-weight: 700; cursor: pointer; font-size: 13px; padding: 0 6px; }
+    .reset:hover { text-decoration: underline; }
+
+    .bulk { display: none; align-items: center; gap: 10px; flex-wrap: wrap; background: #0f172a; color: #fff; border-radius: 14px; padding: 12px 16px; margin-bottom: 14px; animation: rise .3s ease; }
+    .bulk.show { display: flex; }
+    .bulk strong { margin-right: auto; }
+    .bulk button { border: none; border-radius: 9px; padding: 9px 14px; font-weight: 700; font-size: 13px; cursor: pointer; color: #fff; }
+    .bk-h { background: #f59e0b; } .bk-s { background: #16a34a; } .bk-d { background: #dc2626; } .bk-e { background: #0284c7; } .bk-x { background: rgba(255,255,255,.15); }
+
+    /* ================= TABLE ================= */
+    .panel { background: #fff; border-radius: 16px; box-shadow: 0 2px 10px rgba(15,23,42,.06); overflow: hidden; }
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 940px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; vertical-align: middle; }
+    th { background: #f8fafc; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #fafcff; }
+    tr.sel td { background: #eff6ff; }
+    tr.hid td { opacity: .55; }
+    tr.flash td { animation: flash 1.2s ease; }
+    @keyframes flash { from { background: #dcfce7; } to { background: transparent; } }
+    input[type="checkbox"] { width: 17px; height: 17px; accent-color: #0284c7; cursor: pointer; }
+    .pimg { width: 52px; height: 52px; object-fit: contain; background: #f4f6fa; border-radius: 10px; display: block; }
+    .pn { font-weight: 700; max-width: 280px; }
+    .pn small { display: block; color: #64748b; font-weight: 500; font-size: 12px; margin-top: 2px; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+    .tag.base { background: #e0f2fe; color: #0369a1; } .tag.cust { background: #ede9fe; color: #6d28d9; } .tag.edit { background: #fef3c7; color: #b45309; }
+    .price b { font-size: 15px; } .price s { display: block; color: #9ca3af; font-size: 12px; }
+    .stk { width: 78px; height: 36px; padding: 0 8px; border: 1px solid #d1d5db; border-radius: 9px; font-size: 14px; font-weight: 700; text-align: center; outline: none; }
+    .stk:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+    .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-top: 4px; }
+    .pill.in { background: #dcfce7; color: #15803d; } .pill.low { background: #fef3c7; color: #b45309; } .pill.out { background: #fee2e2; color: #b91c1c; }
+    .vis { padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; }
+    .vis.on { background: #dcfce7; color: #15803d; } .vis.off { background: #e5e7eb; color: #475569; }
+    .acts { display: flex; gap: 6px; }
+    .ib { width: 34px; height: 34px; border-radius: 9px; border: none; cursor: pointer; font-size: 15px; background: #eef2f7; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+    .ib:hover { background: #dbeafe; transform: translateY(-2px); }
+    .ib.del:hover { background: #fecaca; }
+    .empty { text-align: center; color: #94a3b8; padding: 50px 16px; font-size: 14px; }
+    .empty b { display: block; font-size: 44px; margin-bottom: 8px; }
+
+    .pager { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px; border-top: 1px solid #f1f5f9; font-size: 14px; color: #64748b; }
+    .pgs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pgs button { min-width: 36px; height: 36px; padding: 0 10px; border-radius: 9px; border: 1px solid #e2e8f0; background: #fff; font-weight: 700; cursor: pointer; color: #374151; }
+    .pgs button:hover:not(:disabled) { border-color: #0284c7; color: #0284c7; }
+    .pgs button.active { background: #0284c7; border-color: #0284c7; color: #fff; }
+    .pgs button:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ================= MODAL ================= */
+    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 300; padding: 16px; }
+    .overlay.show { display: flex; animation: fade .2s ease; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .modal { background: #fff; border-radius: 18px; padding: 24px; width: 100%; max-width: 500px; max-height: 92vh; overflow-y: auto; animation: pop .3s cubic-bezier(.2,.9,.3,1.2); }
+    @keyframes pop { from { opacity: 0; transform: scale(.92) translateY(14px); } to { opacity: 1; transform: none; } }
+    .modal h3 { font-size: 20px; margin-bottom: 2px; }
+    .modal .sub { color: #64748b; font-size: 13px; margin-bottom: 16px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .f { margin-bottom: 12px; }
+    .f label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; }
+    .f input[type="text"], .f input[type="number"] { width: 100%; height: 44px; padding: 0 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; outline: none; }
+    .f input:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+    .f input[readonly] { background: #f8fafc; color: #64748b; cursor: not-allowed; }
+    .f input.error { border-color: #dc2626; }
+    .f .err { color: #dc2626; font-size: 12px; margin-top: 4px; }
+    .f .hint { color: #16a34a; font-size: 12px; font-weight: 600; margin-top: 4px; }
+    .chk { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin: 4px 0 8px; }
+    .m-note { background: #fef3c7; color: #92400e; border-radius: 10px; padding: 9px 12px; font-size: 12px; line-height: 1.5; margin-bottom: 12px; }
+    .m-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+    .m-btns button { height: 44px; border: none; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; color: #fff; }
+    .m-save { background: #16a34a; } .m-cancel { background: #0f172a; } .m-reset { background: #fef3c7; color: #92400e !important; grid-column: 1 / -1; }
+
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px; opacity: 0; transition: all .3s; pointer-events: none; z-index: 500; max-width: 92%; text-align: center; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .scrim { display: none; }
+
+    @media (max-width: 1100px) { .stats { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; z-index: 200; transform: translateX(-102%); transition: transform .3s; }
+      .side.open { transform: none; }
+      .scrim.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; }
+      .menu-btn { display: block; }
+      .main { padding: 16px 14px 40px; }
+    }
+    @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, 1fr); } .two { grid-template-columns: 1fr; gap: 0; } .topbar h1 { font-size: 22px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+
+<script>
+  /* Fakt admin j aa page joi shake */
+  (function () {
+    let ok = false;
+    try { ok = !!sessionStorage.getItem("adminSession"); } catch (e) {}
+    if (!ok) location.replace("admin-login.html?redirect=products.html");
+  })();
+</script>
+
+<div class="layout">
+
+  <aside class="side" id="side">
+    <div class="brand">Shop <span>Smart AI</span><small>ADMIN PANEL</small></div>
+    <ul class="menu">
+      <li><a href="index.html">🏠 Admin Home</a></li>
+      <li><a href="dashboard.html">📊 Dashboard</a></li>
+      <li><a href="orders.html">📦 Orders</a></li>
+      <li><a href="products.html" class="active">🛍️ Products</a></li>
+      <li><a href="add-product.html">➕ Add Product</a></li>
+      <li class="sep"></li>
+      <li><a href="../products.html" target="_blank" rel="noopener">🌐 Customer Products Page</a></li>
+      <li><button type="button" class="logout" id="logoutBtn">🚪 Logout</button></li>
+    </ul>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;gap:12px;align-items:center">
+        <button class="menu-btn" id="menuBtn" aria-label="Menu" type="button">☰</button>
+        <div>
+          <h1>🛍️ Products</h1>
+          <p id="subText">Badha products manage karo</p>
+        </div>
+      </div>
+      <div class="top-right">
+        <a class="tbtn blue" href="add-product.html">➕ Navo Product</a>
+        <button class="tbtn green" id="csvBtn" type="button">⬇ CSV Export</button>
+      </div>
+    </div>
+
+    <section class="stats" id="stats"></section>
+    <div class="tabs" id="tabs"></div>
+
+    <div class="toolbar">
+      <div class="search">
+        <input type="search" id="searchBox" placeholder="🔍 Product naam, brand ke category shodho..." autocomplete="off">
+        <button class="x" id="searchClear" type="button" aria-label="Clear">✕</button>
+      </div>
+      <select id="catSel" aria-label="Category"><option value="all">🗂 Badhi Category</option></select>
+      <select id="sortSel" aria-label="Sort">
+        <option value="new">🆕 Navu pehela (ID)</option>
+        <option value="name">🔤 Naam (A-Z)</option>
+        <option value="low">💰 Price: Ochhi thi Vadhu</option>
+        <option value="high">💎 Price: Vadhu thi Ochhi</option>
+        <option value="stockLow">📉 Stock: Ochhu pehela</option>
+        <option value="stockHigh">📈 Stock: Vadhu pehela</option>
+      </select>
+      <button class="reset" id="resetBtn" type="button">✕ Reset</button>
+    </div>
+
+    <div class="bulk" id="bulk">
+      <strong id="bulkTxt">0 select karya</strong>
+      <button class="bk-h" data-bulk="hide" type="button">🙈 Hide</button>
+      <button class="bk-s" data-bulk="show" type="button">👁 Show</button>
+      <button class="bk-d" data-bulk="delete" type="button">🗑 Delete</button>
+      <button class="bk-e" id="bulkCsv" type="button">⬇ CSV</button>
+      <button class="bk-x" id="bulkClear" type="button">Clear</button>
+    </div>
+
+    <div class="panel">
+      <div class="tbl-wrap" id="tableBox"></div>
+      <div class="pager" id="pager"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Edit -->
+<div class="overlay" id="modalBg"><div class="modal" id="modalBody"></div></div>
+<div id="toast"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const rupee = n => "₹" + Math.round(Number(n) || 0).toLocaleString("en-IN");
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function showToast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2400);
+  }
+
+  const MIN_PRICE = 1000, MAX_PRICE = 10000, LOW = 5, PAGE = 10;
+  const ICONS = { Electronics: "🎧", Wearables: "⌚", Fashion: "👟", Accessories: "🎒", Home: "🏠", "Men's Wear": "👔", "Women's Wear": "👗", Footwear: "👞", Laptops: "💻", Mobiles: "📱" };
+  function ph(cat) {
+    return "data:image/svg+xml;utf8," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='100%' height='100%' fill='#eef2f7'/><text x='50%' y='62%' font-size='38' text-anchor='middle'>" + (ICONS[cat] || "🛍️") + "</text></svg>");
+  }
+  function imgFail(el, cat) { el.onerror = null; el.src = ph(cat); }
+
+  /* =========================================================
+     BASE PRODUCTS (customer products.html jevi j list)
+     [id, naam, category, brand, price, MRP, rating, reviews, stock, photo]
+     ========================================================= */
+  const BASE = [
+    [1,"Wireless Bluetooth Headphones","Electronics","SoundMax",1499,2999,4.5,1280,25,"photo-1505740420928-5e560c06d30e"],
+    [2,"Smart Watch Series X","Wearables","TechFit",2999,5999,4.3,860,12,"photo-1523275335684-37898b6baf30"],
+    [3,"Running Sports Shoes","Fashion","SprintX",1999,3499,4.4,540,40,"photo-1542291026-7eec264c27ff"],
+    [4,"Portable Power Bank 20000mAh","Accessories","ChargePro",1299,1999,4.6,2100,0,"photo-1609091839311-d5365f9ff1c5"],
+    [5,"Mirrorless Digital Camera","Electronics","PixelPro",8999,12999,4.7,310,6,"photo-1516035069371-29a1b244cc32"],
+    [6,"Leather Casual Backpack","Accessories","UrbanPack",1199,2199,4.2,720,33,"photo-1553062407-98eeb64c6a62"],
+    [7,"Ceramic Table Lamp","Home","HomeGlow",1099,1799,4.1,190,18,"photo-1507473885765-e6ed057f782c"],
+    [8,"Fitness Smart Band","Wearables","TechFit",1499,2499,4.0,410,52,"photo-1575311373937-040b8e1fd5b6"],
+    [9,"Mechanical Gaming Keyboard","Electronics","KeyForge",2499,3999,4.4,650,21,"photo-1587829741301-dc798b83add3"],
+    [10,"Portable Bluetooth Speaker","Electronics","SoundMax",3499,5999,4.5,980,15,"photo-1608043152269-423dbba4e7e1"],
+    [11,"Men's Cotton Casual Shirt","Men's Wear","UrbanFit",1199,1999,4.3,860,45,"photo-1596755094514-f87e34085b2c"],
+    [12,"Men's Slim Fit Stretch Jeans","Men's Wear","DenimCo",1499,2799,4.4,1240,38,"photo-1542272604-787c3835535d"],
+    [13,"Men's Printed Round Neck T-Shirt","Men's Wear","UrbanFit",1099,1799,4.1,970,60,"photo-1521572163474-6864f9cf17ab"],
+    [14,"Men's Winter Hoodie","Men's Wear","WarmWear",1799,2999,4.5,530,22,"photo-1556821840-3a63f95609a7"],
+    [15,"Women's Cotton Kurti","Women's Wear","Ethnica",1299,2199,4.4,1530,50,"photo-1583391733956-3750e0ff4e8b"],
+    [16,"Women's Floral Maxi Dress","Women's Wear","StyleBloom",1899,3299,4.3,640,28,"photo-1595777457583-95e059d581b8"],
+    [17,"Women's Printed Silk Saree","Women's Wear","Ethnica",2499,4499,4.6,410,14,"photo-1610030469983-98e550d6193c"],
+    [18,"Women's High-Waist Jeans","Women's Wear","DenimCo",1599,2899,4.2,720,35,"photo-1541099649105-f69ad21f3246"],
+    [19,"Men's Formal Leather Shoes","Footwear","StepUp",1999,3499,4.2,380,26,"photo-1614252235316-8c857d38b5f4"],
+    [20,"Women's Fashion Sandals","Footwear","StepUp",1199,1999,4.1,520,41,"photo-1543163521-1bf539c55dd2"],
+    [21,"Refurbished Laptop 14\" Core i5 8GB / 256GB SSD","Laptops","Refurbished",9999,18999,4.2,280,9,"photo-1496181133206-80ce9b88a853"],
+    [22,"Refurbished Laptop 14\" Core i3 4GB / 128GB SSD","Laptops","Refurbished",7499,14999,4.0,190,12,"photo-1517336714731-489689fd1ca8"],
+    [23,"Smartphone 4GB / 64GB 6.5\" Display","Mobiles","Nova",6999,8999,4.1,3200,60,"photo-1511707171634-5f897ff02aa9"],
+    [24,"Smartphone 6GB / 128GB 5000mAh","Mobiles","Nova",8999,11999,4.3,2450,44,"photo-1598327105666-5b89351aff97"],
+    [25,"5G Smartphone 8GB / 128GB 50MP","Mobiles","Nova",9999,13999,4.4,1780,4,"photo-1592899677977-9c10ca588bbd"],
+    [26,"True Wireless Earbuds","Electronics","SoundMax",1299,2999,4.3,4100,80,"photo-1590658268037-6bf12165a8df"],
+    [27,"8-inch Android Tablet 3GB / 32GB","Electronics","TabPro",6999,9999,4.0,340,17,"photo-1544244015-0df4b3ffc6b0"]
+  ].map(a => ({ id: a[0], name: a[1], category: a[2], brand: a[3], price: a[4], oldPrice: a[5], rating: a[6], reviews: a[7], stock: a[8],
+                image: "https://images.unsplash.com/" + a[9] + "?w=120", base: true }));
+
+  /* =========================================================
+     STORAGE (error vagar)
+     customProducts   : add-product.html na products
+     productOverrides : { id: { price, oldPrice, stock, hidden } }
+     ========================================================= */
+  function readJSON(key, fb) { try { const v = JSON.parse(localStorage.getItem(key)); return v == null ? fb : v; } catch (e) { return fb; } }
+  function writeJSON(key, v) {
+    try { localStorage.setItem(key, JSON.stringify(v)); return true; }
+    catch (e) { showToast("Save na thayu (browser storage bharayu ke block chhe)"); return false; }
+  }
+  const getCustom = () => { const l = readJSON("customProducts", []); return Array.isArray(l) ? l.filter(p => p && p.id && p.name) : []; };
+  const getOv = () => { const o = readJSON("productOverrides", {}); return o && typeof o === "object" && !Array.isArray(o) ? o : {}; };
+
+  function allProducts() {
+    const ov = getOv();
+    const list = BASE.map(b => {
+      const o = ov[b.id] || {};
+      return Object.assign({}, b,
+        "price" in o ? { price: Number(o.price) } : {}, "oldPrice" in o ? { oldPrice: Number(o.oldPrice) } : {}, "stock" in o ? { stock: Number(o.stock) } : {},
+        { hidden: !!o.hidden, edited: "price" in o || "oldPrice" in o || "stock" in o });
+    });
+    getCustom().forEach(c => list.push(Object.assign(
+      { category: "General", brand: "Generic", rating: 4, reviews: 0, stock: 0, oldPrice: c.price },
+      c, { price: Number(c.price) || 0, stock: Number(c.stock) || 0, base: false, hidden: !!(ov[c.id] && ov[c.id].hidden) })));
+    return list;
+  }
+  const stockState = p => p.stock <= 0 ? "out" : p.stock <= LOW ? "low" : "in";
+
+  /* =========================================================
+     STATE + FILTER
+     ========================================================= */
+  const state = { tab: "all", q: "", cat: "all", sort: "new", page: 1 };
+  const selected = new Set();
+  let editId = null, flashId = null;
+
+  function filtered() {
+    const q = state.q.toLowerCase();
+    const list = allProducts().filter(p => {
+      if (state.tab === "in" && stockState(p) !== "in") return false;
+      if (state.tab === "low" && stockState(p) !== "low") return false;
+      if (state.tab === "out" && stockState(p) !== "out") return false;
+      if (state.tab === "hidden" && !p.hidden) return false;
+      if (state.cat !== "all" && p.category !== state.cat) return false;
+      if (q && !(p.name + " " + p.category + " " + (p.brand || "")).toLowerCase().includes(q)) return false;
+      return true;
+    });
+    const sorts = {
+      new: (a, b) => b.id - a.id, name: (a, b) => a.name.localeCompare(b.name),
+      low: (a, b) => a.price - b.price, high: (a, b) => b.price - a.price,
+      stockLow: (a, b) => a.stock - b.stock, stockHigh: (a, b) => b.stock - a.stock
+    };
+    return list.sort(sorts[state.sort] || sorts.new);
+  }
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
+  function renderStats() {
+    const list = allProducts(), vis = list.filter(p => !p.hidden);
+    const c = { in: 0, low: 0, out: 0 };
+    list.forEach(p => c[stockState(p)]++);
+    const value = vis.reduce((s, p) => s + p.price * Math.max(0, p.stock), 0);
+    const cards = [
+      { ic: "🛍️", k: "a", t: "Kul Products", v: list.length }, { ic: "✅", k: "b", t: "In Stock", v: c.in },
+      { ic: "⚠️", k: "c", t: "Ochhu Stock", v: c.low }, { ic: "⛔", k: "d", t: "Out of Stock", v: c.out },
+      { ic: "💼", k: "e", t: "Stock ni Kimmat", v: rupee(value) }
+    ];
+    $("stats").innerHTML = cards.map((k, i) => `<div class="stat" style="animation-delay:${i * 50}ms"><div class="ic ${k.k}">${k.ic}</div><div><small>${k.t}</small><strong>${k.v}</strong></div></div>`).join("");
+
+    const cnt = { all: list.length, in: c.in, low: c.low, out: c.out, hidden: list.filter(p => p.hidden).length };
+    const names = { all: "Badha", in: "In Stock", low: "Ochhu Stock", out: "Out of Stock", hidden: "Hidden" };
+    $("tabs").innerHTML = Object.keys(names).map(k =>
+      `<button class="tab ${state.tab === k ? "active" : ""}" data-tab="${k}" type="button">${names[k]}<b>${cnt[k]}</b></button>`).join("");
+    $("subText").textContent = list.length + " products · " + (c.low + c.out) + " ma stock dhyan magi le chhe";
+  }
+
+  function renderCats() {
+    const cats = [...new Set(allProducts().map(p => p.category))];
+    if (state.cat !== "all" && !cats.includes(state.cat)) state.cat = "all";
+    $("catSel").innerHTML = `<option value="all">🗂 Badhi Category</option>` +
+      cats.map(c => `<option value="${esc(c)}" ${state.cat === c ? "selected" : ""}>${esc((ICONS[c] || "🛍️") + " " + c)}</option>`).join("");
+  }
+
+  function render() {
+    renderStats();
+    const list = filtered();
+    const pages = Math.max(1, Math.ceil(list.length / PAGE));
+    if (state.page > pages) state.page = pages;
+    const start = (state.page - 1) * PAGE;
+    const rows = list.slice(start, start + PAGE);
+
+    if (!rows.length) {
+      $("tableBox").innerHTML = `<div class="empty"><b>📭</b>Koi product malyo nahi.</div>`;
+      $("pager").innerHTML = ""; renderBulk(); return;
+    }
+    const allOn = rows.every(p => selected.has(String(p.id)));
+
+    $("tableBox").innerHTML = `<table>
+      <thead><tr><th><input type="checkbox" id="chkAll" ${allOn ? "checked" : ""} aria-label="Badha select"></th>
+        <th>Photo</th><th>Product</th><th>Price</th><th>Stock</th><th>Rating</th><th>Visible</th><th>Action</th></tr></thead><tbody>
+      ${rows.map(p => {
+        const id = String(p.id), s = stockState(p), d = p.oldPrice > p.price ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+        return `<tr class="${selected.has(id) ? "sel" : ""} ${p.hidden ? "hid" : ""} ${p.id === flashId ? "flash" : ""}">
+          <td><input type="checkbox" data-chk="${id}" ${selected.has(id) ? "checked" : ""} aria-label="Select"></td>
+          <td><img class="pimg" src="${esc(p.image || ph(p.category))}" alt="" loading="lazy" onerror="imgFail(this,'${esc(p.category).replace(/'/g, "")}')"></td>
+          <td class="pn">${esc(p.name)}<small>#${p.id} · ${esc(p.category)} · ${esc(p.brand || "")}
+            <span class="tag ${p.base ? "base" : "cust"}">${p.base ? "Main" : "Custom"}</span>${p.edited ? '<span class="tag edit">Edited</span>' : ""}</small></td>
+          <td class="price"><b>${rupee(p.price)}</b>${p.oldPrice > p.price ? `<s>${rupee(p.oldPrice)} · ${d}% off</s>` : ""}</td>
+          <td><input class="stk" type="number" min="0" step="1" value="${p.stock}" data-stk="${id}" aria-label="Stock"><br>
+            <span class="pill ${s}">${s === "out" ? "Out of Stock" : s === "low" ? "Ochhu" : "In Stock"}</span></td>
+          <td>${"★".repeat(Math.round(p.rating || 0))} ${p.rating || 0}<small style="display:block;color:#64748b">${(p.reviews || 0).toLocaleString("en-IN")} reviews</small></td>
+          <td><button class="vis ${p.hidden ? "off" : "on"}" data-vis="${id}" type="button" title="Customer ne dekhado / chhupavo">${p.hidden ? "🙈 Hidden" : "👁 Visible"}</button></td>
+          <td><div class="acts">
+            <button class="ib" data-edit="${id}" title="Edit" aria-label="Edit" type="button">✏️</button>
+            <a class="ib" href="../product-details.html?id=${p.id}" target="_blank" rel="noopener" title="Customer view" aria-label="View">🔗</a>
+            ${p.base ? "" : `<button class="ib del" data-del="${id}" title="Delete" aria-label="Delete" type="button">🗑</button>`}
+          </div></td></tr>`;
+      }).join("")}</tbody></table>`;
+
+    const pg = [];
+    for (let p = 1; p <= pages; p++) {
+      if (pages > 7 && p !== 1 && p !== pages && Math.abs(p - state.page) > 1) { if (pg[pg.length - 1] !== "…") pg.push("…"); continue; }
+      pg.push(p);
+    }
+    $("pager").innerHTML = `<span>${start + 1}-${Math.min(start + PAGE, list.length)} / ${list.length} products</span>
+      <div class="pgs"><button data-pg="${state.page - 1}" ${state.page === 1 ? "disabled" : ""} type="button">‹</button>
+      ${pg.map(p => p === "…" ? `<button disabled>…</button>` : `<button data-pg="${p}" class="${p === state.page ? "active" : ""}" type="button">${p}</button>`).join("")}
+      <button data-pg="${state.page + 1}" ${state.page === pages ? "disabled" : ""} type="button">›</button></div>`;
+    renderBulk();
+    flashId = null;
+  }
+  function renderBulk() {
+    $("bulk").classList.toggle("show", selected.size > 0);
+    $("bulkTxt").textContent = selected.size + " product select karya";
+  }
+
+  /* =========================================================
+     SAVE HELPERS
+     ========================================================= */
+  function setOv(id, patch) {
+    const ov = getOv();
+    const cur = Object.assign({}, ov[id] || {}, patch);
+    if (!cur.hidden) delete cur.hidden;
+    if (Object.keys(cur).length) ov[id] = cur; else delete ov[id];
+    return writeJSON("productOverrides", ov);
+  }
+  function updateStock(id, val) {
+    const n = Math.floor(Number(val));
+    if (isNaN(n) || n < 0) { showToast("Stock 0 ke vadhu purnank hovu joie"); return render(); }
+    const p = allProducts().find(x => String(x.id) === String(id)); if (!p) return;
+    let ok;
+    if (p.base) ok = setOv(p.id, { stock: n });
+    else { const l = getCustom(); const c = l.find(x => String(x.id) === String(id)); if (!c) return; c.stock = n; ok = writeJSON("customProducts", l); }
+    if (ok) { flashId = p.id; showToast(p.name.slice(0, 30) + ": stock " + n); }
+    render();
+  }
+  function setHidden(ids, hidden) {
+    const ov = getOv();
+    ids.forEach(id => {
+      const cur = Object.assign({}, ov[id] || {});
+      if (hidden) cur.hidden = true; else delete cur.hidden;
+      if (Object.keys(cur).length) ov[id] = cur; else delete ov[id];
+    });
+    return writeJSON("productOverrides", ov);
+  }
+  function deleteProducts(ids) {
+    const set = new Set(ids.map(String));
+    const left = getCustom().filter(c => !set.has(String(c.id)));
+    if (!writeJSON("customProducts", left)) return false;
+    const ov = getOv(); ids.forEach(id => delete ov[id]); writeJSON("productOverrides", ov);
+    return true;
+  }
+
+  /* =========================================================
+     EVENTS
+     ========================================================= */
+  $("tableBox").addEventListener("change", e => {
+    const s = e.target.closest("input[data-stk]"); if (s) return updateStock(s.dataset.stk, s.value);
+    const c = e.target.closest("input[data-chk]");
+    if (c) { c.checked ? selected.add(c.dataset.chk) : selected.delete(c.dataset.chk); return render(); }
+    if (e.target.id === "chkAll") {
+      filtered().slice((state.page - 1) * PAGE, state.page * PAGE).forEach(p => e.target.checked ? selected.add(String(p.id)) : selected.delete(String(p.id)));
+      render();
+    }
+  });
+  $("tableBox").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("input[data-stk]")) e.target.blur(); });
+  $("tableBox").addEventListener("click", e => {
+    const v = e.target.closest("[data-vis]");
+    if (v) {
+      const p = allProducts().find(x => String(x.id) === v.dataset.vis); if (!p) return;
+      if (setHidden([p.id], !p.hidden)) { flashId = p.id; showToast(p.hidden ? "Customer ne have dekhase ✔" : "Customer thi chhupavyo 🙈"); }
+      return render();
+    }
+    const ed = e.target.closest("[data-edit]"); if (ed) return openEdit(ed.dataset.edit);
+    const d = e.target.closest("[data-del]");
+    if (d) {
+      const p = allProducts().find(x => String(x.id) === d.dataset.del); if (!p) return;
+      if (!confirm("\"" + p.name + "\" delete karvo chhe? Aa pachhu nahi aave.")) return;
+      if (deleteProducts([p.id])) { selected.delete(String(p.id)); showToast("Product delete thayo"); }
+      render(); renderCats();
+    }
+  });
+  $("tabs").addEventListener("click", e => { const t = e.target.closest("[data-tab]"); if (t) { state.tab = t.dataset.tab; state.page = 1; render(); } });
+  $("pager").addEventListener("click", e => {
+    const b = e.target.closest("[data-pg]"); if (!b || b.disabled) return;
+    state.page = Number(b.dataset.pg); render(); window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  let st;
+  $("searchBox").addEventListener("input", e => {
+    $("searchClear").style.display = e.target.value ? "block" : "none";
+    clearTimeout(st); st = setTimeout(() => { state.q = e.target.value.trim(); state.page = 1; render(); }, 200);
+  });
+  $("searchClear").onclick = () => { $("searchBox").value = ""; $("searchClear").style.display = "none"; state.q = ""; state.page = 1; render(); };
+  $("catSel").onchange = e => { state.cat = e.target.value; state.page = 1; render(); };
+  $("sortSel").onchange = e => { state.sort = e.target.value; state.page = 1; render(); };
+  $("resetBtn").onclick = () => {
+    Object.assign(state, { tab: "all", q: "", cat: "all", sort: "new", page: 1 });
+    $("searchBox").value = ""; $("searchClear").style.display = "none"; $("sortSel").value = "new"; renderCats(); render();
+  };
+
+  /* Bulk */
+  $("bulk").addEventListener("click", e => {
+    const b = e.target.closest("[data-bulk]"); if (!b) return;
+    const ids = [...selected].map(Number), act = b.dataset.bulk;
+    if (act === "hide" || act === "show") {
+      if (setHidden(ids, act === "hide")) showToast(ids.length + " product " + (act === "hide" ? "chhupavya" : "dekhadya"));
+    } else {
+      const customIds = ids.filter(id => { const p = allProducts().find(x => x.id === id); return p && !p.base; });
+      if (!customIds.length) return showToast("Main products delete nathi thata, fakt Hide kari shako chho");
+      if (!confirm(customIds.length + " custom product delete karva chho?" + (customIds.length < ids.length ? "\n(Main products delete nahi thay.)" : ""))) return;
+      if (deleteProducts(customIds)) showToast(customIds.length + " product delete thaya");
+    }
+    selected.clear(); renderCats(); render();
+  });
+  $("bulkClear").onclick = () => { selected.clear(); render(); };
+  $("bulkCsv").onclick = () => exportCSV(allProducts().filter(p => selected.has(String(p.id))));
+  $("csvBtn").onclick = () => exportCSV(filtered());
+
+  /* =========================================================
+     EDIT MODAL
+     ========================================================= */
+  function openEdit(id) {
+    const p = allProducts().find(x => String(x.id) === String(id)); if (!p) return;
+    editId = p.id;
+    $("modalBody").innerHTML = `
+      <h3>✏️ Product Edit Karo</h3>
+      <p class="sub">#${p.id} · ${p.base ? "Main product" : "Custom product"}</p>
+      ${p.base ? `<div class="m-note">Main product nu naam ane photo badli nathi shakatu. Price, MRP, stock ane visibility badli shakay chhe.</div>` : ""}
+      <div class="f"><label for="eName">Naam</label><input type="text" id="eName" value="${esc(p.name)}" ${p.base ? "readonly" : 'maxlength="80"'}><div class="err" id="eNameErr"></div></div>
+      <div class="two">
+        <div class="f"><label for="eCat">Category</label><input type="text" id="eCat" value="${esc(p.category)}" ${p.base ? "readonly" : 'maxlength="30"'}><div class="err" id="eCatErr"></div></div>
+        <div class="f"><label for="eStock">Stock</label><input type="number" id="eStock" value="${p.stock}" min="0" step="1"><div class="err" id="eStockErr"></div></div>
+      </div>
+      <div class="two">
+        <div class="f"><label for="ePrice">Selling Price (₹)</label><input type="number" id="ePrice" value="${p.price}" min="${MIN_PRICE}" max="${MAX_PRICE}"><div class="err" id="ePriceErr"></div></div>
+        <div class="f"><label for="eOld">MRP (₹)</label><input type="number" id="eOld" value="${p.oldPrice > p.price ? p.oldPrice : ""}" min="1"><div class="err" id="eOldErr"></div></div>
+      </div>
+      <div class="hint" id="eHint"></div>
+      <label class="chk"><input type="checkbox" id="eVis" ${p.hidden ? "" : "checked"}> Customer ne dekhado (Visible)</label>
+      <div class="m-btns">
+        <button class="m-save" id="eSave" type="button">💾 Save</button>
+        <button class="m-cancel" id="eCancel" type="button">Cancel</button>
+        ${p.base && p.edited ? `<button class="m-reset" id="eReset" type="button">↩ Original price / stock ma pachha lao</button>` : ""}
+      </div>`;
+    $("modalBg").classList.add("show");
+    ["ePrice", "eOld"].forEach(i => $(i).addEventListener("input", hint)); hint();
+  }
+  function hint() {
+    const pr = Number($("ePrice").value), old = Number($("eOld").value);
+    $("eHint").textContent = old > pr && pr > 0 ? "🎉 Customer ne " + Math.round((1 - pr / old) * 100) + "% discount dekhase (" + rupee(old - pr) + " ni bachat)" : "";
+  }
+  function closeModal() { editId = null; $("modalBg").classList.remove("show"); }
+  function fieldErr(id, errId, msg) { $(errId).textContent = msg || ""; $(id).classList.toggle("error", !!msg); return !msg; }
+
+  $("modalBg").addEventListener("click", e => {
+    if (e.target === $("modalBg") || e.target.id === "eCancel") return closeModal();
+
+    if (e.target.id === "eReset") {
+      const ov = getOv(); const keepHidden = ov[editId] && ov[editId].hidden;
+      delete ov[editId]; if (keepHidden) ov[editId] = { hidden: true };
+      if (writeJSON("productOverrides", ov)) { flashId = editId; closeModal(); render(); showToast("Original ma pachha avyu ✔"); }
+      return;
+    }
+    if (e.target.id !== "eSave") return;
+
+    const p = allProducts().find(x => x.id === editId); if (!p) return closeModal();
+    const name = $("eName").value.trim(), cat = $("eCat").value.trim();
+    const price = Number($("ePrice").value), old = $("eOld").value === "" ? 0 : Number($("eOld").value), stockRaw = $("eStock").value;
+    const ok = [
+      fieldErr("eName", "eNameErr", name.length < 3 ? "Minimum 3 akshar nu naam" : ""),
+      fieldErr("eCat", "eCatErr", !cat ? "Category lakho" : ""),
+      fieldErr("ePrice", "ePriceErr", !(price >= MIN_PRICE && price <= MAX_PRICE) ? "Price ₹" + MIN_PRICE.toLocaleString("en-IN") + " thi ₹" + MAX_PRICE.toLocaleString("en-IN") + " vachche joie" : ""),
+      fieldErr("eOld", "eOldErr", old && old < price ? "MRP selling price thi ochhu na hoi shake" : ""),
+      fieldErr("eStock", "eStockErr", stockRaw === "" || Number(stockRaw) < 0 || !Number.isInteger(Number(stockRaw)) ? "Stock 0 ke vadhu purnank joie" : "")
+    ];
+    if (ok.includes(false)) return;
+
+    const stock = Number(stockRaw), hidden = !$("eVis").checked, finalOld = old > price ? old : price;
+    let saved;
+    if (p.base) {
+      saved = setOv(p.id, { price, oldPrice: finalOld, stock, hidden });
+    } else {
+      const l = getCustom(), c = l.find(x => x.id === p.id);
+      if (c) Object.assign(c, { name, category: cat, price, oldPrice: finalOld, stock });
+      saved = writeJSON("customProducts", l) && setHidden([p.id], hidden);
+    }
+    if (!saved) return;
+    flashId = p.id; closeModal(); renderCats(); render(); showToast("Product update thayo ✔");
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+  /* =========================================================
+     CSV
+     ========================================================= */
+  function exportCSV(list) {
+    if (!list.length) return showToast("Export karva mate koi product nathi");
+    const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""').replace(/^([=+\-@])/, "'$1") + '"';
+    const rows = [["ID", "Naam", "Category", "Brand", "Price", "MRP", "Stock", "Stock Status", "Rating", "Visible"]];
+    list.forEach(p => rows.push([p.id, p.name, p.category, p.brand, p.price, p.oldPrice, p.stock, stockState(p), p.rating, p.hidden ? "No" : "Yes"]));
+    const blob = new Blob(["\ufeff" + rows.map(r => r.map(q).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "shop-smart-products.csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    showToast(list.length + " products CSV ma download thaya ✔");
+  }
+
+  /* =========================================================
+     SIDEBAR, LOGOUT, START
+     ========================================================= */
+  const side = $("side"), scrim = $("scrim");
+  const toggleSide = open => { side.classList.toggle("open", open); scrim.classList.toggle("show", open); };
+  $("menuBtn").onclick = () => toggleSide(!side.classList.contains("open"));
+  scrim.onclick = () => toggleSide(false);
+  $("logoutBtn").onclick = () => {
+    if (!confirm("Admin logout karvu chhe?")) return;
+    try { sessionStorage.removeItem("adminSession"); } catch (e) {}
+    location.href = "admin-login.html";
+  };
+  window.addEventListener("storage", e => { if (["customProducts", "productOverrides"].includes(e.key)) { renderCats(); render(); } });
+
+  /* ?tab=low jevi link thi seedho tab (jem ke admin home na alert thi) */
+  (function () {
+    const t = new URLSearchParams(location.search).get("tab");
+    if (["in", "low", "out", "hidden"].includes(t)) state.tab = t;
+  })();
+
+  renderCats();
+  render();
+</script>
+</body>
+</html>

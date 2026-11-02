@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details | Shop Smart AI</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+    }
+
+    /* Header */
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo { font-size: 22px; font-weight: 700; color: #0284c7; text-decoration: none; }
+    .logo span { color: #16a34a; }
+    nav a { margin-left: 18px; text-decoration: none; color: #374151; font-weight: 500; }
+    nav a:hover { color: #0284c7; }
+    .cart-badge {
+      background: #16a34a; color: #fff; border-radius: 999px;
+      padding: 1px 8px; font-size: 12px; margin-left: 4px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb { max-width: 1100px; margin: 18px auto 0; padding: 0 20px; color: #6b7280; font-size: 14px; }
+    .breadcrumb a { color: #0284c7; text-decoration: none; }
+
+    /* Product card */
+    .container { max-width: 1100px; margin: 16px auto 40px; padding: 0 20px; }
+    .product-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+
+    .image-box {
+      background: #f4f6fa;
+      border-radius: 16px;
+      min-height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .image-box img { width: 100%; height: 100%; object-fit: contain; max-height: 420px; }
+
+    .info h1 { font-size: 26px; margin-bottom: 8px; }
+    .category { color: #6b7280; font-size: 14px; margin-bottom: 10px; }
+    .rating { color: #f59e0b; font-size: 18px; margin-bottom: 14px; }
+    .rating small { color: #6b7280; font-size: 14px; margin-left: 6px; }
+
+    .price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+    .price { font-size: 32px; font-weight: 700; }
+    .old-price { color: #9ca3af; text-decoration: line-through; font-size: 18px; }
+    .discount { color: #16a34a; font-weight: 600; }
+    .offer { color: #16a34a; margin-bottom: 14px; }
+
+    .description { color: #4b5563; line-height: 1.6; margin-bottom: 16px; }
+
+    .stock { font-weight: 700; margin-bottom: 18px; }
+    .stock.in { color: #16a34a; }
+    .stock.out { color: #dc2626; }
+
+    .qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .qty-row label { font-weight: 700; }
+    .qty-btn {
+      width: 46px; height: 46px; border: 1px solid #e5e7eb; background: #fff;
+      border-radius: 10px; font-size: 20px; cursor: pointer;
+    }
+    .qty-btn:hover { background: #f3f4f6; }
+    #qty {
+      width: 76px; height: 46px; text-align: center; font-size: 16px;
+      border: 1px solid #e5e7eb; border-radius: 10px;
+    }
+
+    .actions { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn {
+      padding: 15px 30px; border: none; border-radius: 10px;
+      font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
+      transition: transform .1s, opacity .2s;
+    }
+    .btn:hover { opacity: .9; }
+    .btn:active { transform: scale(.97); }
+    .btn:disabled { background: #9ca3af !important; cursor: not-allowed; }
+    .btn-cart { background: #0284c7; }
+    .btn-buy { background: #16a34a; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px;
+      opacity: 0; transition: all .3s; pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Related products */
+    .related h2 { margin: 34px 0 14px; }
+    .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .related-item {
+      background: #fff; border-radius: 12px; padding: 14px; text-decoration: none; color: inherit;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05); transition: transform .15s;
+    }
+    .related-item:hover { transform: translateY(-3px); }
+    .related-item img { width: 100%; height: 140px; object-fit: contain; background: #f4f6fa; border-radius: 8px; }
+    .related-item h4 { margin: 10px 0 4px; font-size: 15px; }
+    .related-item p { font-weight: 700; }
+
+    @media (max-width: 800px) {
+      .product-card { grid-template-columns: 1fr; padding: 18px; }
+      .image-box { min-height: 280px; }
+      .btn { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="cart.html">Cart<span class="cart-badge" id="cartCount">0</span></a>
+    </nav>
+  </header>
+
+  <div class="breadcrumb">
+    <a href="index.html">Home</a> / <a href="products.html">Products</a> / <span id="crumbName">Product</span>
+  </div>
+
+  <main class="container">
+    <section class="product-card">
+      <div class="image-box">
+        <img id="pImage" alt="Product Image">
+      </div>
+
+      <div class="info">
+        <h1 id="pName"></h1>
+        <div class="category" id="pCategory"></div>
+        <div class="rating"><span id="pStars"></span><small id="pReviews">Customer Reviews</small></div>
+
+        <div class="price-row">
+          <span class="price" id="pPrice"></span>
+          <span class="old-price" id="pOldPrice"></span>
+          <span class="discount" id="pDiscount"></span>
+        </div>
+        <div class="offer">Special offer available</div>
+
+        <p class="description" id="pDesc"></p>
+
+        <div class="stock in" id="pStock">✔ In Stock</div>
+
+        <div class="qty-row">
+          <label for="qty">Quantity:</label>
+          <button class="qty-btn" id="minus" aria-label="Decrease">−</button>
+          <input type="number" id="qty" value="1" min="1" max="10">
+          <button class="qty-btn" id="plus" aria-label="Increase">+</button>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-cart" id="addCart">Add To Cart</button>
+          <button class="btn btn-buy" id="buyNow">Buy Now</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="related">
+      <h2>Related Products</h2>
+      <div class="related-grid" id="relatedGrid"></div>
+    </section>
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    /* ---------- Product data ----------
+       Tamara products.html na data sathe match karva aa list badli shako cho. */
+    const PRODUCTS = [
+      { id: 1, name: "Wireless Bluetooth Headphones", category: "Electronics", price: 1499, oldPrice: 2999, rating: 4.5, reviews: 1280, stock: 25,
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600",
+        desc: "Deep bass, 30 hours battery life ane comfortable fit sathe premium wireless headphones." },
+      { id: 2, name: "Smart Watch Series X", category: "Wearables", price: 2999, oldPrice: 5999, rating: 4.3, reviews: 860, stock: 12,
+        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600",
+        desc: "Heart rate, sleep tracking, calls ane notifications sathe stylish smart watch." },
+      { id: 3, name: "Running Sports Shoes", category: "Fashion", price: 1999, oldPrice: 3499, rating: 4.4, reviews: 540, stock: 40,
+        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600",
+        desc: "Lightweight ane breathable shoes, roz na running ane gym mate perfect." },
+      { id: 4, name: "Portable Power Bank 20000mAh", category: "Accessories", price: 1299, oldPrice: 1999, rating: 4.6, reviews: 2100, stock: 0,
+        image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600",
+        desc: "Fast charging support sathe high capacity power bank, ek vaar ma multiple devices charge karo." }
+    ];
+
+    const $ = id => document.getElementById(id);
+    const rupee = n => "₹" + Number(n).toLocaleString("en-IN");
+    const placeholder = "data:image/svg+xml;utf8," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='600' height='420'><rect width='100%' height='100%' fill='#f4f6fa'/>" +
+      "<text x='50%' y='50%' font-size='22' fill='#9ca3af' text-anchor='middle' font-family='Arial'>Product Image</text></svg>");
+
+    /* ---------- Product load (error vagar) ----------
+       1) URL ?id=2  2) localStorage "selectedProduct"  3) default pehelo product */
+    function getProduct() {
+      const params = new URLSearchParams(location.search);
+      const urlId = Number(params.get("id"));
+      let found = PRODUCTS.find(p => p.id === urlId);
+
+      if (!found) {
+        try {
+          const saved = JSON.parse(localStorage.getItem("selectedProduct"));
+          if (saved && saved.id) found = PRODUCTS.find(p => p.id === Number(saved.id)) || saved;
+        } catch (e) {}
+      }
+      return found || PRODUCTS[0];
+    }
+
+    const product = getProduct();
+    const MAX_QTY = 10;
+
+    function renderProduct(p) {
+      document.title = p.name + " | Shop Smart AI";
+      $("crumbName").textContent = p.name;
+      $("pName").textContent = p.name;
+      $("pCategory").textContent = "Category: " + (p.category || "General");
+      $("pDesc").textContent = p.desc || "";
+      $("pPrice").textContent = rupee(p.price);
+
+      if (p.oldPrice && p.oldPrice > p.price) {
+        $("pOldPrice").textContent = rupee(p.oldPrice);
+        $("pDiscount").textContent = Math.round((1 - p.price / p.oldPrice) * 100) + "% off";
+      }
+
+      const full = Math.round(p.rating || 4);
+      $("pStars").textContent = "★".repeat(full) + "☆".repeat(5 - full);
+      $("pReviews").textContent = (p.rating || 4) + " · " + (p.reviews || 0) + " Customer Reviews";
+
+      const img = $("pImage");
+      img.onerror = () => { img.onerror = null; img.src = placeholder; };
+      img.src = p.image || placeholder;
+
+      const stockEl = $("pStock");
+      if (p.stock > 0) {
+        stockEl.textContent = "✔ In Stock";
+        stockEl.className = "stock in";
+      } else {
+        stockEl.textContent = "✖ Out of Stock";
+        stockEl.className = "stock out";
+        $("addCart").disabled = true;
+        $("buyNow").disabled = true;
+      }
+    }
+
+    function renderRelated(current) {
+      $("relatedGrid").innerHTML = PRODUCTS.filter(p => p.id !== current.id).map(p => `
+        <a class="related-item" href="product-details.html?id=${p.id}">
+          <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='${placeholder}'">
+          <h4>${p.name}</h4>
+          <p>${rupee(p.price)}</p>
+        </a>`).join("");
+    }
+
+    /* ---------- Quantity ---------- */
+    const qtyInput = $("qty");
+    const clampQty = () => {
+      let v = parseInt(qtyInput.value, 10);
+      if (isNaN(v) || v < 1) v = 1;
+      const limit = Math.min(MAX_QTY, product.stock || MAX_QTY);
+      if (v > limit) v = limit;
+      qtyInput.value = v;
+      return v;
+    };
+    $("minus").onclick = () => { qtyInput.value = Number(qtyInput.value) - 1; clampQty(); };
+    $("plus").onclick  = () => { qtyInput.value = Number(qtyInput.value) + 1; clampQty(); };
+    qtyInput.onchange = clampQty;
+
+    /* ---------- Cart ---------- */
+    function getCart() {
+      try { return JSON.parse(localStorage.getItem("cart")) || []; } catch (e) { return []; }
+    }
+    function updateCartCount() {
+      $("cartCount").textContent = getCart().reduce((s, i) => s + i.qty, 0);
+    }
+    function addToCart() {
+      const qty = clampQty();
+      const cart = getCart();
+      const item = cart.find(i => i.id === product.id);
+      if (item) item.qty += qty;
+      else cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, qty });
+      localStorage.setItem("cart", JSON.stringify(cart));
+      updateCartCount();
+    }
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    $("addCart").onclick = () => { addToCart(); showToast("Cart ma add thai gayu ✔"); };
+    $("buyNow").onclick = () => { addToCart(); location.href = "cart.html"; };
+
+    /* ---------- Start ---------- */
+    renderProduct(product);
+    renderRelated(product);
+    updateCartCount();
+  </script>
+</body>
+</html>

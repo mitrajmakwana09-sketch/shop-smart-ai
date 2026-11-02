@@ -1,0 +1,80 @@
+
+{
+  "products": [
+    {
+      "id": 1,
+      "title": "Premium Wireless Headphones",
+      "description": "High quality wireless headphones with clear sound and comfortable design.",
+      "price": 2499,
+      "category": "electronics",
+      "image": "https://fakestoreapi.com/img/81QpkIctqPL._AC_SX679_.jpg",
+      "rating": {
+        "rate": 4.5,
+        "count": 120
+      },
+      "stock": 25,
+      "brand": "SoundPro",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "title": "Men's Casual T-Shirt",
+      "description": "Comfortable cotton casual t-shirt for daily use.",
+      "price": 799,
+      "category": "men-clothing",
+      "image": "https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._UY_.jpg",
+      "rating": {
+        "rate": 4.2,
+        "count": 85
+      },
+      "stock": 50,
+      "brand": "FashionWear",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "title": "Elegant Women's Jacket",
+      "description": "Stylish jacket with a modern design and premium quality fabric.",
+      "price": 1899,
+      "category": "women-clothing",
+      "image": "https://fakestoreapi.com/img/71HblAHs5xL._AC_UY879_-2.jpg",
+      "rating": {
+        "rate": 4.6,
+        "count": 95
+      },
+      "stock": 30,
+      "brand": "StyleQueen",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "title": "Gold Plated Bracelet",
+      "description": "Beautiful gold plated bracelet suitable for everyday fashion.",
+      "price": 599,
+      "category": "jewelery",
+      "image": "https://fakestoreapi.com/img/71pWzhdJNwL._AC_UL640_QL65_ML3_.jpg",
+      "rating": {
+        "rate": 4.3,
+        "count": 60
+      },
+      "stock": 40,
+      "brand": "GoldenTouch",
+      "status": "active"
+    },
+    {
+      "id": 5,
+      "title": "Smart LED Television",
+      "description": "Smart television with HD display and internet connectivity.",
+      "price": 15999,
+      "category": "electronics",
+      "image": "https://fakestoreapi.com/img/81QpkIctqPL._AC_SX679_.jpg",
+      "rating": {
+        "rate": 4.7,
+        "count": 200
+      },
+      "stock": 15,
+      "brand": "TechVision",
+      "status": "active"
+    }
+  ]
+}

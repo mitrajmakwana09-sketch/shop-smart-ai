@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Product | Shop Smart AI</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; }
+
+    /* Header */
+    header {
+      background: rgba(255,255,255,.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: #0284c7; }
+    .logo span { color: #16a34a; }
+    nav { display: flex; align-items: center; gap: 22px; }
+    nav a { color: #374151; font-weight: 500; }
+    nav a:hover, nav a.active { color: #0284c7; }
+    .cart-badge {
+      background: #16a34a; color: #fff; border-radius: 999px;
+      padding: 1px 8px; font-size: 12px; margin-left: 4px;
+    }
+    .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; }
+
+    /* Banner */
+    .banner {
+      background: linear-gradient(135deg, #0284c7, #0369a1 60%, #16a34a 150%);
+      color: #fff; text-align: center; padding: 40px 20px 56px;
+    }
+    .banner h1 { font-size: 32px; margin-bottom: 6px; }
+    .banner p { opacity: .92; }
+
+    .container {
+      max-width: 1100px; margin: -30px auto 30px; padding: 0 20px;
+      display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start;
+    }
+    .box {
+      background: #fff; border-radius: 16px; padding: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.07); margin-bottom: 20px;
+    }
+    .box h2 { font-size: 19px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .box .sub { color: #6b7280; font-size: 14px; margin-bottom: 18px; }
+
+    /* Form */
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .field label small { color: #9ca3af; font-weight: 400; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 0 14px; border: 1px solid #d1d5db; border-radius: 10px;
+      font-size: 15px; font-family: inherit; outline: none; background: #fff;
+      transition: border .2s, box-shadow .2s;
+    }
+    .field input, .field select { height: 46px; }
+    .field textarea { padding: 12px 14px; min-height: 100px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15);
+    }
+    .field .error { border-color: #dc2626; }
+    .err-msg { color: #dc2626; font-size: 13px; margin-top: 5px; }
+    .counter { text-align: right; font-size: 12px; color: #9ca3af; margin-top: 4px; }
+    .hint { font-size: 13px; color: #16a34a; font-weight: 600; margin-top: 5px; min-height: 18px; }
+
+    /* Image upload */
+    .drop {
+      border: 2px dashed #bae6fd; border-radius: 14px; background: #f0f9ff; padding: 22px 14px;
+      text-align: center; cursor: pointer; transition: all .2s; margin-bottom: 10px;
+    }
+    .drop:hover, .drop.over { background: #e0f2fe; border-color: #0284c7; }
+    .drop .ic { font-size: 34px; display: block; margin-bottom: 6px; }
+    .drop strong { color: #0369a1; }
+    .drop small { display: block; color: #6b7280; margin-top: 4px; }
+    .or { text-align: center; color: #9ca3af; font-size: 13px; margin: 8px 0; }
+
+    /* Buttons */
+    .btn {
+      height: 50px; padding: 0 26px; border: none; border-radius: 10px; color: #fff;
+      font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity .2s, transform .1s;
+    }
+    .btn:hover { opacity: .92; }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-green { background: #16a34a; }
+    .btn-blue { background: #0284c7; }
+    .btn-gray { background: #f3f4f6; color: #374151; }
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+    .btn-row .btn { flex: 1; min-width: 140px; }
+
+    .alert {
+      display: none; padding: 12px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; margin-bottom: 16px;
+    }
+    .alert.show { display: block; }
+    .alert.success { background: #dcfce7; color: #15803d; }
+    .alert.error { background: #fee2e2; color: #b91c1c; }
+    .alert.info { background: #e0f2fe; color: #0369a1; }
+
+    /* Preview card */
+    .preview { position: sticky; top: 84px; }
+    .pv-card {
+      border-radius: 14px; overflow: hidden; box-shadow: 0 3px 14px rgba(0,0,0,.1);
+      background: #fff; position: relative;
+    }
+    .pv-badge {
+      position: absolute; top: 12px; left: 12px; background: #dc2626; color: #fff;
+      font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; display: none;
+    }
+    .pv-img {
+      background: #f4f6fa; height: 220px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .pv-img img { width: 100%; height: 100%; object-fit: contain; }
+    .pv-img span { color: #9ca3af; font-size: 15px; }
+    .pv-body { padding: 14px 16px 18px; }
+    .pv-cat { font-size: 12px; color: #0284c7; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+    .pv-body h3 { font-size: 17px; margin: 4px 0; word-break: break-word; }
+    .pv-stars { color: #f59e0b; font-size: 14px; margin-bottom: 6px; }
+    .pv-price { font-size: 22px; font-weight: 800; }
+    .pv-price small { color: #9ca3af; text-decoration: line-through; font-weight: 400; font-size: 14px; margin-left: 6px; }
+    .pv-stock { font-size: 13px; font-weight: 700; margin-top: 6px; }
+    .pv-stock.in { color: #16a34a; }
+    .pv-stock.out { color: #dc2626; }
+    .pv-desc { color: #6b7280; font-size: 14px; line-height: 1.5; margin-top: 8px; word-break: break-word; }
+
+    /* Product list */
+    .list-wrap { max-width: 1100px; margin: 0 auto 40px; padding: 0 20px; }
+    .list-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    .list-head h2 { font-size: 22px; }
+    .list-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .small-btn {
+      padding: 9px 16px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff;
+      font-weight: 600; font-size: 13px; cursor: pointer; color: #374151;
+    }
+    .small-btn:hover { background: #f3f4f6; }
+    .small-btn.red { color: #dc2626; border-color: #fca5a5; }
+    .small-btn.red:hover { background: #fee2e2; }
+    .search {
+      width: 100%; height: 44px; padding: 0 14px; border: 1px solid #d1d5db; border-radius: 10px;
+      font-size: 14px; outline: none; margin-bottom: 14px; background: #fff;
+    }
+    .search:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+
+    .table-wrap { background: #fff; border-radius: 16px; box-shadow: 0 4px 18px rgba(0,0,0,.06); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 640px; }
+    th, td { padding: 13px 14px; text-align: left; border-bottom: 1px solid #f1f2f6; font-size: 14px; vertical-align: middle; }
+    th { background: #f9fafb; color: #4b5563; font-size: 13px; }
+    tr:last-child td { border-bottom: none; }
+    tr.flash { animation: flash 1.2s ease; }
+    @keyframes flash { from { background: #dcfce7; } to { background: transparent; } }
+    td img { width: 48px; height: 48px; object-fit: contain; background: #f4f6fa; border-radius: 8px; }
+    td .nm { font-weight: 700; }
+    td .nm small { display: block; color: #6b7280; font-weight: 400; }
+    .tag { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .tag.in { background: #dcfce7; color: #15803d; }
+    .tag.out { background: #fee2e2; color: #b91c1c; }
+    .row-btns { display: flex; gap: 6px; }
+    .row-btns button, .row-btns a {
+      padding: 6px 12px; border-radius: 7px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; color: #fff;
+    }
+    .b-edit { background: #0284c7; }
+    .b-del { background: #dc2626; }
+    .b-view { background: #16a34a; }
+
+    .empty { text-align: center; padding: 40px 16px; color: #6b7280; }
+    .empty .icon { font-size: 44px; margin-bottom: 8px; }
+
+    footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 22px; font-size: 13px; margin-top: 20px; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px;
+      opacity: 0; transition: all .3s; pointer-events: none; z-index: 200;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+      .preview { position: static; }
+    }
+    @media (max-width: 640px) {
+      .menu-btn { display: block; }
+      nav {
+        position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column;
+        align-items: flex-start; padding: 0 24px; gap: 0; max-height: 0; overflow: hidden;
+        transition: max-height .3s; border-bottom: 1px solid #e5e7eb;
+      }
+      nav.open { max-height: 360px; padding: 10px 24px 16px; }
+      nav a { padding: 10px 0; width: 100%; }
+      .two, .three { grid-template-columns: 1fr; gap: 0; }
+      .box { padding: 18px 14px; }
+      .banner h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <nav id="nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="add-product.html" class="active">Add Product</a>
+      <a href="my-order.html">My Orders</a>
+      <a href="cart.html">Cart<span class="cart-badge" id="cartCount">0</span></a>
+      <a href="login.html" id="loginLink">Login</a>
+    </nav>
+  </header>
+
+  <section class="banner">
+    <h1>➕ Add New Product</h1>
+    <p>Navo product add karo, edit karo ke delete karo.</p>
+  </section>
+
+  <main class="container">
+
+    <!-- FORM -->
+    <section class="box">
+      <h2 id="formTitle">Product Details</h2>
+      <p class="sub">* vali fields bharvi jaruri chhe.</p>
+
+      <div class="alert" id="alertBox"></div>
+
+      <form id="productForm" novalidate>
+        <div class="field">
+          <label for="pName">Product Name *</label>
+          <input type="text" id="pName" placeholder="Jem ke: Wireless Bluetooth Headphones" maxlength="80">
+          <div class="err-msg" id="pNameErr"></div>
+        </div>
+
+        <div class="two">
+          <div class="field">
+            <label for="pCategory">Category *</label>
+            <select id="pCategory">
+              <option value="">-- Pasand karo --</option>
+              <option>Electronics</option>
+              <option>Wearables</option>
+              <option>Fashion</option>
+              <option>Accessories</option>
+              <option>Home</option>
+              <option value="__new">+ Navi category...</option>
+            </select>
+            <input type="text" id="pCategoryNew" placeholder="Navi category nu naam" maxlength="30" style="display:none;margin-top:8px">
+            <div class="err-msg" id="pCategoryErr"></div>
+          </div>
+          <div class="field">
+            <label for="pBrand">Brand <small>(optional)</small></label>
+            <input type="text" id="pBrand" placeholder="Jem ke: SoundMax" maxlength="30">
+          </div>
+        </div>
+
+        <div class="three">
+          <div class="field">
+            <label for="pPrice">Selling Price (₹) *</label>
+            <input type="number" id="pPrice" placeholder="1499" min="1" inputmode="numeric">
+            <div class="err-msg" id="pPriceErr"></div>
+          </div>
+          <div class="field">
+            <label for="pOldPrice">MRP (₹) <small>(optional)</small></label>
+            <input type="number" id="pOldPrice" placeholder="2999" min="1" inputmode="numeric">
+            <div class="err-msg" id="pOldPriceErr"></div>
+          </div>
+          <div class="field">
+            <label for="pStock">Stock *</label>
+            <input type="number" id="pStock" placeholder="25" min="0" inputmode="numeric">
+            <div class="err-msg" id="pStockErr"></div>
+          </div>
+        </div>
+        <div class="hint" id="discHint"></div>
+
+        <div class="three" style="margin-top:10px">
+          <div class="field">
+            <label for="pRating">Rating (1-5)</label>
+            <input type="number" id="pRating" placeholder="4.5" min="1" max="5" step="0.1">
+            <div class="err-msg" id="pRatingErr"></div>
+          </div>
+          <div class="field">
+            <label for="pWarranty">Warranty</label>
+            <input type="text" id="pWarranty" placeholder="1 Year" maxlength="20">
+          </div>
+          <div class="field">
+            <label for="pBattery">Battery / Feature</label>
+            <input type="text" id="pBattery" placeholder="30 Hours" maxlength="30">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="pDesc">Description *</label>
+          <textarea id="pDesc" placeholder="Product vishe thodu lakho..." maxlength="400"></textarea>
+          <div class="counter"><span id="descCount">0</span>/400</div>
+          <div class="err-msg" id="pDescErr"></div>
+        </div>
+
+        <!-- Image -->
+        <div class="field">
+          <label>Product Image</label>
+          <div class="drop" id="drop">
+            <span class="ic">📷</span>
+            <strong>Photo ahi drop karo ke click karo</strong>
+            <small>JPG / PNG / WEBP, max 5 MB (automatic nano karva ma aave chhe)</small>
+          </div>
+          <input type="file" id="pFile" accept="image/*" style="display:none">
+          <div class="or">athva</div>
+          <input type="url" id="pImageUrl" placeholder="https://example.com/image.jpg" style="width:100%;height:46px;padding:0 14px;border:1px solid #d1d5db;border-radius:10px;font-size:15px;outline:none">
+          <div class="err-msg" id="pImageErr"></div>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn btn-green" id="saveBtn">Save Product</button>
+          <button type="button" class="btn btn-gray" id="resetBtn">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- LIVE PREVIEW -->
+    <aside class="box preview">
+      <h2>👁 Live Preview</h2>
+      <p class="sub">Customer ne aa rite dekhase.</p>
+      <div class="pv-card">
+        <span class="pv-badge" id="pvBadge"></span>
+        <div class="pv-img" id="pvImg"><span>Product Image</span></div>
+        <div class="pv-body">
+          <div class="pv-cat" id="pvCat">CATEGORY</div>
+          <h3 id="pvName">Product Name</h3>
+          <div class="pv-stars" id="pvStars">★★★★☆</div>
+          <div class="pv-price"><span id="pvPrice">₹0</span><small id="pvOld"></small></div>
+          <div class="pv-stock in" id="pvStock">✔ In Stock</div>
+          <p class="pv-desc" id="pvDesc">Product nu description ahi dekhase.</p>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- PRODUCT LIST -->
+  <section class="list-wrap">
+    <div class="list-head">
+      <h2>📦 Tame Add Karela Products (<span id="totalCount">0</span>)</h2>
+      <div class="list-actions">
+        <button class="small-btn" id="exportBtn" type="button">⬇ Export (backup)</button>
+        <button class="small-btn" id="importBtn" type="button">⬆ Import</button>
+        <button class="small-btn red" id="clearAllBtn" type="button">🗑 Badhu delete karo</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+    </div>
+    <input type="search" class="search" id="searchBox" placeholder="🔍 Product naam ke category thi shodho...">
+    <div class="table-wrap" id="tableWrap"></div>
+  </section>
+
+  <footer>© 2026 Shop Smart AI. All rights reserved.</footer>
+  <div id="toast"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const rupee = n => "₹" + Number(n).toLocaleString("en-IN");
+    const STORE_KEY = "customProducts";
+    const placeholder = "data:image/svg+xml;utf8," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect width='100%' height='100%' fill='#f4f6fa'/></svg>");
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2400);
+    }
+    function showAlert(msg, type) {
+      const b = $("alertBox");
+      b.textContent = msg;
+      b.className = "alert show " + type;
+      b.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    function hideAlert() { $("alertBox").className = "alert"; }
+
+    /* ---------- Storage (error vagar) ---------- */
+    function loadProducts() {
+      try {
+        const l = JSON.parse(localStorage.getItem(STORE_KEY));
+        return Array.isArray(l) ? l.filter(p => p && p.id && p.name) : [];
+      } catch (e) { return []; }
+    }
+    function saveProducts(list) {
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(list));
+        return true;
+      } catch (e) { return false; }   /* storage bharai gayu hoy to false */
+    }
+    function nextId(list) {
+      /* 1-99 sample products mate reserved, custom products 100 thi sharu */
+      return list.reduce((m, p) => Math.max(m, Number(p.id) || 0), 99) + 1;
+    }
+
+    let products = loadProducts();
+    let editingId = null;
+    let imageData = "";       /* URL athva compressed base64 */
+
+    /* =========================================================
+       IMAGE
+       ========================================================= */
+    function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("File vanchi shakay nahi"));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => reject(new Error("Aa valid image nathi"));
+          img.onload = () => {
+            const MAX = 640;
+            const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+            const c = document.createElement("canvas");
+            c.width = Math.round(img.width * scale);
+            c.height = Math.round(img.height * scale);
+            const ctx = c.getContext("2d");
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(0, 0, c.width, c.height);
+            ctx.drawImage(img, 0, 0, c.width, c.height);
+            resolve(c.toDataURL("image/jpeg", 0.75));
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleFile(file) {
+      if (!file) return;
+      if (!file.type.startsWith("image/")) return setImgErr("Fakt image file pasand karo");
+      if (file.size > 5 * 1024 * 1024) return setImgErr("Image 5 MB thi nani joie");
+      try {
+        imageData = await compressImage(file);
+        $("pImageUrl").value = "";
+        setImgErr("");
+        updatePreview();
+        showToast("Image add thai ✔");
+      } catch (e) { setImgErr(e.message); }
+    }
+    function setImgErr(msg) { $("pImageErr").textContent = msg || ""; }
+
+    $("drop").onclick = () => $("pFile").click();
+    $("pFile").onchange = e => handleFile(e.target.files[0]);
+    ["dragenter", "dragover"].forEach(ev => $("drop").addEventListener(ev, e => { e.preventDefault(); $("drop").classList.add("over"); }));
+    ["dragleave", "drop"].forEach(ev => $("drop").addEventListener(ev, e => { e.preventDefault(); $("drop").classList.remove("over"); }));
+    $("drop").addEventListener("drop", e => handleFile(e.dataTransfer.files[0]));
+
+    $("pImageUrl").addEventListener("input", e => {
+      const v = e.target.value.trim();
+      imageData = v;
+      setImgErr(v && !/^https?:\/\//i.test(v) ? "Link http:// ke https:// thi sharu thavi joie" : "");
+      updatePreview();
+    });
+
+    /* =========================================================
+       LIVE PREVIEW
+       ========================================================= */
+    function categoryValue() {
+      return $("pCategory").value === "__new" ? $("pCategoryNew").value.trim() : $("pCategory").value;
+    }
+
+    function updatePreview() {
+      const name = $("pName").value.trim();
+      const price = Number($("pPrice").value) || 0;
+      const old = Number($("pOldPrice").value) || 0;
+      const stock = $("pStock").value === "" ? null : Number($("pStock").value);
+      const rating = Math.min(5, Math.max(0, Number($("pRating").value) || 4));
+      const desc = $("pDesc").value.trim();
+
+      $("pvName").textContent = name || "Product Name";
+      $("pvCat").textContent = categoryValue() || "Category";
+      $("pvPrice").textContent = rupee(price);
+      $("pvDesc").textContent = desc || "Product nu description ahi dekhase.";
+      $("descCount").textContent = $("pDesc").value.length;
+
+      const full = Math.round(rating);
+      $("pvStars").textContent = "★".repeat(full) + "☆".repeat(5 - full);
+
+      const hasDisc = old > price && price > 0;
+      const pct = hasDisc ? Math.round((1 - price / old) * 100) : 0;
+      $("pvOld").textContent = hasDisc ? rupee(old) : "";
+      $("pvBadge").style.display = hasDisc ? "block" : "none";
+      $("pvBadge").textContent = pct + "% OFF";
+      $("discHint").textContent = hasDisc ? "🎉 Customer ne " + pct + "% discount dekhase (" + rupee(old - price) + " ni bachat)" : "";
+
+      const sEl = $("pvStock");
+      const out = stock !== null && stock <= 0;
+      sEl.className = "pv-stock " + (out ? "out" : "in");
+      sEl.textContent = out ? "✖ Out of Stock" : "✔ In Stock";
+
+      const box = $("pvImg");
+      if (imageData) {
+        box.innerHTML = "";
+        const im = new Image();
+        im.alt = "";
+        im.onerror = () => { box.innerHTML = "<span>Image load na thayi</span>"; };
+        im.src = imageData;
+        box.appendChild(im);
+      } else {
+        box.innerHTML = "<span>Product Image</span>";
+      }
+    }
+
+    ["pName", "pPrice", "pOldPrice", "pStock", "pRating", "pDesc", "pCategoryNew"].forEach(id =>
+      $(id).addEventListener("input", updatePreview));
+    $("pCategory").addEventListener("change", () => {
+      const isNew = $("pCategory").value === "__new";
+      $("pCategoryNew").style.display = isNew ? "block" : "none";
+      if (isNew) $("pCategoryNew").focus();
+      updatePreview();
+    });
+
+    /* =========================================================
+       VALIDATION
+       ========================================================= */
+    function setErr(inputId, errId, msg) {
+      $(errId).textContent = msg || "";
+      if (inputId) $(inputId).classList.toggle("error", !!msg);
+      return !msg;
+    }
+
+    function validate() {
+      const price = Number($("pPrice").value);
+      const old = $("pOldPrice").value === "" ? 0 : Number($("pOldPrice").value);
+      const stockRaw = $("pStock").value;
+      const rating = $("pRating").value === "" ? 4 : Number($("pRating").value);
+      const cat = categoryValue();
+      const url = $("pImageUrl").value.trim();
+
+      const res = [
+        setErr("pName", "pNameErr", $("pName").value.trim().length < 3 ? "Minimum 3 akshar nu naam lakho" : ""),
+        setErr("pCategory", "pCategoryErr", !cat ? "Category pasand karo ke lakho" : ""),
+        setErr("pPrice", "pPriceErr", !(price > 0) ? "Sacho price lakho" : ""),
+        setErr("pOldPrice", "pOldPriceErr", old && old < price ? "MRP selling price thi ochhu na hoi shake" : ""),
+        setErr("pStock", "pStockErr", stockRaw === "" || Number(stockRaw) < 0 || !Number.isInteger(Number(stockRaw)) ? "Stock (0 ke vadhu, purnank) lakho" : ""),
+        setErr("pRating", "pRatingErr", rating < 1 || rating > 5 ? "Rating 1 thi 5 vachche hovi joie" : ""),
+        setErr("pDesc", "pDescErr", $("pDesc").value.trim().length < 10 ? "Minimum 10 akshar nu description lakho" : "")
+      ];
+      if (url && !/^https?:\/\//i.test(url)) { setImgErr("Sacho image link lakho"); res.push(false); }
+      return !res.includes(false);
+    }
+
+    /* =========================================================
+       SAVE / EDIT
+       ========================================================= */
+    function buildProduct(id) {
+      const name = $("pName").value.trim();
+      const price = Number($("pPrice").value);
+      const old = Number($("pOldPrice").value) || 0;
+      const old_ = editingId ? products.find(p => p.id === editingId) : null;
+      return {
+        id,
+        name,
+        category: categoryValue(),
+        brand: $("pBrand").value.trim() || "Generic",
+        price,
+        oldPrice: old > price ? old : price,
+        rating: Math.round((Number($("pRating").value) || 4) * 10) / 10,
+        reviews: old_ ? old_.reviews || 0 : 0,
+        stock: Number($("pStock").value),
+        warranty: $("pWarranty").value.trim() || "N/A",
+        battery: $("pBattery").value.trim() || "N/A",
+        desc: $("pDesc").value.trim(),
+        image: imageData || "",
+        keys: name.toLowerCase().split(/\s+/).filter(w => w.length > 2),   /* AI Assistant mate */
+        addedAt: old_ ? old_.addedAt : new Date().toISOString()
+      };
+    }
+
+    $("productForm").addEventListener("submit", e => {
+      e.preventDefault();
+      hideAlert();
+      if (!validate()) {
+        showToast("Kripa kari ne lal rang ni jagya sudharo");
+        const first = document.querySelector(".error");
+        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      const wasEditing = !!editingId;
+      const id = editingId || nextId(products);
+      const item = buildProduct(id);
+      const backup = products.slice();
+
+      if (wasEditing) products = products.map(p => p.id === id ? item : p);
+      else products.unshift(item);
+
+      if (!saveProducts(products)) {
+        products = backup;
+        showAlert("Storage bharai gayu chhe. Nani image vapro (ke image link vapro) athva juna products delete karo.", "error");
+        return;
+      }
+
+      resetForm();
+      renderList(id);
+      showAlert(wasEditing ? "Product update thai gayo ✔" : "Navo product add thai gayo ✔", "success");
+      showToast(wasEditing ? "Update thayu" : "Product add thayo 🎉");
+    });
+
+    function resetForm() {
+      $("productForm").reset();
+      $("pCategoryNew").style.display = "none";
+      document.querySelectorAll(".error").forEach(x => x.classList.remove("error"));
+      document.querySelectorAll(".err-msg").forEach(x => x.textContent = "");
+      imageData = "";
+      editingId = null;
+      $("formTitle").textContent = "Product Details";
+      $("saveBtn").textContent = "Save Product";
+      $("resetBtn").textContent = "Reset";
+      updatePreview();
+    }
+    $("resetBtn").onclick = () => { hideAlert(); resetForm(); };
+
+    function startEdit(id) {
+      const p = products.find(x => x.id === id);
+      if (!p) return;
+      editingId = id;
+      hideAlert();
+
+      $("pName").value = p.name;
+      const has = Array.from($("pCategory").options).some(o => o.value === p.category || o.text === p.category);
+      if (has) { $("pCategory").value = p.category; $("pCategoryNew").style.display = "none"; }
+      else { $("pCategory").value = "__new"; $("pCategoryNew").style.display = "block"; $("pCategoryNew").value = p.category; }
+      $("pBrand").value = p.brand === "Generic" ? "" : p.brand || "";
+      $("pPrice").value = p.price;
+      $("pOldPrice").value = p.oldPrice > p.price ? p.oldPrice : "";
+      $("pStock").value = p.stock;
+      $("pRating").value = p.rating || "";
+      $("pWarranty").value = p.warranty === "N/A" ? "" : p.warranty || "";
+      $("pBattery").value = p.battery === "N/A" ? "" : p.battery || "";
+      $("pDesc").value = p.desc || "";
+      imageData = p.image || "";
+      $("pImageUrl").value = /^https?:\/\//i.test(imageData) ? imageData : "";
+
+      $("formTitle").textContent = "✏️ Product Edit Karo (#" + p.id + ")";
+      $("saveBtn").textContent = "Update Product";
+      $("resetBtn").textContent = "Cancel Edit";
+      updatePreview();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showAlert("Edit mode chalu chhe: badlav karo ane Update dabavo.", "info");
+    }
+
+    function deleteProduct(id) {
+      const p = products.find(x => x.id === id);
+      if (!p || !confirm("\"" + p.name + "\" delete karva mango chho?")) return;
+      products = products.filter(x => x.id !== id);
+      saveProducts(products);
+      if (editingId === id) resetForm();
+      renderList();
+      showToast("Product delete thayo");
+    }
+
+    /* =========================================================
+       LIST
+       ========================================================= */
+    function renderList(flashId) {
+      $("totalCount").textContent = products.length;
+      const q = $("searchBox").value.trim().toLowerCase();
+      const list = q
+        ? products.filter(p => (p.name + " " + p.category + " " + (p.brand || "")).toLowerCase().includes(q))
+        : products;
+
+      if (!list.length) {
+        $("tableWrap").innerHTML = `
+          <div class="empty">
+            <div class="icon">📭</div>
+            <p>${products.length ? "Koi product malyo nahi." : "Haju koi product add nathi karyo. Upar nu form bharo!"}</p>
+          </div>`;
+        return;
+      }
+
+      $("tableWrap").innerHTML = `
+        <table>
+          <tr><th>Image</th><th>Product</th><th>Price</th><th>Stock</th><th>Rating</th><th>Action</th></tr>
+          ${list.map(p => `
+            <tr class="${p.id === flashId ? "flash" : ""}">
+              <td><img src="${esc(p.image || placeholder)}" alt="" onerror="this.onerror=null;this.src='${placeholder}'"></td>
+              <td class="nm">${esc(p.name)}<small>${esc(p.category)} · ${esc(p.brand || "")}</small></td>
+              <td><strong>${rupee(p.price)}</strong>${p.oldPrice > p.price ? `<br><small style="color:#9ca3af;text-decoration:line-through">${rupee(p.oldPrice)}</small>` : ""}</td>
+              <td><span class="tag ${p.stock > 0 ? "in" : "out"}">${p.stock > 0 ? p.stock + " in stock" : "Out of stock"}</span></td>
+              <td>${"★".repeat(Math.round(p.rating || 4))} ${p.rating || 4}</td>
+              <td><div class="row-btns">
+                <a class="b-view" href="product-details.html?id=${p.id}">View</a>
+                <button class="b-edit" onclick="startEdit(${p.id})">Edit</button>
+                <button class="b-del" onclick="deleteProduct(${p.id})">Delete</button>
+              </div></td>
+            </tr>`).join("")}
+        </table>`;
+    }
+    $("searchBox").addEventListener("input", () => renderList());
+
+    /* ---------- Export / Import / Clear ---------- */
+    $("exportBtn").onclick = () => {
+      if (!products.length) return showToast("Export karva mate koi product nathi");
+      const blob = new Blob([JSON.stringify(products, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "shop-smart-products.json";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      showToast("Backup download thayu ✔");
+    };
+
+    $("importBtn").onclick = () => $("importFile").click();
+    $("importFile").onchange = e => {
+      const file = e.target.files[0];
+      e.target.value = "";
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!Array.isArray(data)) throw new Error();
+          let added = 0;
+          data.forEach(p => {
+            if (!p || typeof p.name !== "string" || !(Number(p.price) > 0)) return;
+            const id = nextId(products);
+            products.unshift({
+              id, name: String(p.name).slice(0, 80), category: String(p.category || "General").slice(0, 30),
+              brand: String(p.brand || "Generic").slice(0, 30), price: Number(p.price),
+              oldPrice: Number(p.oldPrice) > Number(p.price) ? Number(p.oldPrice) : Number(p.price),
+              rating: Math.min(5, Math.max(1, Number(p.rating) || 4)), reviews: Number(p.reviews) || 0,
+              stock: Math.max(0, parseInt(p.stock, 10) || 0), warranty: String(p.warranty || "N/A").slice(0, 20),
+              battery: String(p.battery || "N/A").slice(0, 30), desc: String(p.desc || "").slice(0, 400),
+              image: typeof p.image === "string" ? p.image : "",
+              keys: String(p.name).toLowerCase().split(/\s+/).filter(w => w.length > 2),
+              addedAt: new Date().toISOString()
+            });
+            added++;
+          });
+          if (!added) return showToast("File ma koi sacho product malyo nahi");
+          if (!saveProducts(products)) { products = loadProducts(); return showToast("Storage bharai gayu chhe"); }
+          renderList();
+          showToast(added + " product import thaya ✔");
+        } catch (err) { showToast("Aa valid backup file nathi"); }
+      };
+      reader.readAsText(file);
+    };
+
+    $("clearAllBtn").onclick = () => {
+      if (!products.length) return showToast("Delete karva mate kai nathi");
+      if (!confirm("Badha " + products.length + " products delete karva mango chho? Aa pachhu nahi aave.")) return;
+      products = [];
+      saveProducts(products);
+      resetForm();
+      renderList();
+      showToast("Badha products delete thaya");
+    };
+
+    /* ---------- Header helpers ---------- */
+    function updateCartCount() {
+      try {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        $("cartCount").textContent = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+      } catch (e) { $("cartCount").textContent = 0; }
+    }
+    function updateLoginLink() {
+      try {
+        const u = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser") || "null");
+        if (u && u.name) {
+          $("loginLink").textContent = "Hi, " + u.name.split(" ")[0];
+          $("loginLink").href = "my-order.html";
+        }
+      } catch (e) {}
+    }
+    $("menuBtn").onclick = () => $("nav").classList.toggle("open");
+
+    /* ---------- Start ---------- */
+    updateCartCount();
+    updateLoginLink();
+    updatePreview();
+    renderList();
+  </script>
+</body>
+</html>

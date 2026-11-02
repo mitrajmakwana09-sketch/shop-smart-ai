@@ -1,0 +1,56 @@
+
+{
+  "users": [
+    {
+      "id": "USR001",
+      "name": "Meetraj Makwana",
+      "email": "meetraj@example.com",
+      "phone": "9876543210",
+      "role": "customer",
+      "address": {
+        "street": "Main Road",
+        "city": "Surendranagar",
+        "state": "Gujarat",
+        "country": "India",
+        "pincode": "363001"
+      },
+      "profileImage": "https://i.pravatar.cc/150?img=12",
+      "status": "active",
+      "createdAt": "2026-11-01T10:00:00Z"
+    },
+    {
+      "id": "USR002",
+      "name": "Demo Customer",
+      "email": "customer@example.com",
+      "phone": "9876543211",
+      "role": "customer",
+      "address": {
+        "street": "Market Road",
+        "city": "Rajkot",
+        "state": "Gujarat",
+        "country": "India",
+        "pincode": "360001"
+      },
+      "profileImage": "https://i.pravatar.cc/150?img=15",
+      "status": "active",
+      "createdAt": "2026-11-01T11:00:00Z"
+    },
+    {
+      "id": "USR003",
+      "name": "Demo Admin",
+      "email": "admin@example.com",
+      "phone": "9876543212",
+      "role": "admin",
+      "address": {
+        "street": "Office Road",
+        "city": "Ahmedabad",
+        "state": "Gujarat",
+        "country": "India",
+        "pincode": "380001"
+      },
+      "profileImage": "https://i.pravatar.cc/150?img=68",
+      "status": "active",
+      "createdAt": "2026-11-01T12:00:00Z"
+    }
+  ]
+}

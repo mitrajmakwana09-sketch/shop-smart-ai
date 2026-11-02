@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Payment | Shop Smart AI</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+    }
+    body.noscroll { overflow: hidden; }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; }
+
+    /* ---------- Header ---------- */
+    header {
+      background: rgba(255,255,255,.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: #0284c7; }
+    .logo span { color: #16a34a; }
+    nav { display: flex; align-items: center; gap: 22px; }
+    nav a { color: #374151; font-weight: 500; }
+    nav a:hover { color: #0284c7; }
+    .cart-badge {
+      background: #16a34a; color: #fff; border-radius: 999px;
+      padding: 1px 8px; font-size: 12px; margin-left: 4px;
+    }
+    .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; }
+
+    /* ---------- Steps ---------- */
+    .steps {
+      max-width: 760px; margin: 24px auto 0; padding: 0 20px;
+      display: flex; justify-content: space-between; position: relative;
+    }
+    .steps::before {
+      content: ""; position: absolute; top: 15px; left: 12%; right: 12%; height: 3px; background: #e5e7eb;
+    }
+    .step { position: relative; text-align: center; flex: 1; font-size: 13px; color: #9ca3af; font-weight: 600; }
+    .step .dot {
+      width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; color: #fff;
+      margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .step.done { color: #16a34a; }
+    .step.done .dot { background: #16a34a; }
+    .step.active { color: #0284c7; }
+    .step.active .dot { background: #0284c7; animation: pulse 1.8s infinite; }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(2,132,199,.5); }
+      70% { box-shadow: 0 0 0 12px rgba(2,132,199,0); }
+      100% { box-shadow: 0 0 0 0 rgba(2,132,199,0); }
+    }
+
+    /* ---------- Layout ---------- */
+    .container {
+      max-width: 1100px; margin: 24px auto 40px; padding: 0 20px;
+      display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start;
+    }
+    .box {
+      background: #fff; border-radius: 16px; padding: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+      animation: rise .6s ease both;
+    }
+    .summary { animation-delay: .12s; position: sticky; top: 84px; }
+    @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+
+    .pay-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .pay-top h1 { font-size: 23px; }
+    .sub { color: #6b7280; font-size: 14px; }
+
+    /* Session timer */
+    .timer { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: #374151; }
+    .timer svg { width: 44px; height: 44px; transform: rotate(-90deg); }
+    .timer circle { fill: none; stroke-width: 4; }
+    .timer .bg { stroke: #e5e7eb; }
+    .timer .fg { stroke: #16a34a; stroke-linecap: round; stroke-dasharray: 113.1; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke .3s; }
+    .timer.low { color: #dc2626; }
+    .timer.low .fg { stroke: #dc2626; }
+
+    .demo-note {
+      background: #fef3c7; color: #92400e; border-radius: 10px; padding: 11px 14px;
+      font-size: 13px; line-height: 1.6; margin-bottom: 18px;
+    }
+    .demo-note code { background: rgba(255,255,255,.65); padding: 1px 6px; border-radius: 5px; font-size: 12px; }
+
+    /* ---------- Tabs ---------- */
+    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+    .tab {
+      padding: 12px 6px; border: 2px solid #e5e7eb; border-radius: 12px; background: #fff;
+      cursor: pointer; font-size: 13px; font-weight: 700; color: #4b5563; text-align: center;
+      transition: all .2s;
+    }
+    .tab .ic { display: block; font-size: 22px; margin-bottom: 4px; }
+    .tab:hover { background: #f9fafb; transform: translateY(-2px); }
+    .tab.active { border-color: #0284c7; background: #f0f9ff; color: #0369a1; }
+
+    .panel { display: none; }
+    .panel.show { display: block; animation: fade .35s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* ---------- 3D Card preview ---------- */
+    .scene { perspective: 1100px; width: 100%; max-width: 360px; margin: 0 auto 22px; }
+    .tilt { transition: transform .15s ease-out; transform-style: preserve-3d; }
+    .flip {
+      position: relative; width: 100%; aspect-ratio: 1.586; transform-style: preserve-3d;
+      transition: transform .8s cubic-bezier(.4,.2,.2,1);
+    }
+    .flip.flipped { transform: rotateY(180deg); }
+    .face {
+      position: absolute; inset: 0; border-radius: 18px; padding: 20px 22px; color: #fff;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden;
+      box-shadow: 0 18px 40px rgba(15,23,42,.35);
+      background: linear-gradient(135deg, #334155, #64748b);
+      transition: background .5s;
+    }
+    .flip.visa .face { background: linear-gradient(135deg, #1e3a8a, #2563eb); }
+    .flip.mastercard .face { background: linear-gradient(135deg, #7f1d1d, #ea580c); }
+    .flip.amex .face { background: linear-gradient(135deg, #115e59, #14b8a6); }
+    .flip.rupay .face { background: linear-gradient(135deg, #14532d, #16a34a); }
+
+    .face.front::before {
+      content: ""; position: absolute; top: -50%; left: -60%; width: 40%; height: 200%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+      transform: rotate(20deg); animation: shine 4.5s ease-in-out infinite;
+    }
+    @keyframes shine { 0%, 55% { left: -60%; } 100% { left: 160%; } }
+
+    .face.back { transform: rotateY(180deg); padding: 0; }
+    .card-top { display: flex; justify-content: space-between; align-items: center; }
+    .chip {
+      width: 46px; height: 35px; border-radius: 7px;
+      background: linear-gradient(135deg, #fde68a, #d97706 60%, #fcd34d);
+      position: relative; overflow: hidden;
+    }
+    .chip::before, .chip::after { content: ""; position: absolute; background: rgba(0,0,0,.18); }
+    .chip::before { left: 0; right: 0; top: 50%; height: 1px; }
+    .chip::after { top: 0; bottom: 0; left: 50%; width: 1px; }
+    .brand { font-size: 17px; font-weight: 800; font-style: italic; letter-spacing: 1px; min-height: 22px; }
+    .card-number { font-size: 22px; letter-spacing: 2px; margin: 24px 0 18px; font-family: "Courier New", monospace; text-shadow: 0 2px 4px rgba(0,0,0,.35); }
+    .card-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+    .card-bottom small { display: block; font-size: 9px; opacity: .75; letter-spacing: 1px; margin-bottom: 3px; }
+    .card-bottom strong { font-size: 14px; letter-spacing: 1px; font-family: "Courier New", monospace; }
+    .stripe { height: 44px; background: #0f172a; margin-top: 26px; }
+    .sign-row { display: flex; align-items: center; gap: 10px; margin: 20px 20px 0; }
+    .sign { flex: 1; height: 38px; background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 6px, #e5e7eb 6px, #e5e7eb 12px); border-radius: 4px; }
+    .cvv-show { background: #fff; color: #111827; padding: 9px 14px; border-radius: 4px; font-family: "Courier New", monospace; font-weight: 700; min-width: 56px; text-align: center; }
+    .back-note { margin: 16px 20px 0; font-size: 10px; opacity: .8; line-height: 1.5; }
+
+    /* ---------- Form fields ---------- */
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .field input {
+      width: 100%; height: 48px; padding: 0 14px; border: 1px solid #d1d5db; border-radius: 10px;
+      font-size: 15px; outline: none; background: #fff; transition: border .2s, box-shadow .2s;
+    }
+    .field input:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+    .field input.error { border-color: #dc2626; }
+    .err-msg { color: #dc2626; font-size: 13px; margin-top: 5px; min-height: 0; }
+
+    /* UPI chips */
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .chip-btn {
+      padding: 9px 16px; border: 1px solid #bae6fd; background: #f0f9ff; color: #0369a1;
+      border-radius: 999px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s;
+    }
+    .chip-btn:hover { background: #e0f2fe; transform: translateY(-2px); }
+
+    /* Bank / wallet tiles */
+    .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .tile {
+      border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px 8px; text-align: center;
+      background: #fff; cursor: pointer; font-weight: 700; font-size: 14px; transition: all .2s;
+    }
+    .tile .logo-c {
+      width: 44px; height: 44px; border-radius: 50%; margin: 0 auto 8px; color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800;
+      background: linear-gradient(135deg, #0284c7, #16a34a);
+    }
+    .tile:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(0,0,0,.08); }
+    .tile.selected { border-color: #16a34a; background: #f0fdf4; }
+    .tile.selected .logo-c { animation: pop .4s ease; }
+    @keyframes pop { 50% { transform: scale(1.18); } }
+
+    /* ---------- Pay button ---------- */
+    .pay-btn {
+      width: 100%; height: 56px; border: none; border-radius: 12px; margin-top: 18px;
+      background: linear-gradient(90deg, #16a34a, #22c55e, #16a34a); background-size: 200% 100%;
+      color: #fff; font-size: 18px; font-weight: 800; cursor: pointer; position: relative; overflow: hidden;
+      transition: transform .1s, opacity .2s; animation: btnMove 4s linear infinite;
+    }
+    @keyframes btnMove { to { background-position: 200% 0; } }
+    .pay-btn:hover { opacity: .94; }
+    .pay-btn:active { transform: scale(.98); }
+    .pay-btn:disabled { opacity: .55; cursor: not-allowed; animation: none; }
+    .secure { text-align: center; font-size: 13px; color: #6b7280; margin-top: 12px; }
+    .back-link { display: block; text-align: center; margin-top: 10px; color: #0284c7; font-weight: 600; font-size: 14px; }
+
+    /* ---------- Summary ---------- */
+    .summary h2 { font-size: 20px; margin-bottom: 4px; }
+    .sum-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f2f6; }
+    .sum-item img { width: 52px; height: 52px; object-fit: contain; background: #f4f6fa; border-radius: 8px; }
+    .sum-item .nm { flex: 1; font-size: 14px; font-weight: 600; }
+    .sum-item .nm small { display: block; color: #6b7280; font-weight: 400; margin-top: 2px; }
+    .sum-item .am { font-weight: 700; font-size: 14px; }
+    .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; }
+    .row.green { color: #16a34a; font-weight: 600; }
+    .row.total { font-size: 21px; font-weight: 800; border-top: 2px dashed #e5e7eb; margin-top: 8px; padding-top: 14px; }
+    .order-id { background: #f4f6fa; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #4b5563; margin-top: 12px; }
+
+    /* ---------- Empty ---------- */
+    .empty {
+      max-width: 520px; margin: 50px auto; background: #fff; border-radius: 16px; padding: 56px 20px;
+      text-align: center; box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+    .empty .icon { font-size: 60px; margin-bottom: 10px; }
+    .empty h2 { margin-bottom: 8px; }
+    .empty p { color: #6b7280; margin-bottom: 20px; }
+    .btn-blue {
+      display: inline-block; padding: 0 28px; height: 48px; line-height: 48px; background: #0284c7;
+      color: #fff; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; font-size: 15px;
+    }
+
+    footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 22px; font-size: 13px; margin-top: 30px; }
+
+    /* ---------- Overlays ---------- */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,.62); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; z-index: 500; padding: 16px;
+    }
+    .overlay.show { display: flex; animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      background: #fff; border-radius: 20px; padding: 32px 26px; width: 100%; max-width: 420px;
+      text-align: center; animation: modalIn .4s cubic-bezier(.2,.9,.3,1.2);
+    }
+    @keyframes modalIn { from { opacity: 0; transform: scale(.85) translateY(20px); } to { opacity: 1; transform: none; } }
+    .modal h3 { font-size: 21px; margin-bottom: 6px; }
+    .modal .muted { color: #6b7280; font-size: 14px; line-height: 1.6; }
+
+    /* Processing */
+    .ring {
+      width: 92px; height: 92px; border-radius: 50%; margin: 0 auto 18px; position: relative;
+      border: 5px solid #e0f2fe; border-top-color: #0284c7; animation: spin 1s linear infinite;
+    }
+    .ring::after {
+      content: ""; position: absolute; inset: 8px; border-radius: 50%;
+      border: 4px solid transparent; border-bottom-color: #16a34a; animation: spin 1.4s linear infinite reverse;
+    }
+    .ring-wrap { position: relative; width: 92px; margin: 0 auto 18px; }
+    .ring-wrap .ring { margin: 0; }
+    .ring-wrap .lock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .stages { list-style: none; text-align: left; margin: 20px 0 14px; }
+    .stages li {
+      display: flex; align-items: center; gap: 10px; padding: 8px 4px; font-size: 14px;
+      color: #9ca3af; transition: color .3s;
+    }
+    .stages .ico {
+      width: 22px; height: 22px; border-radius: 50%; border: 2px solid #d1d5db; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; transition: all .3s;
+    }
+    .stages li.active { color: #0369a1; font-weight: 600; }
+    .stages li.active .ico { border-color: #0284c7; border-top-color: transparent; animation: spin .8s linear infinite; }
+    .stages li.done { color: #15803d; }
+    .stages li.done .ico { background: #16a34a; border-color: #16a34a; animation: none; }
+    .stages li.done .ico::after { content: "✓"; }
+    .bar { height: 7px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+    .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #0284c7, #16a34a); border-radius: 99px; transition: width .5s ease; }
+
+    /* OTP */
+    .otp-row { display: flex; gap: 8px; justify-content: center; margin: 20px 0 6px; }
+    .otp-box {
+      width: 46px; height: 54px; border: 2px solid #d1d5db; border-radius: 10px; text-align: center;
+      font-size: 22px; font-weight: 700; outline: none; transition: all .2s;
+    }
+    .otp-box:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.18); transform: translateY(-2px); }
+    .otp-row.shake { animation: shake .5s; }
+    .otp-row.shake .otp-box { border-color: #dc2626; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); } 20% { transform: translateX(-9px); } 40% { transform: translateX(9px); }
+      60% { transform: translateX(-6px); } 80% { transform: translateX(6px); }
+    }
+    .otp-err { color: #dc2626; font-size: 13px; min-height: 20px; margin-bottom: 4px; }
+    .demo-hint { background: #fef3c7; color: #92400e; font-size: 12px; border-radius: 8px; padding: 7px 10px; margin: 8px 0 14px; }
+    .resend { font-size: 13px; color: #6b7280; margin-top: 12px; }
+    .resend button { background: none; border: none; color: #0284c7; font-weight: 700; cursor: pointer; font-size: 13px; }
+    .resend button:disabled { color: #9ca3af; cursor: not-allowed; }
+
+    .m-btn {
+      width: 100%; height: 48px; border: none; border-radius: 10px; font-weight: 700; font-size: 15px;
+      cursor: pointer; margin-top: 8px; transition: opacity .2s, transform .1s;
+    }
+    .m-btn:hover { opacity: .92; }
+    .m-btn:active { transform: scale(.98); }
+    .m-green { background: #16a34a; color: #fff; }
+    .m-blue { background: #0284c7; color: #fff; }
+    .m-gray { background: #f3f4f6; color: #374151; }
+
+    /* Success */
+    .success-circle {
+      width: 96px; height: 96px; border-radius: 50%; background: #16a34a; margin: 0 auto 18px; position: relative;
+      display: flex; align-items: center; justify-content: center; animation: pop2 .6s cubic-bezier(.2,.9,.3,1.4);
+    }
+    .success-circle::before, .success-circle::after {
+      content: ""; position: absolute; inset: 0; border-radius: 50%; border: 3px solid #16a34a;
+      animation: ripple 1.8s ease-out infinite;
+    }
+    .success-circle::after { animation-delay: .9s; }
+    @keyframes ripple { from { transform: scale(1); opacity: .7; } to { transform: scale(1.9); opacity: 0; } }
+    @keyframes pop2 { from { transform: scale(0); } to { transform: scale(1); } }
+    .success-circle svg { width: 52px; height: 52px; position: relative; z-index: 1; }
+    .success-circle path {
+      stroke: #fff; stroke-width: 5; fill: none; stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw .55s .45s ease forwards;
+    }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .receipt {
+      background: #f9fafb; border-radius: 12px; padding: 12px 16px; margin: 18px 0 6px; text-align: left; font-size: 14px;
+    }
+    .receipt div { display: flex; justify-content: space-between; padding: 5px 0; gap: 10px; }
+    .receipt strong { text-align: right; word-break: break-all; }
+    .redirect-note { font-size: 13px; color: #6b7280; margin-top: 8px; }
+
+    /* Fail */
+    .fail-circle {
+      width: 96px; height: 96px; border-radius: 50%; background: #dc2626; margin: 0 auto 18px;
+      display: flex; align-items: center; justify-content: center; animation: pop2 .5s ease, shake .6s .4s;
+    }
+    .fail-circle svg { width: 46px; height: 46px; }
+    .fail-circle path {
+      stroke: #fff; stroke-width: 5; stroke-linecap: round; fill: none;
+      stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw .4s .35s ease forwards;
+    }
+    .fail-circle path + path { animation-delay: .6s; }
+    .fail-msg { background: #fee2e2; color: #b91c1c; border-radius: 10px; padding: 11px 14px; font-size: 14px; line-height: 1.5; margin: 14px 0 6px; }
+
+    #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 700; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px;
+      opacity: 0; transition: all .3s; pointer-events: none; z-index: 800;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+      .summary { position: static; }
+    }
+    @media (max-width: 640px) {
+      .menu-btn { display: block; }
+      nav {
+        position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column;
+        align-items: flex-start; padding: 0 24px; gap: 0; max-height: 0; overflow: hidden;
+        transition: max-height .3s; border-bottom: 1px solid #e5e7eb;
+      }
+      nav.open { max-height: 300px; padding: 10px 24px 16px; }
+      nav a { padding: 10px 0; width: 100%; }
+      .box { padding: 18px 14px; }
+      .tabs { grid-template-columns: repeat(2, 1fr); }
+      .two { grid-template-columns: 1fr; gap: 0; }
+      .card-number { font-size: 18px; }
+      .otp-box { width: 40px; height: 48px; }
+      .pay-top { flex-wrap: wrap; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <nav id="nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="my-order.html">My Orders</a>
+      <a href="cart.html">Cart<span class="cart-badge" id="cartCount">0</span></a>
+      <a href="login.html" id="loginLink">Login</a>
+    </nav>
+  </header>
+
+  <div class="steps" id="steps">
+    <div class="step done"><div class="dot">✔</div>Cart</div>
+    <div class="step done"><div class="dot">✔</div>Checkout</div>
+    <div class="step active"><div class="dot">3</div>Payment</div>
+    <div class="step"><div class="dot">4</div>Done</div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty" id="emptyBox" style="display:none">
+    <div class="icon">💳</div>
+    <h2>Payment mate koi order nathi</h2>
+    <p>Pehela cart ma products add karo ane checkout karo.</p>
+    <a class="btn-blue" href="products.html">Shopping Chalu Karo</a>
+  </div>
+
+  <main class="container" id="mainBox">
+
+    <!-- LEFT: Payment -->
+    <section class="box">
+      <div class="pay-top">
+        <div>
+          <h1>Payment</h1>
+          <p class="sub">Payment method pasand karo</p>
+        </div>
+        <div class="timer" id="timer" title="Session pura thay te pehela payment karo">
+          <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" id="timerRing" cx="22" cy="22" r="18"/></svg>
+          <span id="timerText">10:00</span>
+        </div>
+      </div>
+
+      <div class="demo-note">
+        🧪 <strong>Demo payment:</strong> sacho paiso nathi kapato. Test card <code>4242 4242 4242 4242</code>,
+        koi pan future expiry, CVV <code>123</code>, OTP <code>123456</code>.
+        Decline test mate <code>4000 0000 0000 0002</code> vapro.
+      </div>
+
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-method="card"><span class="ic">💳</span>Card</button>
+        <button class="tab" data-method="upi"><span class="ic">📱</span>UPI</button>
+        <button class="tab" data-method="netbanking"><span class="ic">🏦</span>Net Banking</button>
+        <button class="tab" data-method="wallet"><span class="ic">👛</span>Wallet</button>
+      </div>
+
+      <!-- CARD -->
+      <div class="panel show" id="panel-card">
+        <div class="scene" id="scene">
+          <div class="tilt" id="tilt">
+            <div class="flip" id="flip">
+              <div class="face front">
+                <div class="card-top"><div class="chip"></div><div class="brand" id="pvBrand"></div></div>
+                <div class="card-number" id="pvNumber">•••• •••• •••• ••••</div>
+                <div class="card-bottom">
+                  <div><small>CARD HOLDER</small><strong id="pvName">TAMARU NAAM</strong></div>
+                  <div><small>VALID THRU</small><strong id="pvExp">MM/YY</strong></div>
+                </div>
+              </div>
+              <div class="face back">
+                <div class="stripe"></div>
+                <div class="sign-row"><div class="sign"></div><div class="cvv-show" id="pvCvv">•••</div></div>
+                <div class="back-note">Aa demo card chhe. CVV card ni pachal ni baju lakhelo 3 (Amex ma 4) digit no number chhe.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="cardNo">Card Number</label>
+          <input type="text" id="cardNo" placeholder="1234 5678 9012 3456" inputmode="numeric" autocomplete="off">
+          <div class="err-msg" id="cardNoErr"></div>
+        </div>
+        <div class="field">
+          <label for="cardName">Name on Card</label>
+          <input type="text" id="cardName" placeholder="Card par lakhelu naam" autocomplete="off" maxlength="26">
+          <div class="err-msg" id="cardNameErr"></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="cardExp">Expiry (MM/YY)</label>
+            <input type="text" id="cardExp" placeholder="MM/YY" maxlength="5" inputmode="numeric" autocomplete="off">
+            <div class="err-msg" id="cardExpErr"></div>
+          </div>
+          <div class="field">
+            <label for="cardCvv">CVV</label>
+            <input type="password" id="cardCvv" placeholder="123" maxlength="4" inputmode="numeric" autocomplete="off">
+            <div class="err-msg" id="cardCvvErr"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPI -->
+      <div class="panel" id="panel-upi">
+        <div class="chips" id="upiChips">
+          <button type="button" class="chip-btn" data-handle="@okaxis">Google Pay</button>
+          <button type="button" class="chip-btn" data-handle="@ybl">PhonePe</button>
+          <button type="button" class="chip-btn" data-handle="@paytm">Paytm</button>
+          <button type="button" class="chip-btn" data-handle="@upi">BHIM</button>
+        </div>
+        <div class="field">
+          <label for="upiId">UPI ID</label>
+          <input type="text" id="upiId" placeholder="naam@upi" autocomplete="off">
+          <div class="err-msg" id="upiIdErr"></div>
+        </div>
+        <p class="sub">Pay dabavta tamara UPI app ma approval request jase. (Demo: UPI ID ma "fail" hoy to payment decline thase.)</p>
+      </div>
+
+      <!-- NET BANKING -->
+      <div class="panel" id="panel-netbanking">
+        <div class="tiles" id="bankTiles">
+          <div class="tile" data-name="SBI"><div class="logo-c">SB</div>SBI</div>
+          <div class="tile" data-name="HDFC"><div class="logo-c">HD</div>HDFC</div>
+          <div class="tile" data-name="ICICI"><div class="logo-c">IC</div>ICICI</div>
+          <div class="tile" data-name="Axis"><div class="logo-c">AX</div>Axis</div>
+          <div class="tile" data-name="Kotak"><div class="logo-c">KT</div>Kotak</div>
+          <div class="tile" data-name="PNB"><div class="logo-c">PN</div>PNB</div>
+        </div>
+        <div class="err-msg" id="bankErr" style="margin-top:8px"></div>
+      </div>
+
+      <!-- WALLET -->
+      <div class="panel" id="panel-wallet">
+        <div class="tiles" id="walletTiles">
+          <div class="tile" data-name="Paytm"><div class="logo-c">PT</div>Paytm</div>
+          <div class="tile" data-name="PhonePe"><div class="logo-c">PP</div>PhonePe</div>
+          <div class="tile" data-name="Amazon Pay"><div class="logo-c">AP</div>Amazon Pay</div>
+          <div class="tile" data-name="MobiKwik"><div class="logo-c">MK</div>MobiKwik</div>
+        </div>
+        <div class="err-msg" id="walletErr" style="margin-top:8px"></div>
+      </div>
+
+      <button class="pay-btn" id="payBtn" type="button">🔒 Pay Securely</button>
+      <div class="secure">Card ni details kyay save thati nathi.</div>
+      <a class="back-link" href="checkout.html">← Checkout par pachha jao</a>
+    </section>
+
+    <!-- RIGHT: Summary -->
+    <aside class="box summary">
+      <h2>Order Summary</h2>
+      <p class="sub" id="itemCount"></p>
+      <div id="sumItems"></div>
+      <div class="row"><span>Subtotal</span><span id="subTotal">₹0</span></div>
+      <div class="row green" id="discRow" style="display:none"><span>Discount</span><span id="discAmt">-₹0</span></div>
+      <div class="row"><span>Delivery</span><span id="delAmt">₹0</span></div>
+      <div class="row total"><span>Total Payable</span><span id="grandTotal">₹0</span></div>
+      <div class="order-id">Order ID: <strong id="orderIdText">-</strong></div>
+    </aside>
+  </main>
+
+  <footer>© 2026 Shop Smart AI. All rights reserved.</footer>
+
+  <!-- ===== Overlays ===== -->
+  <div class="overlay" id="procOverlay">
+    <div class="modal">
+      <div class="ring-wrap"><div class="ring"></div><div class="lock">🔒</div></div>
+      <h3 id="procTitle">Payment process thai rahyu chhe</h3>
+      <p class="muted">Kripa kari ne page band na karsho ke refresh na karsho.</p>
+      <ul class="stages" id="stages"></ul>
+      <div class="bar"><i id="procBar"></i></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="otpOverlay">
+    <div class="modal">
+      <div style="font-size:46px;margin-bottom:8px">📲</div>
+      <h3>OTP Verify Karo</h3>
+      <p class="muted" id="otpText">6 digit OTP darj karo.</p>
+      <div class="demo-hint">🧪 Demo OTP: <strong>123456</strong></div>
+      <div class="otp-row" id="otpRow">
+        <input class="otp-box" maxlength="1" inputmode="numeric" autocomplete="one-time-code">
+        <input class="otp-box" maxlength="1" inputmode="numeric">
+        <input class="otp-box" maxlength="1" inputmode="numeric">
+        <input class="otp-box" maxlength="1" inputmode="numeric">
+        <input class="otp-box" maxlength="1" inputmode="numeric">
+        <input class="otp-box" maxlength="1" inputmode="numeric">
+      </div>
+      <div class="otp-err" id="otpErr"></div>
+      <button class="m-btn m-green" id="otpVerify" type="button">Verify &amp; Pay</button>
+      <button class="m-btn m-gray" id="otpCancel" type="button">Cancel</button>
+      <div class="resend"><span id="resendText">OTP fari moklo 30s ma</span> <button id="resendBtn" type="button" disabled>Resend OTP</button></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="successOverlay">
+    <div class="modal">
+      <div class="success-circle"><svg viewBox="0 0 52 52"><path d="M14 27 L23 36 L39 17"/></svg></div>
+      <h3 style="color:#16a34a">Payment Successful! 🎉</h3>
+      <p class="muted">Tamaro order confirm thai gayo chhe.</p>
+      <div class="receipt">
+        <div><span>Amount Paid</span><strong id="sAmount">₹0</strong></div>
+        <div><span>Method</span><strong id="sMethod">-</strong></div>
+        <div><span>Transaction ID</span><strong id="sTxn">-</strong></div>
+        <div><span>Order ID</span><strong id="sOrder">-</strong></div>
+      </div>
+      <button class="m-btn m-green" id="goSuccess" type="button">Order Details Juo</button>
+      <div class="redirect-note" id="redirectNote"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="failOverlay">
+    <div class="modal">
+      <div class="fail-circle"><svg viewBox="0 0 52 52"><path d="M15 15 L37 37"/><path d="M37 15 L15 37"/></svg></div>
+      <h3 style="color:#dc2626">Payment Fail Thayu</h3>
+      <div class="fail-msg" id="failMsg">Kai khotu thayu.</div>
+      <p class="muted">Tamara paisa kapaya nathi.</p>
+      <button class="m-btn m-blue" id="failRetry" type="button">Fari Prayatna Karo</button>
+      <a class="m-btn m-gray" id="failCart" href="cart.html" style="display:block;line-height:48px">Cart Par Jao</a>
+    </div>
+  </div>
+
+  <canvas id="confetti"></canvas>
+  <div id="toast"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const rupee = n => "₹" + Number(n).toLocaleString("en-IN");
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const placeholder = "data:image/svg+xml;utf8," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='52' height='52'><rect width='100%' height='100%' fill='#f4f6fa'/></svg>");
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    const FREE_DELIVERY_ABOVE = 999;
+    const DELIVERY_FEE = 49;
+    const SESSION_SECONDS = 600;
+    const DEMO_OTP = "123456";
+
+    let method = "card";
+    let busy = false, paid = false, expired = false;
+    let selectedBank = "", selectedWallet = "";
+
+    /* ---------- Storage helpers (error vagar) ---------- */
+    function getCart() {
+      try { const c = JSON.parse(localStorage.getItem("cart")); return Array.isArray(c) ? c.filter(i => i && Number(i.qty) > 0) : []; }
+      catch (e) { return []; }
+    }
+    function getPending() {
+      try {
+        const o = JSON.parse(localStorage.getItem("pendingOrder"));
+        return o && Array.isArray(o.items) && o.items.length ? o : null;
+      } catch (e) { return null; }
+    }
+    function getUser() {
+      try { return JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser") || "null"); }
+      catch (e) { return null; }
+    }
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2400);
+    }
+
+    /* ---------- Order load ----------
+       1) "pendingOrder" (checkout page thi)  2) cart  3) khali state */
+    function buildOrder() {
+      const pending = getPending();
+      const items = pending ? pending.items : getCart();
+      if (!items.length) return null;
+
+      const subtotal = items.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+      const discount = pending ? Number(pending.discount) || 0 : 0;
+      const delivery = pending && pending.delivery !== undefined
+        ? Number(pending.delivery) || 0
+        : (subtotal - discount >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE);
+      const total = pending && Number(pending.total) > 0 ? Number(pending.total) : subtotal - discount + delivery;
+
+      return Object.assign({}, pending || {}, {
+        id: pending && pending.id ? pending.id : "SS" + Date.now().toString().slice(-8),
+        date: new Date().toISOString(),
+        items, subtotal, discount, delivery, total
+      });
+    }
+    const order = buildOrder();
+
+    function renderSummary() {
+      const count = order.items.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+      $("itemCount").textContent = count + " item" + (count > 1 ? "s" : "");
+      $("sumItems").innerHTML = order.items.map(i => {
+        const qty = Number(i.qty) || 1, price = Number(i.price) || 0;
+        return `
+          <div class="sum-item">
+            <img src="${esc(i.image || placeholder)}" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+            <div class="nm">${esc(i.name || "Product")}<small>Qty: ${qty} × ${rupee(price)}</small></div>
+            <div class="am">${rupee(qty * price)}</div>
+          </div>`;
+      }).join("");
+      $("subTotal").textContent = rupee(order.subtotal);
+      $("discRow").style.display = order.discount ? "flex" : "none";
+      $("discAmt").textContent = "-" + rupee(order.discount);
+      $("delAmt").textContent = order.delivery ? rupee(order.delivery) : "FREE";
+      $("grandTotal").textContent = rupee(order.total);
+      $("orderIdText").textContent = "#" + String(order.id).replace("#", "");
+      $("payBtn").textContent = "🔒 Pay " + rupee(order.total) + " Securely";
+    }
+
+    /* =========================================================
+       SESSION TIMER
+       ========================================================= */
+    let timeLeft = SESSION_SECONDS, timerId = null;
+    function startTimer() {
+      const CIRC = 113.1;
+      const tick = () => {
+        const m = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+        const s = String(timeLeft % 60).padStart(2, "0");
+        $("timerText").textContent = m + ":" + s;
+        $("timerRing").style.strokeDashoffset = CIRC * (1 - timeLeft / SESSION_SECONDS);
+        $("timer").classList.toggle("low", timeLeft <= 60);
+        if (timeLeft <= 0) { clearInterval(timerId); sessionExpired(); return; }
+        timeLeft--;
+      };
+      tick();
+      timerId = setInterval(tick, 1000);
+    }
+    function sessionExpired() {
+      if (paid || busy) { timeLeft = 5; return; }   /* payment chalu hoy to thodo samay aapo */
+      expired = true;
+      showFail("Payment session pura thai gayu. Kripa kari ne checkout par pachha jai fari sharu karo.");
+    }
+
+    /* =========================================================
+       OVERLAY HELPERS
+       ========================================================= */
+    function showOverlay(id) {
+      document.querySelectorAll(".overlay").forEach(o => o.classList.toggle("show", o.id === id));
+      document.body.classList.add("noscroll");
+    }
+    function hideOverlays() {
+      document.querySelectorAll(".overlay").forEach(o => o.classList.remove("show"));
+      document.body.classList.remove("noscroll");
+    }
+    function showFail(msg) {
+      $("failMsg").textContent = msg;
+      $("failRetry").textContent = expired ? "Checkout Par Jao" : "Fari Prayatna Karo";
+      showOverlay("failOverlay");
+    }
+    $("failRetry").onclick = () => {
+      if (expired) { location.href = "checkout.html"; return; }
+      hideOverlays();
+    };
+
+    /* Processing stages animation */
+    async function runStages(list, title) {
+      $("procTitle").textContent = title;
+      $("procBar").style.width = "0%";
+      $("stages").innerHTML = list.map((s, i) => `<li id="st${i}"><span class="ico"></span>${esc(s.text)}</li>`).join("");
+      showOverlay("procOverlay");
+      for (let i = 0; i < list.length; i++) {
+        $("st" + i).className = "active";
+        await sleep(list[i].ms);
+        $("st" + i).className = "done";
+        $("procBar").style.width = Math.round((i + 1) / list.length * 100) + "%";
+      }
+      await sleep(250);
+    }
+
+    /* =========================================================
+       TABS
+       ========================================================= */
+    function setMethod(m) {
+      method = m;
+      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.method === m));
+      document.querySelectorAll(".panel").forEach(p => p.classList.toggle("show", p.id === "panel-" + m));
+    }
+    $("tabs").addEventListener("click", e => {
+      const t = e.target.closest(".tab");
+      if (t && !busy) setMethod(t.dataset.method);
+    });
+
+    /* =========================================================
+       CARD (live 3D preview)
+       ========================================================= */
+    function brandOf(d) {
+      if (/^4/.test(d)) return "VISA";
+      if (/^(5[1-5]|2[2-7])/.test(d)) return "MASTERCARD";
+      if (/^3[47]/.test(d)) return "AMEX";
+      if (/^(60|65|81|82|508)/.test(d)) return "RUPAY";
+      return "";
+    }
+    function formatCard(d, brand) {
+      if (brand === "AMEX") return (d.slice(0, 4) + " " + d.slice(4, 10) + " " + d.slice(10, 15)).trim();
+      return d.replace(/(.{4})/g, "$1 ").trim();
+    }
+    function previewNumber(d, brand) {
+      const mask = brand === "AMEX" ? "#### ###### #####" : "#### #### #### ####";
+      let k = 0;
+      return mask.replace(/#/g, () => { const c = k < d.length ? d[k] : "•"; k++; return c; });
+    }
+    function luhn(num) {
+      let sum = 0, alt = false;
+      for (let i = num.length - 1; i >= 0; i--) {
+        let n = Number(num[i]);
+        if (alt) { n *= 2; if (n > 9) n -= 9; }
+        sum += n; alt = !alt;
+      }
+      return sum % 10 === 0;
+    }
+
+    $("cardNo").addEventListener("input", e => {
+      let d = e.target.value.replace(/\D/g, "");
+      const brand = brandOf(d);
+      d = d.slice(0, brand === "AMEX" ? 15 : 16);
+      e.target.value = formatCard(d, brand);
+      $("pvNumber").textContent = previewNumber(d, brand);
+      $("pvBrand").textContent = brand;
+      $("flip").className = "flip" + (e.target.classList.contains("x") ? "" : "") +
+        (brand ? " " + brand.toLowerCase() : "") + ($("flip").classList.contains("flipped") ? " flipped" : "");
+    });
+    $("cardName").addEventListener("input", e => {
+      e.target.value = e.target.value.replace(/[^a-zA-Z .]/g, "");
+      $("pvName").textContent = e.target.value.trim().toUpperCase() || "TAMARU NAAM";
+    });
+    $("cardExp").addEventListener("input", e => {
+      let d = e.target.value.replace(/\D/g, "").slice(0, 4);
+      if (d.length > 2) d = d.slice(0, 2) + "/" + d.slice(2);
+      e.target.value = d;
+      $("pvExp").textContent = d || "MM/YY";
+    });
+    $("cardCvv").addEventListener("input", e => {
+      e.target.value = e.target.value.replace(/\D/g, "");
+      $("pvCvv").textContent = e.target.value ? "•".repeat(e.target.value.length) : "•••";
+    });
+    $("cardCvv").addEventListener("focus", () => $("flip").classList.add("flipped"));
+    $("cardCvv").addEventListener("blur", () => $("flip").classList.remove("flipped"));
+
+    /* Mouse tilt effect */
+    (function () {
+      if (reduceMotion) return;
+      const scene = $("scene"), tilt = $("tilt");
+      scene.addEventListener("mousemove", e => {
+        const r = scene.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        tilt.style.transform = `rotateX(${(-y * 14).toFixed(1)}deg) rotateY(${(x * 18).toFixed(1)}deg)`;
+      });
+      scene.addEventListener("mouseleave", () => { tilt.style.transform = ""; });
+    })();
+
+    /* UPI chips */
+    $("upiChips").addEventListener("click", e => {
+      const b = e.target.closest(".chip-btn");
+      if (!b) return;
+      const input = $("upiId");
+      const base = input.value.split("@")[0].trim();
+      input.value = (base || "naam") + b.dataset.handle;
+      input.focus();
+    });
+
+    /* Bank / wallet tiles */
+    function tileGroup(containerId, setter, errId) {
+      $(containerId).addEventListener("click", e => {
+        const t = e.target.closest(".tile");
+        if (!t) return;
+        document.querySelectorAll("#" + containerId + " .tile").forEach(x => x.classList.remove("selected"));
+        t.classList.add("selected");
+        setter(t.dataset.name);
+        $(errId).textContent = "";
+      });
+    }
+    tileGroup("bankTiles", v => selectedBank = v, "bankErr");
+    tileGroup("walletTiles", v => selectedWallet = v, "walletErr");
+
+    /* =========================================================
+       VALIDATION
+       ========================================================= */
+    function setErr(inputId, errId, msg) {
+      $(errId).textContent = msg || "";
+      if (inputId) $(inputId).classList.toggle("error", !!msg);
+      return !msg;
+    }
+
+    function validate() {
+      if (method === "card") {
+        const digits = $("cardNo").value.replace(/\s/g, "");
+        const brand = brandOf(digits);
+        const need = brand === "AMEX" ? 15 : 16;
+        const exp = $("cardExp").value;
+        const m = Number(exp.slice(0, 2)), y = Number("20" + exp.slice(3, 5));
+        const now = new Date();
+        const expOk = /^\d{2}\/\d{2}$/.test(exp) && m >= 1 && m <= 12 &&
+          (y > now.getFullYear() || (y === now.getFullYear() && m >= now.getMonth() + 1));
+        const cvvNeed = brand === "AMEX" ? 4 : 3;
+
+        const res = [
+          setErr("cardNo", "cardNoErr", digits.length !== need ? need + " digit card number lakho" : !luhn(digits) ? "Aa card number sacho nathi" : ""),
+          setErr("cardName", "cardNameErr", $("cardName").value.trim().length < 2 ? "Card par lakhelu naam lakho" : ""),
+          setErr("cardExp", "cardExpErr", !expOk ? "Sacho expiry (MM/YY) lakho" : ""),
+          setErr("cardCvv", "cardCvvErr", $("cardCvv").value.length !== cvvNeed ? cvvNeed + " digit CVV lakho" : "")
+        ];
+        return !res.includes(false);
+      }
+      if (method === "upi") {
+        const ok = /^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test($("upiId").value.trim());
+        return setErr("upiId", "upiIdErr", ok ? "" : "Sacho UPI ID lakho (jem ke naam@upi)");
+      }
+      if (method === "netbanking") {
+        return setErr(null, "bankErr", selectedBank ? "" : "Pehela tamari bank pasand karo");
+      }
+      return setErr(null, "walletErr", selectedWallet ? "" : "Pehela wallet pasand karo");
+    }
+
+    /* =========================================================
+       OTP (demo)
+       ========================================================= */
+    let otpState = null, resendTimer = null;
+    const otpBoxes = () => Array.from(document.querySelectorAll(".otp-box"));
+    const otpValue = () => otpBoxes().map(b => b.value).join("");
+
+    function startResendTimer() {
+      clearInterval(resendTimer);
+      let s = 30;
+      $("resendBtn").disabled = true;
+      $("resendText").textContent = "OTP fari moklo " + s + "s ma";
+      resendTimer = setInterval(() => {
+        s--;
+        if (s <= 0) {
+          clearInterval(resendTimer);
+          $("resendText").textContent = "OTP nathi malyo?";
+          $("resendBtn").disabled = false;
+        } else $("resendText").textContent = "OTP fari moklo " + s + "s ma";
+      }, 1000);
+    }
+
+    function askOtp(last4) {
+      return new Promise((resolve, reject) => {
+        otpState = { resolve, reject, attempts: 0 };
+        $("otpText").textContent = "Tamara card (•••• " + last4 + ") sathe jodayela mobile par 6 digit OTP moklyo chhe.";
+        $("otpErr").textContent = "";
+        otpBoxes().forEach(b => b.value = "");
+        showOverlay("otpOverlay");
+        startResendTimer();
+        setTimeout(() => otpBoxes()[0].focus(), 350);
+      });
+    }
+
+    document.querySelectorAll(".otp-box").forEach((box, i, all) => {
+      box.addEventListener("input", () => {
+        box.value = box.value.replace(/\D/g, "").slice(0, 1);
+        if (box.value && i < all.length - 1) all[i + 1].focus();
+        if (otpValue().length === 6) $("otpVerify").focus();
+      });
+      box.addEventListener("keydown", e => {
+        if (e.key === "Backspace" && !box.value && i > 0) all[i - 1].focus();
+        if (e.key === "Enter") $("otpVerify").click();
+      });
+      box.addEventListener("paste", e => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "").slice(0, 6);
+        text.split("").forEach((c, k) => { if (all[k]) all[k].value = c; });
+        (all[Math.min(text.length, 5)] || all[5]).focus();
+      });
+    });
+
+    $("otpVerify").onclick = () => {
+      if (!otpState) return;
+      const code = otpValue();
+      if (code.length < 6) { $("otpErr").textContent = "6 digit OTP lakho"; return; }
+
+      if (code === DEMO_OTP) {
+        clearInterval(resendTimer);
+        const st = otpState; otpState = null;
+        st.resolve();
+        return;
+      }
+      otpState.attempts++;
+      const left = 3 - otpState.attempts;
+      const row = $("otpRow");
+      row.classList.remove("shake"); void row.offsetWidth; row.classList.add("shake");
+      otpBoxes().forEach(b => b.value = "");
+      otpBoxes()[0].focus();
+
+      if (left <= 0) {
+        clearInterval(resendTimer);
+        const st = otpState; otpState = null;
+        st.reject(new Error("3 vaar khotu OTP nakhyu. Surakshā mate payment rokai didhu."));
+      } else {
+        $("otpErr").textContent = "Khotu OTP. " + left + " prayatna baki.";
+      }
+    };
+    $("otpCancel").onclick = () => {
+      if (!otpState) return;
+      clearInterval(resendTimer);
+      const st = otpState; otpState = null;
+      st.reject(new Error("Tame payment cancel karyu."));
+    };
+    $("resendBtn").onclick = () => {
+      otpBoxes().forEach(b => b.value = "");
+      $("otpErr").textContent = "";
+      otpBoxes()[0].focus();
+      startResendTimer();
+      showToast("Navo OTP moklyo (Demo: 123456)");
+    };
+
+    /* =========================================================
+       PAYMENT FLOWS
+       ========================================================= */
+    async function payCard() {
+      const digits = $("cardNo").value.replace(/\s/g, "");
+      await runStages([
+        { text: "Bank sathe surakshit connection banave chhe...", ms: 900 },
+        { text: "Card details verify thay chhe...", ms: 1100 }
+      ], "Payment process thai rahyu chhe");
+
+      if (digits.endsWith("0002")) throw new Error("Card decline thayu: balance purtu nathi. Biji card ke payment method vapro.");
+
+      await askOtp(digits.slice(-4));
+
+      await runStages([
+        { text: "OTP verify thayu ✔", ms: 600 },
+        { text: "Payment confirm thay chhe...", ms: 1200 },
+        { text: "Order taiyar thai rahyo chhe...", ms: 900 }
+      ], "Lagbhag pura thai gayu");
+      finishSuccess("Credit / Debit Card");
+    }
+
+    async function payUpi() {
+      await runStages([
+        { text: "UPI server sathe jodaay chhe...", ms: 900 },
+        { text: "Tamara UPI app ma request moklai...", ms: 1200 },
+        { text: "Tamari approval ni raah joi rahya chhiye...", ms: 2200 }
+      ], "UPI payment");
+
+      if (/fail/i.test($("upiId").value)) throw new Error("UPI payment decline thayu ke samay pura thayo. Fari prayatna karo.");
+
+      await runStages([
+        { text: "Approval malyu ✔", ms: 500 },
+        { text: "Payment confirm thay chhe...", ms: 1100 }
+      ], "Lagbhag pura thai gayu");
+      finishSuccess("UPI (" + $("upiId").value.trim() + ")");
+    }
+
+    async function payRedirect() {
+      const name = method === "netbanking" ? selectedBank : selectedWallet;
+      await runStages([
+        { text: name + " na secure page par redirect thai rahyu chhe...", ms: 1200 },
+        { text: "Login ane approval ni raah...", ms: 1800 },
+        { text: "Payment confirm thay chhe...", ms: 1200 }
+      ], "Redirect thai rahyu chhe");
+      finishSuccess(method === "netbanking" ? "Net Banking (" + name + ")" : "Wallet (" + name + ")");
+    }
+
+    async function pay() {
+      if (busy || paid || expired || !order) return;
+      if (!validate()) {
+        showToast("Kripa kari ne lal rang ni jagya sudharo");
+        const first = document.querySelector(".error");
+        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      busy = true;
+      $("payBtn").disabled = true;
+      try {
+        if (method === "card") await payCard();
+        else if (method === "upi") await payUpi();
+        else await payRedirect();
+      } catch (err) {
+        showFail(err && err.message ? err.message : "Payment fail thayu. Fari prayatna karo.");
+      }
+      busy = false;
+      if (!paid) $("payBtn").disabled = false;
+    }
+    $("payBtn").onclick = pay;
+
+    /* =========================================================
+       SUCCESS
+       ========================================================= */
+    function finishSuccess(label) {
+      paid = true;
+      clearInterval(timerId);
+
+      const txn = "TXN" + Date.now().toString().slice(-9) + Math.floor(Math.random() * 90 + 10);
+      const finalOrder = Object.assign({}, order, {
+        status: "placed",
+        payment: label,
+        paymentStatus: "Paid",
+        transactionId: txn,
+        paidAt: new Date().toISOString()
+      });
+
+      /* Card ni koi pan details save nathi thati */
+      try {
+        const history = JSON.parse(localStorage.getItem("orders")) || [];
+        if (!history.some(o => String(o.id) === String(finalOrder.id))) history.unshift(finalOrder);
+        localStorage.setItem("orders", JSON.stringify(history));
+        localStorage.setItem("lastOrder", JSON.stringify(finalOrder));
+        localStorage.removeItem("cart");
+        localStorage.removeItem("pendingOrder");
+      } catch (e) {}
+
+      $("sAmount").textContent = rupee(order.total);
+      $("sMethod").textContent = label;
+      $("sTxn").textContent = txn;
+      $("sOrder").textContent = "#" + String(order.id).replace("#", "");
+      showOverlay("successOverlay");
+      fireConfetti();
+
+      let s = 6;
+      const note = $("redirectNote");
+      const t = setInterval(() => {
+        s--;
+        note.textContent = "Aapoaap " + s + " second ma order page par jashe...";
+        if (s <= 0) { clearInterval(t); goSuccess(); }
+      }, 1000);
+      note.textContent = "Aapoaap " + s + " second ma order page par jashe...";
+    }
+    function goSuccess() { location.href = "order-success.html"; }
+    $("goSuccess").onclick = goSuccess;
+
+    /* Confetti */
+    function fireConfetti() {
+      if (reduceMotion) return;
+      const c = $("confetti"), ctx = c.getContext("2d");
+      c.width = innerWidth; c.height = innerHeight;
+      const colors = ["#16a34a", "#0284c7", "#f59e0b", "#ec4899", "#8b5cf6", "#ef4444", "#14b8a6"];
+      const parts = Array.from({ length: 150 }, () => ({
+        x: innerWidth / 2, y: innerHeight / 2.6,
+        vx: (Math.random() - .5) * 16, vy: Math.random() * -15 - 4,
+        w: Math.random() * 9 + 5, h: Math.random() * 6 + 4,
+        r: Math.random() * 360, vr: (Math.random() - .5) * 18,
+        color: colors[(Math.random() * colors.length) | 0], life: 0
+      }));
+      (function frame() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        let alive = 0;
+        parts.forEach(p => {
+          p.vy += .38; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life++;
+          if (p.y < c.height + 30 && p.life < 300) {
+            alive++;
+            ctx.save();
+            ctx.translate(p.x, p.y); ctx.rotate(p.r * Math.PI / 180);
+            ctx.globalAlpha = Math.max(0, 1 - p.life / 300);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            ctx.restore();
+          }
+        });
+        if (alive) requestAnimationFrame(frame); else ctx.clearRect(0, 0, c.width, c.height);
+      })();
+    }
+
+    /* Payment chalu hoy tyare page chhodta pehela chetavni */
+    window.addEventListener("beforeunload", e => {
+      if (busy && !paid) { e.preventDefault(); e.returnValue = ""; }
+    });
+
+    /* ---------- Header helpers ---------- */
+    function updateCartCount() {
+      $("cartCount").textContent = getCart().reduce((s, i) => s + (Number(i.qty) || 0), 0);
+    }
+    function updateLoginLink() {
+      const u = getUser();
+      if (u && u.name) {
+        $("loginLink").textContent = "Hi, " + u.name.split(" ")[0];
+        $("loginLink").href = "my-order.html";
+      }
+    }
+    $("menuBtn").onclick = () => $("nav").classList.toggle("open");
+
+    /* Card name prefill (login karelo user hoy to) */
+    function prefill() {
+      const u = getUser();
+      if (u && u.name) {
+        $("cardName").value = u.name.replace(/[^a-zA-Z .]/g, "").slice(0, 26);
+        $("pvName").textContent = $("cardName").value.trim().toUpperCase() || "TAMARU NAAM";
+      }
+    }
+
+    /* ---------- Start ---------- */
+    updateCartCount();
+    updateLoginLink();
+
+    if (!order) {
+      $("mainBox").style.display = "none";
+      $("steps").style.display = "none";
+      $("emptyBox").style.display = "block";
+    } else {
+      renderSummary();
+      prefill();
+      startTimer();
+    }
+  </script>
+</body>
+</html>

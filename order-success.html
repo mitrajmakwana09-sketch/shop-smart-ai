@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Successful | Shop Smart AI</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+    }
+
+    /* Header */
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo { font-size: 22px; font-weight: 700; color: #0284c7; text-decoration: none; }
+    .logo span { color: #16a34a; }
+    nav a { margin-left: 18px; text-decoration: none; color: #374151; font-weight: 500; }
+    nav a:hover { color: #0284c7; }
+
+    /* Success card */
+    .container { max-width: 760px; margin: 36px auto 50px; padding: 0 20px; }
+    .success-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 38px 30px;
+      text-align: center;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+
+    .check-circle {
+      width: 90px; height: 90px; margin: 0 auto 20px;
+      background: #dcfce7; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      animation: pop .5s ease;
+    }
+    .check-circle svg { width: 46px; height: 46px; }
+    .check-circle path {
+      stroke: #16a34a; stroke-width: 5; fill: none;
+      stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: 60; stroke-dashoffset: 60;
+      animation: draw .6s .3s ease forwards;
+    }
+    @keyframes pop { 0% { transform: scale(.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+
+    .success-card h1 { font-size: 28px; color: #16a34a; margin-bottom: 8px; }
+    .success-card .sub { color: #6b7280; margin-bottom: 26px; line-height: 1.6; }
+
+    /* Order info */
+    .order-meta {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      background: #f4f6fa; border-radius: 12px; padding: 16px; margin-bottom: 24px;
+    }
+    .order-meta div small { display: block; color: #6b7280; font-size: 13px; margin-bottom: 4px; }
+    .order-meta div strong { font-size: 15px; }
+
+    /* Items */
+    .items { text-align: left; margin-bottom: 18px; }
+    .items h3 { margin-bottom: 12px; font-size: 17px; }
+    .item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 0; border-bottom: 1px solid #eef0f4;
+    }
+    .item img { width: 60px; height: 60px; object-fit: contain; background: #f4f6fa; border-radius: 8px; }
+    .item .name { flex: 1; font-weight: 600; }
+    .item .name small { display: block; color: #6b7280; font-weight: 400; margin-top: 3px; }
+    .item .amt { font-weight: 700; }
+
+    .total-row {
+      display: flex; justify-content: space-between;
+      font-size: 20px; font-weight: 700; padding: 14px 0 6px;
+    }
+
+    .delivery {
+      background: #ecfdf5; color: #047857; border-radius: 10px;
+      padding: 12px 16px; margin: 18px 0 26px; font-weight: 600;
+    }
+
+    /* Buttons */
+    .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      padding: 14px 28px; border-radius: 10px; border: none;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      text-decoration: none; color: #fff; transition: opacity .2s, transform .1s;
+    }
+    .btn:hover { opacity: .9; }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: #0284c7; }
+    .btn-green { background: #16a34a; }
+    .btn-outline { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+
+    @media (max-width: 600px) {
+      .order-meta { grid-template-columns: 1fr; text-align: left; }
+      .btn { flex: 1; text-align: center; }
+      .success-card { padding: 28px 18px; }
+    }
+
+    @media print {
+      header, .actions { display: none; }
+      body { background: #fff; }
+      .success-card { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="cart.html">Cart</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="success-card">
+      <div class="check-circle">
+        <svg viewBox="0 0 52 52"><path d="M14 27 L23 36 L39 17"/></svg>
+      </div>
+
+      <h1>Order Successful!</h1>
+      <p class="sub">Tamaro order safaltapurvak place thai gayo chhe.<br>Kharidi karva badal aabhar! 🎉</p>
+
+      <div class="order-meta">
+        <div><small>Order ID</small><strong id="orderId">-</strong></div>
+        <div><small>Date</small><strong id="orderDate">-</strong></div>
+        <div><small>Payment</small><strong id="orderPay">Cash on Delivery</strong></div>
+      </div>
+
+      <div class="items">
+        <h3>Order Items</h3>
+        <div id="itemsList"></div>
+        <div class="total-row"><span>Total</span><span id="orderTotal">₹0</span></div>
+      </div>
+
+      <div class="delivery" id="deliveryMsg">🚚 Estimated Delivery: 3-5 Days</div>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="products.html">Continue Shopping</a>
+        <a class="btn btn-green" href="index.html">Go To Home</a>
+        <button class="btn btn-outline" onclick="window.print()">Print Receipt</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const rupee = n => "₹" + Number(n).toLocaleString("en-IN");
+    const placeholder = "data:image/svg+xml;utf8," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'><rect width='100%' height='100%' fill='#f4f6fa'/></svg>");
+
+    /* ---------- Order load (error vagar) ----------
+       1) localStorage "lastOrder"  2) localStorage "cart"  3) default order */
+    function loadOrder() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("lastOrder"));
+        if (saved && Array.isArray(saved.items) && saved.items.length) return saved;
+      } catch (e) {}
+
+      try {
+        const cart = JSON.parse(localStorage.getItem("cart"));
+        if (Array.isArray(cart) && cart.length) {
+          return {
+            id: "SS" + Date.now().toString().slice(-8),
+            date: new Date().toISOString(),
+            payment: "Cash on Delivery",
+            items: cart
+          };
+        }
+      } catch (e) {}
+
+      return {
+        id: "SS" + Date.now().toString().slice(-8),
+        date: new Date().toISOString(),
+        payment: "Cash on Delivery",
+        items: []
+      };
+    }
+
+    function render(order) {
+      $("orderId").textContent = "#" + String(order.id).replace("#", "");
+      $("orderDate").textContent = new Date(order.date || Date.now()).toLocaleDateString("en-IN", {
+        day: "2-digit", month: "short", year: "numeric"
+      });
+      $("orderPay").textContent = order.payment || "Cash on Delivery";
+
+      const list = $("itemsList");
+      let total = 0;
+
+      if (!order.items.length) {
+        list.innerHTML = '<p style="color:#6b7280">Order ni details uplabdh nathi.</p>';
+      } else {
+        list.innerHTML = order.items.map(i => {
+          const qty = Number(i.qty) || 1;
+          const price = Number(i.price) || 0;
+          total += qty * price;
+          return `
+            <div class="item">
+              <img src="${i.image || placeholder}" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+              <div class="name">${i.name || "Product"}<small>Qty: ${qty}</small></div>
+              <div class="amt">${rupee(qty * price)}</div>
+            </div>`;
+        }).join("");
+      }
+
+      $("orderTotal").textContent = rupee(order.total || total);
+
+      /* Delivery date: aaj thi 4 divas pachi */
+      const d = new Date();
+      d.setDate(d.getDate() + 4);
+      $("deliveryMsg").textContent = "🚚 Estimated Delivery: " + d.toLocaleDateString("en-IN", {
+        weekday: "short", day: "2-digit", month: "short"
+      });
+    }
+
+    const order = loadOrder();
+    render(order);
+
+    /* Order show thai gaya pachi cart khali kari do ane last order save rakho */
+    try {
+      localStorage.setItem("lastOrder", JSON.stringify(order));
+      localStorage.removeItem("cart");
+    } catch (e) {}
+  </script>
+</body>
+</html>

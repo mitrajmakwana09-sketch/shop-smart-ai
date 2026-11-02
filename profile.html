@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile | Shop Smart AI</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; }
+
+    /* Header */
+    header {
+      background: rgba(255,255,255,.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: #0284c7; }
+    .logo span { color: #16a34a; }
+    nav { display: flex; align-items: center; gap: 22px; }
+    nav a { color: #374151; font-weight: 500; }
+    nav a:hover, nav a.active { color: #0284c7; }
+    .cart-badge {
+      background: #16a34a; color: #fff; border-radius: 999px;
+      padding: 1px 8px; font-size: 12px; margin-left: 4px;
+    }
+    .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; }
+
+    /* Banner */
+    .banner {
+      background: linear-gradient(135deg, #0284c7, #0369a1 60%, #16a34a 150%);
+      height: 150px;
+    }
+
+    .container {
+      max-width: 1100px; margin: -70px auto 40px; padding: 0 20px;
+      display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start;
+    }
+    .box {
+      background: #fff; border-radius: 16px; padding: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.07);
+      animation: rise .55s ease both;
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+
+    /* Sidebar */
+    .side { text-align: center; position: sticky; top: 84px; }
+    .avatar-wrap { position: relative; width: 120px; height: 120px; margin: -64px auto 12px; }
+    .avatar {
+      width: 120px; height: 120px; border-radius: 50%; border: 5px solid #fff;
+      background: linear-gradient(135deg, #0284c7, #16a34a); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 42px; font-weight: 800; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.18);
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .cam {
+      position: absolute; right: 2px; bottom: 4px; width: 36px; height: 36px; border-radius: 50%;
+      background: #0284c7; color: #fff; border: 3px solid #fff; cursor: pointer; font-size: 15px;
+      transition: transform .2s;
+    }
+    .cam:hover { transform: scale(1.12); }
+    .side h2 { font-size: 20px; margin-bottom: 2px; word-break: break-word; }
+    .side .mail { color: #6b7280; font-size: 14px; word-break: break-all; }
+    .side .since { display: inline-block; margin-top: 10px; background: #e0f2fe; color: #0369a1; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; }
+
+    .menu { list-style: none; margin-top: 18px; text-align: left; }
+    .menu button {
+      width: 100%; text-align: left; padding: 12px 14px; border: none; background: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600; color: #374151; cursor: pointer; display: flex; align-items: center; gap: 10px;
+      transition: background .2s, color .2s;
+    }
+    .menu button:hover { background: #f3f4f6; }
+    .menu button.active { background: #e0f2fe; color: #0369a1; }
+    .menu .logout { color: #dc2626; margin-top: 6px; border-top: 1px solid #f1f2f6; border-radius: 0 0 10px 10px; }
+    .menu .logout:hover { background: #fee2e2; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .stat {
+      background: #fff; border-radius: 14px; padding: 18px 10px; text-align: center;
+      box-shadow: 0 3px 14px rgba(0,0,0,.06); transition: transform .2s;
+    }
+    .stat:hover { transform: translateY(-4px); }
+    .stat .ic { font-size: 26px; }
+    .stat strong { display: block; font-size: 22px; color: #0284c7; margin: 4px 0 2px; }
+    .stat span { color: #6b7280; font-size: 13px; }
+
+    /* Panels */
+    .panel { display: none; }
+    .panel.show { display: block; animation: fade .3s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .panel h2 { font-size: 21px; margin-bottom: 4px; }
+    .panel .sub { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
+
+    .alert { display: none; padding: 12px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+    .alert.show { display: block; }
+    .alert.success { background: #dcfce7; color: #15803d; }
+    .alert.error { background: #fee2e2; color: #b91c1c; }
+    .alert.info { background: #e0f2fe; color: #0369a1; }
+
+    /* Form */
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .field label small { color: #9ca3af; font-weight: 400; }
+    .input-wrap { position: relative; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 0 14px; border: 1px solid #d1d5db; border-radius: 10px;
+      font-size: 15px; font-family: inherit; outline: none; background: #fff;
+      transition: border .2s, box-shadow .2s;
+    }
+    .field input, .field select { height: 46px; }
+    .field textarea { padding: 12px 14px; min-height: 90px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15);
+    }
+    .field input[readonly] { background: #f9fafb; color: #6b7280; cursor: not-allowed; }
+    .field .error { border-color: #dc2626; }
+    .input-wrap.pw input { padding-right: 46px; }
+    .eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; font-size: 18px; padding: 6px; }
+    .err-msg { color: #dc2626; font-size: 13px; margin-top: 5px; }
+
+    .strength { height: 6px; background: #e5e7eb; border-radius: 99px; margin-top: 8px; overflow: hidden; }
+    .strength i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width .3s, background .3s; }
+    .strength-text { font-size: 12px; margin-top: 4px; font-weight: 600; min-height: 16px; }
+
+    .btn {
+      height: 48px; padding: 0 28px; border: none; border-radius: 10px; color: #fff;
+      font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .2s, transform .1s;
+    }
+    .btn:hover { opacity: .92; }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-green { background: #16a34a; }
+    .btn-blue { background: #0284c7; }
+    .btn-red { background: #dc2626; }
+    .btn-gray { background: #f3f4f6; color: #374151; }
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+
+    /* Orders */
+    .order {
+      border: 1px solid #eef0f4; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+      transition: box-shadow .2s;
+    }
+    .order:hover { box-shadow: 0 4px 14px rgba(0,0,0,.07); }
+    .order .id { font-weight: 700; }
+    .order .meta { color: #6b7280; font-size: 13px; margin-top: 3px; }
+    .order .amt { font-weight: 800; font-size: 17px; text-align: right; }
+    .status { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-top: 4px; }
+    .status.placed { background: #e0f2fe; color: #0369a1; }
+    .status.shipped { background: #fef3c7; color: #b45309; }
+    .status.delivered { background: #dcfce7; color: #15803d; }
+    .status.cancelled { background: #fee2e2; color: #b91c1c; }
+    .link-more { display: inline-block; margin-top: 8px; color: #0284c7; font-weight: 700; }
+    .link-more:hover { text-decoration: underline; }
+
+    .danger {
+      margin-top: 26px; border: 1px solid #fecaca; background: #fef2f2; border-radius: 12px; padding: 16px;
+    }
+    .danger h3 { color: #b91c1c; font-size: 16px; margin-bottom: 4px; }
+    .danger p { color: #7f1d1d; font-size: 13px; margin-bottom: 12px; line-height: 1.5; }
+
+    .empty { text-align: center; padding: 30px 16px; color: #6b7280; }
+    .empty .icon { font-size: 44px; margin-bottom: 8px; }
+
+    /* Not logged in */
+    .guest {
+      max-width: 520px; margin: -60px auto 50px; background: #fff; border-radius: 18px; padding: 50px 24px;
+      text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,.09); animation: rise .55s ease both; position: relative;
+    }
+    .guest .icon { font-size: 62px; margin-bottom: 10px; }
+    .guest h2 { margin-bottom: 8px; }
+    .guest p { color: #6b7280; margin-bottom: 22px; line-height: 1.6; }
+    .guest .btn { display: inline-block; line-height: 48px; padding: 0 26px; margin: 4px; }
+
+    footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 22px; font-size: 13px; margin-top: 20px; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px;
+      opacity: 0; transition: all .3s; pointer-events: none; z-index: 200;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+      .side { position: static; }
+      .menu { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+      .menu .logout { margin-top: 0; border-top: none; border-radius: 10px; }
+    }
+    @media (max-width: 640px) {
+      .menu-btn { display: block; }
+      nav {
+        position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column;
+        align-items: flex-start; padding: 0 24px; gap: 0; max-height: 0; overflow: hidden;
+        transition: max-height .3s; border-bottom: 1px solid #e5e7eb;
+      }
+      nav.open { max-height: 320px; padding: 10px 24px 16px; }
+      nav a { padding: 10px 0; width: 100%; }
+      .two { grid-template-columns: 1fr; gap: 0; }
+      .stats { grid-template-columns: 1fr; }
+      .box { padding: 18px 14px; }
+      .btn-row .btn { flex: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <nav id="nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="my-order.html">My Orders</a>
+      <a href="cart.html">Cart<span class="cart-badge" id="cartCount">0</span></a>
+      <a href="profile.html" class="active" id="loginLink">Profile</a>
+    </nav>
+  </header>
+
+  <div class="banner"></div>
+
+  <!-- Login nathi tyare -->
+  <div class="guest" id="guestBox" style="display:none">
+    <div class="icon">🔐</div>
+    <h2>Pehela Login Karo</h2>
+    <p>Tamaro profile jova mate login karvu jaruri chhe. Account nathi? Navu banavo, fakt 1 minute lage chhe.</p>
+    <a class="btn btn-blue" href="login.html?redirect=profile.html">Login</a>
+    <a class="btn btn-green" href="register.html?redirect=profile.html">Register</a>
+  </div>
+
+  <!-- Profile -->
+  <main class="container" id="mainBox" style="display:none">
+
+    <!-- Sidebar -->
+    <aside class="box side">
+      <div class="avatar-wrap">
+        <div class="avatar" id="avatar"></div>
+        <button class="cam" id="camBtn" type="button" title="Photo badlo" aria-label="Photo badlo">📷</button>
+        <input type="file" id="photoFile" accept="image/*" style="display:none">
+      </div>
+      <h2 id="sideName"></h2>
+      <div class="mail" id="sideMail"></div>
+      <span class="since" id="sideSince"></span>
+
+      <ul class="menu" id="menu">
+        <li><button class="active" data-tab="info">👤 Mari Details</button></li>
+        <li><button data-tab="address">📍 Address</button></li>
+        <li><button data-tab="password">🔑 Password</button></li>
+        <li><button data-tab="orders">📦 Mara Orders</button></li>
+        <li><button class="logout" id="logoutBtn" type="button">🚪 Logout</button></li>
+      </ul>
+    </aside>
+
+    <!-- Content -->
+    <div>
+      <div class="stats">
+        <div class="stat"><div class="ic">📦</div><strong id="stOrders">0</strong><span>Total Orders</span></div>
+        <div class="stat"><div class="ic">💰</div><strong id="stSpent">₹0</strong><span>Total Kharch</span></div>
+        <div class="stat"><div class="ic">🛒</div><strong id="stCart">0</strong><span>Cart ma Items</span></div>
+      </div>
+
+      <div class="box">
+        <div class="alert" id="alertBox"></div>
+
+        <!-- INFO -->
+        <section class="panel show" id="panel-info">
+          <h2>Mari Details</h2>
+          <p class="sub">Tamaru naam ane mobile number ahi badli shako chho.</p>
+          <form id="infoForm" novalidate>
+            <div class="field">
+              <label for="pName">Full Name</label>
+              <input type="text" id="pName" maxlength="50" autocomplete="name">
+              <div class="err-msg" id="pNameErr"></div>
+            </div>
+            <div class="two">
+              <div class="field">
+                <label for="pEmail">Email <small>(badli nathi shakatu)</small></label>
+                <input type="email" id="pEmail" readonly>
+              </div>
+              <div class="field">
+                <label for="pPhone">Mobile Number</label>
+                <input type="tel" id="pPhone" maxlength="10" inputmode="numeric" autocomplete="tel">
+                <div class="err-msg" id="pPhoneErr"></div>
+              </div>
+            </div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn-green">Save Changes</button>
+              <button type="button" class="btn btn-gray" id="infoReset">Reset</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ADDRESS -->
+        <section class="panel" id="panel-address">
+          <h2>Delivery Address</h2>
+          <p class="sub">Aa address checkout par automatic bharai jase.</p>
+          <form id="addrForm" novalidate>
+            <div class="field">
+              <label for="aAddress">Address (Ghar no., Society, Area)</label>
+              <textarea id="aAddress" maxlength="200" autocomplete="street-address"></textarea>
+              <div class="err-msg" id="aAddressErr"></div>
+            </div>
+            <div class="two">
+              <div class="field">
+                <label for="aCity">City</label>
+                <input type="text" id="aCity" maxlength="40" autocomplete="address-level2">
+                <div class="err-msg" id="aCityErr"></div>
+              </div>
+              <div class="field">
+                <label for="aPin">Pincode</label>
+                <input type="text" id="aPin" maxlength="6" inputmode="numeric" autocomplete="postal-code">
+                <div class="err-msg" id="aPinErr"></div>
+              </div>
+            </div>
+            <div class="field">
+              <label for="aState">State</label>
+              <select id="aState">
+                <option>Gujarat</option><option>Maharashtra</option><option>Rajasthan</option>
+                <option>Madhya Pradesh</option><option>Delhi</option><option>Karnataka</option>
+                <option>Tamil Nadu</option><option>Uttar Pradesh</option><option>West Bengal</option>
+                <option>Punjab</option><option>Other</option>
+              </select>
+            </div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn-green">Save Address</button>
+              <button type="button" class="btn btn-gray" id="addrClear">Address Hatavo</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- PASSWORD -->
+        <section class="panel" id="panel-password">
+          <h2>Password Badlo</h2>
+          <p class="sub">Surakshā mate jetlo vaar pasand hoy teto badli shako chho.</p>
+          <form id="passForm" novalidate>
+            <div class="field">
+              <label for="oldPass">Juno Password</label>
+              <div class="input-wrap pw">
+                <input type="password" id="oldPass" autocomplete="current-password">
+                <button type="button" class="eye" data-target="oldPass" aria-label="Show">👁</button>
+              </div>
+              <div class="err-msg" id="oldPassErr"></div>
+            </div>
+            <div class="field">
+              <label for="newPass">Navo Password</label>
+              <div class="input-wrap pw">
+                <input type="password" id="newPass" placeholder="Minimum 6 characters" autocomplete="new-password">
+                <button type="button" class="eye" data-target="newPass" aria-label="Show">👁</button>
+              </div>
+              <div class="strength"><i id="strBar"></i></div>
+              <div class="strength-text" id="strText"></div>
+              <div class="err-msg" id="newPassErr"></div>
+            </div>
+            <div class="field">
+              <label for="newPass2">Navo Password Fari Lakho</label>
+              <div class="input-wrap pw">
+                <input type="password" id="newPass2" autocomplete="new-password">
+                <button type="button" class="eye" data-target="newPass2" aria-label="Show">👁</button>
+              </div>
+              <div class="err-msg" id="newPass2Err"></div>
+            </div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn-blue" id="passBtn">Password Badlo</button>
+            </div>
+          </form>
+
+          <div class="danger">
+            <h3>⚠️ Danger Zone</h3>
+            <p>Account delete karva thi tamari profile ane saved address kayam mate hatavai jase. Aa pachhu nahi aave.</p>
+            <button type="button" class="btn btn-red" id="deleteBtn">Account Delete Karo</button>
+          </div>
+        </section>
+
+        <!-- ORDERS -->
+        <section class="panel" id="panel-orders">
+          <h2>Mara Orders</h2>
+          <p class="sub">Tamara chhella orders.</p>
+          <div id="orderList"></div>
+          <a class="link-more" href="my-order.html">Badha orders juo →</a>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>© 2026 Shop Smart AI. All rights reserved.</footer>
+  <div id="toast"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const rupee = n => "₹" + Number(n).toLocaleString("en-IN");
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2400);
+    }
+    function showAlert(msg, type) {
+      const b = $("alertBox");
+      b.textContent = msg;
+      b.className = "alert show " + type;
+      b.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    function hideAlert() { $("alertBox").className = "alert"; }
+    function setErr(inputId, errId, msg) {
+      $(errId).textContent = msg || "";
+      $(inputId).classList.toggle("error", !!msg);
+      return !msg;
+    }
+
+    /* ---------- Storage (login.html / register.html sathe same keys) ---------- */
+    function getUsers() {
+      try { const u = JSON.parse(localStorage.getItem("users")); return Array.isArray(u) ? u : []; }
+      catch (e) { return []; }
+    }
+    function saveUsers(list) {
+      try { localStorage.setItem("users", JSON.stringify(list)); return true; } catch (e) { return false; }
+    }
+    function sessionWhere() {
+      try {
+        if (localStorage.getItem("currentUser")) return localStorage;
+        if (sessionStorage.getItem("currentUser")) return sessionStorage;
+      } catch (e) {}
+      return null;
+    }
+    function getSession() {
+      const st = sessionWhere();
+      if (!st) return null;
+      try { return JSON.parse(st.getItem("currentUser")); } catch (e) { return null; }
+    }
+    function setSession(user) {
+      const st = sessionWhere() || localStorage;
+      try { st.setItem("currentUser", JSON.stringify({ name: user.name, email: user.email, phone: user.phone })); } catch (e) {}
+    }
+    function getCart() {
+      try { const c = JSON.parse(localStorage.getItem("cart")); return Array.isArray(c) ? c : []; } catch (e) { return []; }
+    }
+    function getOrders() {
+      try { const o = JSON.parse(localStorage.getItem("orders")); return Array.isArray(o) ? o : []; } catch (e) { return []; }
+    }
+    function getAddress() {
+      try { return JSON.parse(localStorage.getItem("savedAddress")) || {}; } catch (e) { return {}; }
+    }
+
+    /* login.html jevo j SHA-256 hash */
+    async function hashPass(text) {
+      try {
+        if (window.crypto && crypto.subtle) {
+          const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+          return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+      } catch (e) {}
+      return btoa(unescape(encodeURIComponent(text)));
+    }
+
+    /* ---------- State ---------- */
+    let me = null;            /* currentUser (session) */
+    function record() { return getUsers().find(u => u.email === (me && me.email)); }
+
+    /* =========================================================
+       RENDER
+       ========================================================= */
+    function renderSide() {
+      const rec = record() || {};
+      const name = me.name || "User";
+      const initials = name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase() || "U";
+      const av = $("avatar");
+
+      if (rec.avatar) {
+        av.innerHTML = "";
+        const img = new Image();
+        img.alt = "";
+        img.onerror = () => { av.textContent = initials; };
+        img.src = rec.avatar;
+        av.appendChild(img);
+      } else {
+        av.textContent = initials;
+      }
+      $("sideName").textContent = name;
+      $("sideMail").textContent = me.email || "";
+      $("sideSince").textContent = rec.createdAt
+        ? "Member since " + new Date(rec.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })
+        : "Member";
+    }
+
+    function myOrders() {
+      return getOrders().filter(o => {
+        const e = o && o.address && o.address.email;
+        return !e || e === me.email;
+      });
+    }
+
+    function renderStats() {
+      const orders = myOrders();
+      const spent = orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + (Number(o.total) || 0), 0);
+      $("stOrders").textContent = orders.length;
+      $("stSpent").textContent = rupee(spent);
+      $("stCart").textContent = getCart().reduce((s, i) => s + (Number(i.qty) || 0), 0);
+    }
+
+    function fillInfo() {
+      $("pName").value = me.name || "";
+      $("pEmail").value = me.email || "";
+      $("pPhone").value = me.phone || "";
+    }
+
+    function fillAddress() {
+      const a = getAddress();
+      $("aAddress").value = a.address || "";
+      $("aCity").value = a.city || "";
+      $("aPin").value = a.pin || "";
+      if (a.state) $("aState").value = a.state;
+    }
+
+    function renderOrders() {
+      const list = myOrders().slice(0, 4);
+      if (!list.length) {
+        $("orderList").innerHTML = `
+          <div class="empty"><div class="icon">📭</div><p>Tamae haju koi order nathi karyo.</p>
+          <a class="link-more" href="products.html">Shopping Chalu Karo →</a></div>`;
+        return;
+      }
+      $("orderList").innerHTML = list.map(o => {
+        const st = o.status || "placed";
+        const date = new Date(o.date || Date.now()).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+        const n = Array.isArray(o.items) ? o.items.reduce((s, i) => s + (Number(i.qty) || 1), 0) : 0;
+        return `
+          <div class="order">
+            <div>
+              <div class="id">Order #${esc(String(o.id || "").replace("#", ""))}</div>
+              <div class="meta">${date} · ${n} item${n === 1 ? "" : "s"} · ${esc(o.payment || "")}</div>
+              <span class="status ${esc(st)}">${esc(st.charAt(0).toUpperCase() + st.slice(1))}</span>
+            </div>
+            <div class="amt">${rupee(o.total || 0)}</div>
+          </div>`;
+      }).join("");
+    }
+
+    function refreshAll() {
+      renderSide();
+      renderStats();
+      renderOrders();
+      $("loginLink").textContent = "Hi, " + (me.name || "User").split(" ")[0];
+    }
+
+    /* =========================================================
+       TABS
+       ========================================================= */
+    function openTab(name) {
+      document.querySelectorAll("#menu button[data-tab]").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+      document.querySelectorAll(".panel").forEach(p => p.classList.toggle("show", p.id === "panel-" + name));
+      hideAlert();
+    }
+    $("menu").addEventListener("click", e => {
+      const b = e.target.closest("button[data-tab]");
+      if (b) openTab(b.dataset.tab);
+    });
+
+    /* =========================================================
+       INFO FORM
+       ========================================================= */
+    $("pPhone").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, ""); });
+
+    $("infoForm").addEventListener("submit", e => {
+      e.preventDefault();
+      hideAlert();
+      const name = $("pName").value.trim();
+      const phone = $("pPhone").value.trim();
+
+      const ok = [
+        setErr("pName", "pNameErr", name.length < 2 ? "Potanu pūru naam lakho" : ""),
+        setErr("pPhone", "pPhoneErr", !/^[6-9]\d{9}$/.test(phone) ? "Sacho 10 digit mobile number lakho" : "")
+      ];
+      if (ok.includes(false)) return;
+
+      const users = getUsers();
+      if (users.some(u => u.phone === phone && u.email !== me.email)) {
+        setErr("pPhone", "pPhoneErr", "Aa mobile number biji account ma vaparayelo chhe");
+        return;
+      }
+
+      const idx = users.findIndex(u => u.email === me.email);
+      if (idx >= 0) {
+        users[idx].name = name;
+        users[idx].phone = phone;
+        if (!saveUsers(users)) return showAlert("Save na thayu (browser storage block chhe).", "error");
+      }
+      me.name = name; me.phone = phone;
+      setSession(me);
+      refreshAll();
+      showAlert("Profile update thai gayo ✔", "success");
+      showToast("Profile save thayo");
+    });
+    $("infoReset").onclick = () => { fillInfo(); hideAlert(); ["pName", "pPhone"].forEach(i => { $(i).classList.remove("error"); $(i + "Err").textContent = ""; }); };
+
+    /* =========================================================
+       ADDRESS FORM  (checkout.html ni "savedAddress" sathe same)
+       ========================================================= */
+    $("aPin").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, ""); });
+
+    $("addrForm").addEventListener("submit", e => {
+      e.preventDefault();
+      hideAlert();
+      const ok = [
+        setErr("aAddress", "aAddressErr", $("aAddress").value.trim().length < 8 ? "Pura address lakho" : ""),
+        setErr("aCity", "aCityErr", $("aCity").value.trim().length < 2 ? "City lakho" : ""),
+        setErr("aPin", "aPinErr", !/^\d{6}$/.test($("aPin").value) ? "Sacho 6 digit pincode lakho" : "")
+      ];
+      if (ok.includes(false)) return;
+
+      const data = {
+        name: me.name, phone: me.phone || "", email: me.email,
+        address: $("aAddress").value.trim(), city: $("aCity").value.trim(),
+        pin: $("aPin").value, state: $("aState").value
+      };
+      try { localStorage.setItem("savedAddress", JSON.stringify(data)); }
+      catch (err) { return showAlert("Address save na thayo.", "error"); }
+      showAlert("Address save thai gayo ✔ Checkout par automatic bharai jase.", "success");
+      showToast("Address save thayo");
+    });
+
+    $("addrClear").onclick = () => {
+      if (!confirm("Saved address hatavva mango chho?")) return;
+      try { localStorage.removeItem("savedAddress"); } catch (e) {}
+      $("aAddress").value = ""; $("aCity").value = ""; $("aPin").value = "";
+      showToast("Address hatavyo");
+    };
+
+    /* =========================================================
+       PASSWORD
+       ========================================================= */
+    document.querySelectorAll(".eye").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const input = $(btn.dataset.target);
+        const show = input.type === "password";
+        input.type = show ? "text" : "password";
+        btn.textContent = show ? "🙈" : "👁";
+      });
+    });
+
+    $("newPass").addEventListener("input", () => {
+      const p = $("newPass").value;
+      let score = [p.length >= 6, /[A-Z]/.test(p), /\d/.test(p), /[^A-Za-z0-9]/.test(p)].filter(Boolean).length;
+      if (p.length >= 10 && score >= 3) score = 4;
+      if (!p.length) score = 0;
+      const L = [
+        { w: "0%", c: "#e5e7eb", t: "" }, { w: "25%", c: "#dc2626", t: "Kamjor" },
+        { w: "50%", c: "#f59e0b", t: "Theek" }, { w: "75%", c: "#0284c7", t: "Saru" },
+        { w: "100%", c: "#16a34a", t: "Majboot 💪" }
+      ][score];
+      $("strBar").style.width = L.w;
+      $("strBar").style.background = L.c;
+      $("strText").textContent = L.t ? "Password: " + L.t : "";
+      $("strText").style.color = L.c;
+    });
+
+    $("passForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      hideAlert();
+
+      const users = getUsers();
+      const idx = users.findIndex(u => u.email === me.email);
+      if (idx < 0) {
+        return showAlert("Aa account ni password details aa browser ma nathi, etle password badli shakay nahi. Navo account banavo.", "error");
+      }
+
+      const oldP = $("oldPass").value, n1 = $("newPass").value, n2 = $("newPass2").value;
+      const ok = [
+        setErr("oldPass", "oldPassErr", !oldP ? "Juno password lakho" : ""),
+        setErr("newPass", "newPassErr", n1.length < 6 ? "Minimum 6 characters joie" : (n1 === oldP ? "Navo password juna thi alag hovo joie" : "")),
+        setErr("newPass2", "newPass2Err", n1 !== n2 ? "Password match nathi thato" : "")
+      ];
+      if (ok.includes(false)) return;
+
+      $("passBtn").disabled = true;
+      const oldHash = await hashPass(oldP);
+      if (users[idx].pass !== oldHash) {
+        $("passBtn").disabled = false;
+        return setErr("oldPass", "oldPassErr", "Juno password khotu chhe");
+      }
+      users[idx].pass = await hashPass(n1);
+      const saved = saveUsers(users);
+      $("passBtn").disabled = false;
+
+      if (!saved) return showAlert("Save na thayu (browser storage block chhe).", "error");
+      $("passForm").reset();
+      $("strBar").style.width = "0%"; $("strText").textContent = "";
+      showAlert("Password safaltapurvak badlayo ✔", "success");
+      showToast("Password badlayo");
+    });
+
+    /* =========================================================
+       AVATAR (photo nani karine save thay chhe)
+       ========================================================= */
+    function compressAvatar(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("File vanchi shakay nahi"));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => reject(new Error("Aa valid image nathi"));
+          img.onload = () => {
+            const S = 256;
+            const c = document.createElement("canvas");
+            c.width = S; c.height = S;
+            const ctx = c.getContext("2d");
+            const side = Math.min(img.width, img.height);            /* vachhe thi square crop */
+            ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, S, S);
+            resolve(c.toDataURL("image/jpeg", 0.8));
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    $("camBtn").onclick = () => $("photoFile").click();
+    $("photoFile").onchange = async e => {
+      const file = e.target.files[0];
+      e.target.value = "";
+      if (!file) return;
+      if (!file.type.startsWith("image/")) return showToast("Fakt image file pasand karo");
+      if (file.size > 5 * 1024 * 1024) return showToast("Image 5 MB thi nani joie");
+
+      const users = getUsers();
+      const idx = users.findIndex(u => u.email === me.email);
+      if (idx < 0) return showToast("Photo save karva mate account joie");
+      try {
+        users[idx].avatar = await compressAvatar(file);
+        if (!saveUsers(users)) throw new Error("Storage bharai gayu chhe");
+        renderSide();
+        showToast("Photo update thayo ✔");
+      } catch (err) { showToast(err.message || "Photo add na thayo"); }
+    };
+
+    /* =========================================================
+       LOGOUT / DELETE
+       ========================================================= */
+    $("logoutBtn").onclick = () => {
+      if (!confirm("Shu tame logout karva mango chho?")) return;
+      try { localStorage.removeItem("currentUser"); sessionStorage.removeItem("currentUser"); } catch (e) {}
+      showToast("Logout thai gayu");
+      setTimeout(() => { location.href = "login.html"; }, 700);
+    };
+
+    $("deleteBtn").onclick = () => {
+      if (!confirm("Sachche account delete karvo chhe? Aa pachhu nahi aave.")) return;
+      if (!confirm("Chhelli vaar puchhiye chhie: account kayam mate delete karvo?")) return;
+      saveUsers(getUsers().filter(u => u.email !== me.email));
+      try {
+        localStorage.removeItem("currentUser");
+        sessionStorage.removeItem("currentUser");
+        localStorage.removeItem("savedAddress");
+      } catch (e) {}
+      showToast("Account delete thai gayo");
+      setTimeout(() => { location.href = "index.html"; }, 900);
+    };
+
+    /* ---------- Header helpers ---------- */
+    function updateCartCount() {
+      $("cartCount").textContent = getCart().reduce((s, i) => s + (Number(i.qty) || 0), 0);
+    }
+    $("menuBtn").onclick = () => $("nav").classList.toggle("open");
+
+    /* ---------- Start ---------- */
+    updateCartCount();
+    me = getSession();
+
+    if (!me || !me.email) {
+      $("guestBox").style.display = "block";
+      $("loginLink").textContent = "Login";
+      $("loginLink").href = "login.html";
+    } else {
+      $("mainBox").style.display = "grid";
+      fillInfo();
+      fillAddress();
+      refreshAll();
+      /* ?tab=orders jevi link thi seedho tab khole */
+      const t = new URLSearchParams(location.search).get("tab");
+      if (["info", "address", "password", "orders"].includes(t)) openTab(t);
+    }
+  </script>
+</body>
+</html>

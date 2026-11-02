@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Cart | Shop Smart AI</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    header {
+      background: rgba(255,255,255,.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: #0284c7; }
+    .logo span { color: #16a34a; }
+    nav { display: flex; align-items: center; gap: 22px; }
+    nav a { color: #374151; font-weight: 500; }
+    nav a:hover, nav a.active { color: #0284c7; }
+    .cart-badge {
+      background: #16a34a; color: #fff; border-radius: 999px;
+      padding: 1px 8px; font-size: 12px; margin-left: 4px;
+    }
+    .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; }
+
+    /* Steps */
+    .steps {
+      max-width: 700px; margin: 24px auto 0; padding: 0 20px;
+      display: flex; justify-content: space-between; position: relative;
+    }
+    .steps::before {
+      content: ""; position: absolute; top: 15px; left: 14%; right: 14%; height: 3px; background: #e5e7eb;
+    }
+    .step { position: relative; text-align: center; flex: 1; font-size: 13px; color: #9ca3af; font-weight: 600; }
+    .step .dot {
+      width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; color: #fff;
+      margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .step.active { color: #0284c7; }
+    .step.active .dot { background: #0284c7; }
+
+    /* Layout */
+    .container {
+      max-width: 1100px; margin: 24px auto 40px; padding: 0 20px;
+      display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; align-items: start;
+    }
+    .box {
+      background: #fff; border-radius: 16px; padding: 22px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+    .box-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .box-head h1 { font-size: 22px; }
+    .box-head .count { color: #6b7280; font-size: 14px; }
+    .clear-btn {
+      background: none; border: 1px solid #fca5a5; color: #dc2626; border-radius: 8px;
+      padding: 7px 14px; font-weight: 600; font-size: 13px; cursor: pointer;
+    }
+    .clear-btn:hover { background: #fee2e2; }
+
+    /* Free delivery bar */
+    .free-bar { background: #f0f9ff; border-radius: 12px; padding: 12px 16px; margin: 12px 0 6px; font-size: 14px; font-weight: 600; }
+    .free-bar.done { background: #dcfce7; color: #15803d; }
+    .track { height: 8px; background: #e0f2fe; border-radius: 99px; margin-top: 8px; overflow: hidden; }
+    .track i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #0284c7, #16a34a); border-radius: 99px; transition: width .5s ease; }
+
+    /* Cart item */
+    .item {
+      display: grid; grid-template-columns: 96px 1fr auto; gap: 16px; align-items: center;
+      padding: 18px 0; border-bottom: 1px solid #f1f2f6; animation: fade .3s ease;
+    }
+    .item:last-child { border-bottom: none; }
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .item img {
+      width: 96px; height: 96px; object-fit: contain; background: #f4f6fa; border-radius: 12px;
+    }
+    .item .info h3 { font-size: 16px; margin-bottom: 4px; }
+    .item .info h3 a:hover { color: #0284c7; }
+    .item .unit { color: #6b7280; font-size: 14px; margin-bottom: 10px; }
+    .item .stock-note { color: #b45309; font-size: 12px; font-weight: 600; margin-top: 6px; }
+
+    .qty { display: inline-flex; align-items: center; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+    .qty button {
+      width: 38px; height: 38px; border: none; background: #fff; font-size: 18px; cursor: pointer;
+    }
+    .qty button:hover { background: #f3f4f6; }
+    .qty span { width: 42px; text-align: center; font-weight: 700; }
+
+    .item .right { text-align: right; }
+    .item .line-total { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+    .remove {
+      background: none; border: none; color: #dc2626; font-weight: 600; font-size: 13px; cursor: pointer;
+    }
+    .remove:hover { text-decoration: underline; }
+
+    .continue { display: inline-block; margin-top: 16px; color: #0284c7; font-weight: 700; }
+    .continue:hover { text-decoration: underline; }
+
+    /* Summary */
+    .summary { position: sticky; top: 84px; }
+    .summary h2 { font-size: 20px; margin-bottom: 14px; }
+    .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; }
+    .row.green { color: #16a34a; font-weight: 600; }
+    .row.total { font-size: 21px; font-weight: 800; border-top: 2px dashed #e5e7eb; margin-top: 8px; padding-top: 14px; }
+    .save-note {
+      background: #ecfdf5; color: #047857; border-radius: 10px; padding: 10px 14px;
+      font-size: 14px; font-weight: 600; margin-top: 12px; display: none;
+    }
+    .btn {
+      width: 100%; height: 52px; border: none; border-radius: 10px; background: #16a34a;
+      color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 16px;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:hover { opacity: .92; }
+    .btn:active { transform: scale(.98); }
+    .secure { text-align: center; font-size: 13px; color: #6b7280; margin-top: 12px; }
+
+    /* Empty */
+    .empty {
+      max-width: 520px; margin: 50px auto; background: #fff; border-radius: 16px; padding: 56px 20px;
+      text-align: center; box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+    .empty .icon { font-size: 64px; margin-bottom: 10px; }
+    .empty h2 { margin-bottom: 8px; }
+    .empty p { color: #6b7280; margin-bottom: 22px; }
+    .btn-blue {
+      display: inline-block; padding: 0 30px; height: 50px; line-height: 50px; background: #0284c7;
+      color: #fff; border-radius: 10px; font-weight: 700;
+    }
+    .btn-blue:hover { opacity: .92; }
+
+    /* Suggestions */
+    .suggest { max-width: 1100px; margin: 0 auto 20px; padding: 0 20px; }
+    .suggest h2 { font-size: 22px; margin-bottom: 14px; }
+    .sug-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .sug {
+      background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+      transition: transform .2s; display: flex; flex-direction: column;
+    }
+    .sug:hover { transform: translateY(-4px); }
+    .sug img { width: 100%; height: 130px; object-fit: contain; background: #f4f6fa; border-radius: 8px; }
+    .sug h4 { margin: 10px 0 4px; font-size: 15px; }
+    .sug p { font-weight: 700; margin-bottom: 10px; }
+    .sug button {
+      margin-top: auto; padding: 9px; border: none; border-radius: 8px; background: #0284c7;
+      color: #fff; font-weight: 700; cursor: pointer;
+    }
+    .sug button:hover { opacity: .9; }
+
+    footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 22px; font-size: 13px; margin-top: 30px; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px;
+      opacity: 0; transition: all .3s; pointer-events: none; z-index: 200;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+      .summary { position: static; }
+    }
+    @media (max-width: 640px) {
+      .menu-btn { display: block; }
+      nav {
+        position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column;
+        align-items: flex-start; padding: 0 24px; gap: 0; max-height: 0; overflow: hidden;
+        transition: max-height .3s; border-bottom: 1px solid #e5e7eb;
+      }
+      nav.open { max-height: 320px; padding: 10px 24px 16px; }
+      nav a { padding: 10px 0; width: 100%; }
+      .item { grid-template-columns: 76px 1fr; }
+      .item img { width: 76px; height: 76px; }
+      .item .right {
+        grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; text-align: left;
+      }
+      .item .line-total { margin-bottom: 0; }
+      .box { padding: 16px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <nav id="nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="my-order.html">My Orders</a>
+      <a href="cart.html" class="active">Cart<span class="cart-badge" id="cartCount">0</span></a>
+      <a href="login.html" id="loginLink">Login</a>
+    </nav>
+  </header>
+
+  <div class="steps" id="steps">
+    <div class="step active"><div class="dot">1</div>Cart</div>
+    <div class="step"><div class="dot">2</div>Checkout</div>
+    <div class="step"><div class="dot">3</div>Done</div>
+  </div>
+
+  <!-- Empty cart -->
+  <div class="empty" id="emptyBox" style="display:none">
+    <div class="icon">🛒</div>
+    <h2>Tamaro cart khali chhe</h2>
+    <p>Haju sudhi koi product add nathi karyo. Chalo shopping chalu kariye!</p>
+    <a class="btn-blue" href="products.html">Shopping Chalu Karo</a>
+  </div>
+
+  <!-- Cart with items -->
+  <main class="container" id="mainBox">
+    <section class="box">
+      <div class="box-head">
+        <div>
+          <h1>My Cart</h1>
+          <span class="count" id="itemCount"></span>
+        </div>
+        <button class="clear-btn" id="clearBtn" type="button">🗑 Cart khali karo</button>
+      </div>
+
+      <div class="free-bar" id="freeBar"></div>
+      <div id="cartList"></div>
+
+      <a class="continue" href="products.html">← Shopping chalu rakho</a>
+    </section>
+
+    <aside class="box summary">
+      <h2>Price Details</h2>
+      <div class="row"><span>Subtotal</span><span id="subTotal">₹0</span></div>
+      <div class="row"><span>Delivery</span><span id="delAmt">₹0</span></div>
+      <div class="row green" id="saveRow" style="display:none"><span>Tamari bachat</span><span id="saveAmt">₹0</span></div>
+      <div class="row total"><span>Total</span><span id="grandTotal">₹0</span></div>
+
+      <div class="save-note" id="saveNote"></div>
+
+      <button class="btn" id="checkoutBtn" type="button">Proceed To Checkout</button>
+      <div class="secure">🔒 100% Secure Checkout</div>
+    </aside>
+  </main>
+
+  <!-- Suggestions -->
+  <section class="suggest" id="suggestBox">
+    <h2>Tamane aa pan gamse</h2>
+    <div class="sug-grid" id="sugGrid"></div>
+  </section>
+
+  <footer>© 2026 Shop Smart AI. All rights reserved.</footer>
+  <div id="toast"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const rupee = n => "₹" + Number(n).toLocaleString("en-IN");
+    const placeholder = "data:image/svg+xml;utf8," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><rect width='100%' height='100%' fill='#f4f6fa'/>" +
+      "<text x='50%' y='52%' font-size='11' fill='#9ca3af' text-anchor='middle' font-family='Arial'>Product</text></svg>");
+
+    const FREE_DELIVERY_ABOVE = 999;
+    const DELIVERY_FEE = 49;
+    const MAX_QTY = 10;
+
+    /* ---------- Products (suggestions mate; baki pages sathe same) ---------- */
+    const PRODUCTS = [
+      { id: 1, name: "Wireless Bluetooth Headphones", price: 1499, oldPrice: 2999, stock: 25,
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500" },
+      { id: 2, name: "Smart Watch Series X", price: 2999, oldPrice: 5999, stock: 12,
+        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500" },
+      { id: 3, name: "Running Sports Shoes", price: 1999, oldPrice: 3499, stock: 40,
+        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500" },
+      { id: 4, name: "Portable Power Bank 20000mAh", price: 1299, oldPrice: 1999, stock: 0,
+        image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=500" }
+    ];
+    const findProduct = id => PRODUCTS.find(p => p.id === Number(id));
+
+    /* ---------- Storage (error vagar) ---------- */
+    function getCart() {
+      try {
+        const c = JSON.parse(localStorage.getItem("cart"));
+        return Array.isArray(c) ? c.filter(i => i && Number(i.qty) > 0) : [];
+      } catch (e) { return []; }
+    }
+    function saveCart(c) {
+      try { localStorage.setItem("cart", JSON.stringify(c)); } catch (e) {}
+    }
+    function getUser() {
+      try { return JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser") || "null"); }
+      catch (e) { return null; }
+    }
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    /* ---------- Totals ---------- */
+    function totals(cart) {
+      const subtotal = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+      const mrp = cart.reduce((s, i) => {
+        const p = findProduct(i.id);
+        const old = p && p.oldPrice > i.price ? p.oldPrice : Number(i.price) || 0;
+        return s + old * (Number(i.qty) || 1);
+      }, 0);
+      const delivery = subtotal === 0 || subtotal >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
+      return { subtotal, delivery, total: subtotal + delivery, saved: Math.max(0, mrp - subtotal) };
+    }
+
+    /* ---------- Render ---------- */
+    function render() {
+      const cart = getCart();
+      updateCartCount(cart);
+
+      if (!cart.length) {
+        $("mainBox").style.display = "none";
+        $("steps").style.display = "none";
+        $("emptyBox").style.display = "block";
+        renderSuggestions(cart);
+        return;
+      }
+      $("mainBox").style.display = "grid";
+      $("steps").style.display = "flex";
+      $("emptyBox").style.display = "none";
+
+      const count = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+      $("itemCount").textContent = count + " item" + (count > 1 ? "s" : "") + " cart ma chhe";
+
+      $("cartList").innerHTML = cart.map(i => {
+        const qty = Number(i.qty) || 1, price = Number(i.price) || 0;
+        const p = findProduct(i.id);
+        const limit = p && p.stock > 0 ? Math.min(MAX_QTY, p.stock) : MAX_QTY;
+        const lowStock = p && p.stock > 0 && p.stock <= 5;
+        return `
+          <div class="item">
+            <a href="product-details.html?id=${i.id}">
+              <img src="${i.image || placeholder}" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+            </a>
+            <div class="info">
+              <h3><a href="product-details.html?id=${i.id}">${i.name || "Product"}</a></h3>
+              <div class="unit">${rupee(price)} / piece</div>
+              <div class="qty">
+                <button onclick="changeQty(${i.id}, -1)" aria-label="Decrease">−</button>
+                <span>${qty}</span>
+                <button onclick="changeQty(${i.id}, 1)" aria-label="Increase" ${qty >= limit ? "disabled style='opacity:.4;cursor:not-allowed'" : ""}>+</button>
+              </div>
+              ${lowStock ? `<div class="stock-note">Fakt ${p.stock} bachya chhe!</div>` : ""}
+            </div>
+            <div class="right">
+              <div class="line-total">${rupee(qty * price)}</div>
+              <button class="remove" onclick="removeItem(${i.id})">🗑 Remove</button>
+            </div>
+          </div>`;
+      }).join("");
+
+      const t = totals(cart);
+      $("subTotal").textContent = rupee(t.subtotal);
+      $("delAmt").textContent = t.delivery ? rupee(t.delivery) : "FREE";
+      $("grandTotal").textContent = rupee(t.total);
+
+      $("saveRow").style.display = t.saved ? "flex" : "none";
+      $("saveAmt").textContent = "-" + rupee(t.saved);
+      const note = $("saveNote");
+      if (t.saved) { note.style.display = "block"; note.textContent = "🎉 Aa order par tame " + rupee(t.saved) + " bachavo chho!"; }
+      else note.style.display = "none";
+
+      /* Free delivery progress */
+      const bar = $("freeBar");
+      if (t.subtotal >= FREE_DELIVERY_ABOVE) {
+        bar.className = "free-bar done";
+        bar.innerHTML = "🎉 Abhinandan! Tamne FREE delivery malse.";
+      } else {
+        const left = FREE_DELIVERY_ABOVE - t.subtotal;
+        const pct = Math.round(t.subtotal / FREE_DELIVERY_ABOVE * 100);
+        bar.className = "free-bar";
+        bar.innerHTML = `🚚 Bija <strong>${rupee(left)}</strong> nu shopping karo ane FREE delivery meLavo
+                         <div class="track"><i style="width:${pct}%"></i></div>`;
+      }
+
+      renderSuggestions(cart);
+    }
+
+    function renderSuggestions(cart) {
+      const inCart = cart.map(i => Number(i.id));
+      const list = PRODUCTS.filter(p => !inCart.includes(p.id) && p.stock > 0).slice(0, 4);
+      $("suggestBox").style.display = list.length ? "block" : "none";
+      $("sugGrid").innerHTML = list.map(p => `
+        <div class="sug">
+          <a href="product-details.html?id=${p.id}">
+            <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='${placeholder}'">
+            <h4>${p.name}</h4>
+          </a>
+          <p>${rupee(p.price)}</p>
+          <button onclick="addSuggested(${p.id})">Add To Cart</button>
+        </div>`).join("");
+    }
+
+    /* ---------- Actions ---------- */
+    function changeQty(id, delta) {
+      const cart = getCart();
+      const item = cart.find(i => Number(i.id) === Number(id));
+      if (!item) return;
+      const p = findProduct(id);
+      const limit = p && p.stock > 0 ? Math.min(MAX_QTY, p.stock) : MAX_QTY;
+      const next = (Number(item.qty) || 1) + delta;
+
+      if (next < 1) return removeItem(id);
+      if (next > limit) return showToast("Aa thi vadhu quantity upalabdh nathi");
+      item.qty = next;
+      saveCart(cart);
+      render();
+    }
+
+    function removeItem(id) {
+      const cart = getCart().filter(i => Number(i.id) !== Number(id));
+      saveCart(cart);
+      render();
+      showToast("Product hatavyo");
+    }
+
+    $("clearBtn").onclick = () => {
+      if (!confirm("Shu tame cart ma thi badha products hatavva mango chho?")) return;
+      saveCart([]);
+      render();
+    };
+
+    function addSuggested(id) {
+      const p = findProduct(id);
+      if (!p || p.stock <= 0) return;
+      const cart = getCart();
+      const item = cart.find(i => Number(i.id) === p.id);
+      if (item) item.qty += 1;
+      else cart.push({ id: p.id, name: p.name, price: p.price, image: p.image, qty: 1 });
+      saveCart(cart);
+      render();
+      showToast("Cart ma add thai gayu ✔");
+    }
+
+    $("checkoutBtn").onclick = () => {
+      if (!getCart().length) return showToast("Cart khali chhe");
+      location.href = "checkout.html";
+    };
+
+    /* ---------- Header helpers ---------- */
+    function updateCartCount(cart) {
+      $("cartCount").textContent = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+    }
+    function updateLoginLink() {
+      const u = getUser();
+      if (u && u.name) {
+        $("loginLink").textContent = "Hi, " + u.name.split(" ")[0];
+        $("loginLink").href = "my-order.html";
+      }
+    }
+    $("menuBtn").onclick = () => $("nav").classList.toggle("open");
+
+    /* Biji tab ma cart badlay to ahi pan update thai jay */
+    window.addEventListener("storage", e => { if (e.key === "cart") render(); });
+
+    /* ---------- Start ---------- */
+    updateLoginLink();
+    render();
+  </script>
+</body>
+</html>

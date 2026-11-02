@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us | Shop Smart AI</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    header {
+      background: rgba(255,255,255,.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: #0284c7; }
+    .logo span { color: #16a34a; }
+    nav { display: flex; align-items: center; gap: 22px; }
+    nav a { color: #374151; font-weight: 500; }
+    nav a:hover, nav a.active { color: #0284c7; }
+    .cart-badge {
+      background: #16a34a; color: #fff; border-radius: 999px;
+      padding: 1px 8px; font-size: 12px; margin-left: 4px;
+    }
+    .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; }
+
+    /* Page banner */
+    .banner {
+      background: linear-gradient(135deg, #0284c7, #0369a1 60%, #16a34a 150%);
+      color: #fff; text-align: center; padding: 54px 20px 80px;
+    }
+    .banner h1 { font-size: 36px; margin-bottom: 8px; }
+    .banner p { opacity: .92; font-size: 17px; }
+
+    /* Info cards */
+    .info-row {
+      max-width: 1100px; margin: -46px auto 0; padding: 0 20px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    }
+    .info-card {
+      background: #fff; border-radius: 14px; padding: 22px 16px; text-align: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,.08); transition: transform .2s;
+    }
+    .info-card:hover { transform: translateY(-5px); }
+    .info-card .ic { font-size: 34px; margin-bottom: 8px; }
+    .info-card h4 { font-size: 15px; margin-bottom: 4px; }
+    .info-card p { font-size: 14px; color: #6b7280; line-height: 1.5; }
+
+    /* Main layout */
+    .main {
+      max-width: 1100px; margin: 36px auto 0; padding: 0 20px;
+      display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px;
+    }
+    .box {
+      background: #fff; border-radius: 16px; padding: 28px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+    .box h2 { font-size: 22px; margin-bottom: 4px; }
+    .box .sub { color: #6b7280; margin-bottom: 20px; font-size: 14px; }
+
+    /* Form */
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 0 14px; border: 1px solid #d1d5db; border-radius: 10px;
+      font-size: 15px; font-family: inherit; outline: none; background: #fff;
+      transition: border .2s, box-shadow .2s;
+    }
+    .field input, .field select { height: 48px; }
+    .field textarea { padding: 12px 14px; min-height: 130px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15);
+    }
+    .field .error { border-color: #dc2626; }
+    .err-msg { color: #dc2626; font-size: 13px; margin-top: 5px; }
+    .counter { text-align: right; font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+    .btn {
+      width: 100%; height: 50px; border: none; border-radius: 10px; background: #0284c7;
+      color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:hover { opacity: .92; }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+
+    .alert {
+      display: none; padding: 12px 14px; border-radius: 10px;
+      font-size: 14px; font-weight: 600; margin-bottom: 16px;
+    }
+    .alert.show { display: block; }
+    .alert.success { background: #dcfce7; color: #15803d; }
+    .alert.error { background: #fee2e2; color: #b91c1c; }
+
+    /* Right side */
+    .hours { list-style: none; margin-bottom: 20px; }
+    .hours li {
+      display: flex; justify-content: space-between; padding: 10px 0;
+      border-bottom: 1px solid #f1f2f6; font-size: 15px;
+    }
+    .hours li:last-child { border-bottom: none; }
+    .hours .closed { color: #dc2626; font-weight: 600; }
+    .open-now {
+      display: inline-block; padding: 5px 14px; border-radius: 999px;
+      font-size: 13px; font-weight: 700; margin-bottom: 14px;
+    }
+    .open-now.yes { background: #dcfce7; color: #15803d; }
+    .open-now.no { background: #fee2e2; color: #b91c1c; }
+
+    .social { display: flex; gap: 10px; margin-top: 8px; }
+    .social a {
+      width: 44px; height: 44px; border-radius: 50%; background: #e0f2fe;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+      transition: transform .2s, background .2s;
+    }
+    .social a:hover { transform: translateY(-4px); background: #bae6fd; }
+
+    .whatsapp {
+      display: block; text-align: center; margin-top: 20px; padding: 14px;
+      background: #16a34a; color: #fff; border-radius: 10px; font-weight: 700;
+    }
+    .whatsapp:hover { opacity: .92; }
+
+    /* FAQ */
+    .faq { max-width: 1100px; margin: 36px auto 0; padding: 0 20px; }
+    .faq h2 { text-align: center; font-size: 26px; margin-bottom: 6px; }
+    .faq .sub { text-align: center; color: #6b7280; margin-bottom: 22px; }
+    .faq-item {
+      background: #fff; border-radius: 12px; margin-bottom: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05); overflow: hidden;
+    }
+    .faq-q {
+      width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+      padding: 18px 20px; font-size: 16px; font-weight: 700; font-family: inherit;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #1f2937;
+    }
+    .faq-q .plus { font-size: 22px; color: #0284c7; transition: transform .25s; }
+    .faq-item.open .plus { transform: rotate(45deg); }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+    .faq-a p { padding: 0 20px 18px; color: #4b5563; line-height: 1.6; }
+
+    /* Footer */
+    footer { background: #0f172a; color: #cbd5e1; margin-top: 60px; padding: 40px 24px 20px; }
+    .foot-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 28px; }
+    footer h4 { color: #fff; margin-bottom: 12px; }
+    footer a { display: block; margin-bottom: 8px; font-size: 14px; color: #94a3b8; }
+    footer a:hover { color: #fff; }
+    footer .about { font-size: 14px; line-height: 1.6; color: #94a3b8; }
+    .copy { text-align: center; border-top: 1px solid #1e293b; margin-top: 28px; padding-top: 16px; font-size: 13px; color: #64748b; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px;
+      opacity: 0; transition: all .3s; pointer-events: none; z-index: 200;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .info-row { grid-template-columns: repeat(2, 1fr); }
+      .main { grid-template-columns: 1fr; }
+      .foot-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .menu-btn { display: block; }
+      nav {
+        position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column;
+        align-items: flex-start; padding: 0 24px; gap: 0; max-height: 0; overflow: hidden;
+        transition: max-height .3s; border-bottom: 1px solid #e5e7eb;
+      }
+      nav.open { max-height: 320px; padding: 10px 24px 16px; }
+      nav a { padding: 10px 0; width: 100%; }
+      .two { grid-template-columns: 1fr; gap: 0; }
+      .banner h1 { font-size: 28px; }
+      .box { padding: 20px 16px; }
+    }
+    @media (max-width: 480px) {
+      .info-row { grid-template-columns: 1fr; }
+      .foot-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <nav id="nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="my-order.html">My Orders</a>
+      <a href="contact.html" class="active">Contact</a>
+      <a href="cart.html">Cart<span class="cart-badge" id="cartCount">0</span></a>
+      <a href="login.html" id="loginLink">Login</a>
+    </nav>
+  </header>
+
+  <section class="banner">
+    <h1>Contact Us</h1>
+    <p>Koi prashn chhe? Amne message karo, ame jaldi jawab aapishu.</p>
+  </section>
+
+  <div class="info-row">
+    <div class="info-card">
+      <div class="ic">📍</div>
+      <h4>Address</h4>
+      <p>Shop Smart AI Office,<br>Main Market Road, Gujarat</p>
+    </div>
+    <div class="info-card">
+      <div class="ic">📞</div>
+      <h4>Phone</h4>
+      <p>+91 98765 43210</p>
+    </div>
+    <div class="info-card">
+      <div class="ic">✉️</div>
+      <h4>Email</h4>
+      <p>support@shopsmartai.com</p>
+    </div>
+    <div class="info-card">
+      <div class="ic">⏰</div>
+      <h4>Working Hours</h4>
+      <p>Mon - Sat<br>9:00 AM - 8:00 PM</p>
+    </div>
+  </div>
+
+  <main class="main">
+    <!-- CONTACT FORM -->
+    <section class="box">
+      <h2>Send Us A Message</h2>
+      <p class="sub">Niche nu form bharo, 24 kalak ma jawab malshe.</p>
+
+      <div class="alert" id="alertBox"></div>
+
+      <form id="contactForm" novalidate>
+        <div class="two">
+          <div class="field">
+            <label for="cName">Full Name</label>
+            <input type="text" id="cName" placeholder="Tamaru naam" autocomplete="name">
+            <div class="err-msg" id="cNameErr"></div>
+          </div>
+          <div class="field">
+            <label for="cPhone">Mobile Number</label>
+            <input type="tel" id="cPhone" placeholder="10 digit mobile number" maxlength="10" autocomplete="tel">
+            <div class="err-msg" id="cPhoneErr"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="cEmail">Email</label>
+          <input type="email" id="cEmail" placeholder="tamaro@email.com" autocomplete="email">
+          <div class="err-msg" id="cEmailErr"></div>
+        </div>
+
+        <div class="field">
+          <label for="cSubject">Subject</label>
+          <select id="cSubject">
+            <option value="">-- Subject pasand karo --</option>
+            <option>Order Status</option>
+            <option>Return / Refund</option>
+            <option>Payment Problem</option>
+            <option>Product Information</option>
+            <option>Feedback / Suggestion</option>
+            <option>Other</option>
+          </select>
+          <div class="err-msg" id="cSubjectErr"></div>
+        </div>
+
+        <div class="field">
+          <label for="cMsg">Message</label>
+          <textarea id="cMsg" placeholder="Tamaro message ahi lakho..." maxlength="500"></textarea>
+          <div class="counter"><span id="cCount">0</span>/500</div>
+          <div class="err-msg" id="cMsgErr"></div>
+        </div>
+
+        <button type="submit" class="btn" id="sendBtn">Send Message</button>
+      </form>
+    </section>
+
+    <!-- RIGHT SIDE -->
+    <aside class="box">
+      <h2>Working Hours</h2>
+      <p class="sub">Amari team aa samay ma upalabdh chhe.</p>
+
+      <span class="open-now" id="openNow">...</span>
+
+      <ul class="hours">
+        <li><span>Monday - Friday</span><strong>9:00 AM - 8:00 PM</strong></li>
+        <li><span>Saturday</span><strong>9:00 AM - 8:00 PM</strong></li>
+        <li><span>Sunday</span><span class="closed">Closed</span></li>
+      </ul>
+
+      <h2 style="font-size:18px">Follow Us</h2>
+      <div class="social">
+        <a href="#" aria-label="Facebook">📘</a>
+        <a href="#" aria-label="Instagram">📷</a>
+        <a href="#" aria-label="YouTube">▶️</a>
+        <a href="#" aria-label="Twitter">🐦</a>
+      </div>
+
+      <a class="whatsapp" href="https://wa.me/919876543210" target="_blank" rel="noopener">💬 WhatsApp par vaat karo</a>
+    </aside>
+  </main>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <h2>Frequently Asked Questions</h2>
+    <p class="sub">Aam tau badha ne thata prashno</p>
+
+    <div class="faq-item">
+      <button class="faq-q" type="button">Order ketla divas ma ave chhe?<span class="plus">+</span></button>
+      <div class="faq-a"><p>Aamtau order 3 thi 5 divas ma tamara ghare pahonchi jay chhe. Door na vistaro ma 1-2 divas vadhu lagi shake.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" type="button">Product return kem karvu?<span class="plus">+</span></button>
+      <div class="faq-a"><p>Product malya pachi 7 divas ma My Orders page par jai return request kari shako chho. Product unused ane original packing ma hovu joie.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" type="button">Payment ketlu safe chhe?<span class="plus">+</span></button>
+      <div class="faq-a"><p>Tamari badhi payment details secure rite handle thay chhe. Cash on Delivery no option pan upalabdh chhe.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" type="button">Order cancel kem karvo?<span class="plus">+</span></button>
+      <div class="faq-a"><p>Order ship thay te pehela My Orders page ma jai "Cancel Order" button dabavi shako chho.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="foot-grid">
+      <div>
+        <h4>Shop Smart AI</h4>
+        <p class="about">Smart online shopping platform. Best products, best prices ane fast delivery, badhu ek j jagya e.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="cart.html">Cart</a>
+      </div>
+      <div>
+        <h4>Account</h4>
+        <a href="login.html">Login / Register</a>
+        <a href="my-order.html">My Orders</a>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <a href="contact.html">Contact Us</a>
+        <a href="#">Returns</a>
+        <a href="#">Help Center</a>
+      </div>
+    </div>
+    <div class="copy">© 2026 Shop Smart AI. All rights reserved.</div>
+  </footer>
+
+  <div id="toast"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    /* ---------- Cart count & login link ---------- */
+    function updateCartCount() {
+      try {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        $("cartCount").textContent = cart.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+      } catch (e) { $("cartCount").textContent = 0; }
+    }
+    function getUser() {
+      try {
+        return JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser") || "null");
+      } catch (e) { return null; }
+    }
+    function updateLoginLink() {
+      const u = getUser();
+      if (u && u.name) {
+        $("loginLink").textContent = "Hi, " + u.name.split(" ")[0];
+        $("loginLink").href = "my-order.html";
+      }
+    }
+
+    /* ---------- Toast ---------- */
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2400);
+    }
+
+    /* ---------- Open / Closed status (Mon-Sat, 9 AM - 8 PM) ---------- */
+    function updateOpenStatus() {
+      const now = new Date();
+      const day = now.getDay();            /* 0 = Sunday */
+      const hour = now.getHours();
+      const open = day !== 0 && hour >= 9 && hour < 20;
+      const el = $("openNow");
+      el.textContent = open ? "🟢 Atyare Open chhe" : "🔴 Atyare Closed chhe";
+      el.className = "open-now " + (open ? "yes" : "no");
+    }
+
+    /* ---------- Form ---------- */
+    function setErr(inputId, errId, msg) {
+      $(errId).textContent = msg || "";
+      $(inputId).classList.toggle("error", !!msg);
+      return !msg;
+    }
+    const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+    /* Login karelo user hoy to naam / email / mobile pehela thi bhari do */
+    (function prefill() {
+      const u = getUser();
+      if (!u) return;
+      if (u.name) $("cName").value = u.name;
+      if (u.email) $("cEmail").value = u.email;
+      if (u.phone) $("cPhone").value = u.phone;
+    })();
+
+    /* Character counter */
+    $("cMsg").addEventListener("input", () => { $("cCount").textContent = $("cMsg").value.length; });
+
+    /* Mobile ma fakt digits */
+    $("cPhone").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, ""); });
+
+    $("contactForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const box = $("alertBox");
+      box.className = "alert";
+
+      const name = $("cName").value.trim();
+      const phone = $("cPhone").value.trim();
+      const email = $("cEmail").value.trim().toLowerCase();
+      const subject = $("cSubject").value;
+      const msg = $("cMsg").value.trim();
+
+      const ok = [
+        setErr("cName", "cNameErr", name.length < 2 ? "Potanu naam lakho" : ""),
+        setErr("cPhone", "cPhoneErr", !/^[6-9]\d{9}$/.test(phone) ? "Sacho 10 digit mobile number lakho" : ""),
+        setErr("cEmail", "cEmailErr", !email ? "Email lakho" : !emailOk(email) ? "Sacho email lakho" : ""),
+        setErr("cSubject", "cSubjectErr", !subject ? "Subject pasand karo" : ""),
+        setErr("cMsg", "cMsgErr", msg.length < 10 ? "Minimum 10 akshar no message lakho" : "")
+      ];
+      if (ok.includes(false)) return;
+
+      $("sendBtn").disabled = true;
+      $("sendBtn").textContent = "Sending...";
+
+      /* Message ne localStorage ma save karo (backend hoy to ahi fetch() vapro) */
+      setTimeout(() => {
+        try {
+          const list = JSON.parse(localStorage.getItem("contactMessages")) || [];
+          list.unshift({
+            id: "MSG" + Date.now().toString().slice(-8),
+            date: new Date().toISOString(),
+            name, phone, email, subject, message: msg
+          });
+          localStorage.setItem("contactMessages", JSON.stringify(list));
+        } catch (err) {}
+
+        box.textContent = "Tamaro message mokli didho chhe ✔ Ame jaldi sampark karishu.";
+        box.className = "alert show success";
+        $("contactForm").reset();
+        $("cCount").textContent = 0;
+        prefillAgain();
+        $("sendBtn").disabled = false;
+        $("sendBtn").textContent = "Send Message";
+        showToast("Message send thai gayo 🎉");
+        box.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 700);
+    });
+
+    function prefillAgain() {
+      const u = getUser();
+      if (!u) return;
+      if (u.name) $("cName").value = u.name;
+      if (u.email) $("cEmail").value = u.email;
+      if (u.phone) $("cPhone").value = u.phone;
+    }
+
+    /* ---------- FAQ accordion ---------- */
+    document.querySelectorAll(".faq-q").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const item = btn.parentElement;
+        const answer = item.querySelector(".faq-a");
+        const isOpen = item.classList.contains("open");
+
+        document.querySelectorAll(".faq-item").forEach(i => {
+          i.classList.remove("open");
+          i.querySelector(".faq-a").style.maxHeight = null;
+        });
+
+        if (!isOpen) {
+          item.classList.add("open");
+          answer.style.maxHeight = answer.scrollHeight + "px";
+        }
+      });
+    });
+
+    /* ---------- Mobile menu ---------- */
+    $("menuBtn").onclick = () => $("nav").classList.toggle("open");
+
+    /* ---------- Start ---------- */
+    updateCartCount();
+    updateLoginLink();
+    updateOpenStatus();
+  </script>
+</body>
+</html>

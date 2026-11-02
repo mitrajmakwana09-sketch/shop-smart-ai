@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | Admin | Shop Smart AI</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0f172a">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Segoe UI", Arial, sans-serif; background: #f1f5f9; color: #1f2937; }
+    a { text-decoration: none; color: inherit; }
+    button, select, input, textarea { font-family: inherit; }
+
+    /* ================= LAYOUT ================= */
+    .layout { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+    .side {
+      background: linear-gradient(180deg, #0b1220, #0f172a 60%, #0c4a6e 160%); color: #cbd5e1;
+      padding: 22px 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column;
+    }
+    .brand { font-size: 21px; font-weight: 800; color: #38bdf8; padding: 4px 10px 18px; }
+    .brand span { color: #4ade80; }
+    .brand small { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-top: 2px; letter-spacing: 1px; }
+    .menu { list-style: none; flex: 1; }
+    .menu a, .menu button {
+      display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; margin-bottom: 4px;
+      border-radius: 12px; font-size: 15px; font-weight: 600; color: #cbd5e1; background: none; border: none; cursor: pointer; transition: background .2s, color .2s;
+    }
+    .menu a:hover, .menu button:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .menu a.active { background: linear-gradient(90deg, #0284c7, #0369a1); color: #fff; box-shadow: 0 6px 16px rgba(2,132,199,.4); }
+    .menu .sep { height: 1px; background: rgba(255,255,255,.1); margin: 12px 4px; }
+    .menu .logout { color: #fca5a5; }
+    .menu .logout:hover { background: rgba(220,38,38,.2); color: #fff; }
+
+    .main { padding: 22px 24px 50px; min-width: 0; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+    .topbar h1 { font-size: 26px; }
+    .topbar p { color: #64748b; font-size: 14px; margin-top: 2px; }
+    .menu-btn { display: none; background: #0f172a; color: #fff; border: none; border-radius: 10px; width: 42px; height: 42px; font-size: 20px; cursor: pointer; }
+
+    /* ================= SETTINGS NAV + CONTENT ================= */
+    .wrap { display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: start; }
+    .snav { background: #fff; border-radius: 16px; padding: 10px; box-shadow: 0 2px 10px rgba(15,23,42,.06); position: sticky; top: 16px; }
+    .snav button {
+      display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 11px 12px; margin-bottom: 3px; border: none; background: none;
+      border-radius: 10px; font-size: 14px; font-weight: 700; color: #475569; cursor: pointer; transition: all .15s;
+    }
+    .snav button:hover { background: #f1f5f9; }
+    .snav button.active { background: #e0f2fe; color: #0369a1; }
+    .snav button.danger { color: #b91c1c; }
+    .snav button.danger.active { background: #fee2e2; }
+
+    .sec { display: none; }
+    .sec.show { display: block; animation: rise .35s ease; }
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    .card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 10px rgba(15,23,42,.06); margin-bottom: 16px; }
+    .card h2 { font-size: 20px; margin-bottom: 4px; }
+    .card .sub { color: #64748b; font-size: 14px; margin-bottom: 18px; line-height: 1.5; }
+
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .f { margin-bottom: 14px; }
+    .f label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .f label small { color: #94a3b8; font-weight: 500; }
+    .f input[type="text"], .f input[type="email"], .f input[type="tel"], .f input[type="number"], .f input[type="password"], .f select, .f textarea {
+      width: 100%; padding: 0 14px; height: 46px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 15px; outline: none; background: #fff; transition: border .2s, box-shadow .2s;
+    }
+    .f textarea { height: 84px; padding: 11px 14px; resize: vertical; }
+    .f input:focus, .f select:focus, .f textarea:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+    .f .error { border-color: #dc2626 !important; }
+    .f .err { color: #dc2626; font-size: 13px; margin-top: 5px; }
+    .f .hint { color: #64748b; font-size: 12px; margin-top: 5px; }
+    .prev { background: #ecfdf5; color: #047857; border-radius: 12px; padding: 12px 14px; font-weight: 600; font-size: 14px; margin-bottom: 16px; line-height: 1.5; }
+
+    .btn { height: 46px; padding: 0 24px; border: none; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; color: #fff; transition: opacity .2s, transform .1s; }
+    .btn:hover { opacity: .9; } .btn:active { transform: scale(.98); } .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn.green { background: #16a34a; } .btn.blue { background: #0284c7; } .btn.red { background: #dc2626; } .btn.gray { background: #0f172a; }
+    .btn.light { background: #eef2f7; color: #374151; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
+    /* Toggle switch */
+    .tg { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
+    .tg:last-of-type { border-bottom: none; }
+    .tg .t b { display: block; font-size: 15px; } .tg .t small { color: #64748b; font-size: 13px; }
+    .sw { position: relative; width: 50px; height: 28px; flex-shrink: 0; }
+    .sw input { opacity: 0; width: 100%; height: 100%; position: absolute; inset: 0; cursor: pointer; z-index: 2; margin: 0; }
+    .sw span { position: absolute; inset: 0; background: #cbd5e1; border-radius: 99px; transition: background .2s; }
+    .sw span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,.25); transition: transform .2s; }
+    .sw input:checked + span { background: #16a34a; }
+    .sw input:checked + span::after { transform: translateX(22px); }
+    .sw input:focus-visible + span { box-shadow: 0 0 0 3px rgba(2,132,199,.4); }
+
+    /* Coupons */
+    .add-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; background: #f8fafc; border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+    .add-row .f { margin: 0; }
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; vertical-align: middle; }
+    th { background: #f8fafc; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+    tr:last-child td { border-bottom: none; }
+    .code { display: inline-block; background: #e0f2fe; color: #0369a1; font-weight: 800; letter-spacing: 1px; padding: 4px 12px; border-radius: 8px; font-size: 13px; }
+    .code.off { background: #e5e7eb; color: #64748b; text-decoration: line-through; }
+    .pill { padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; }
+    .pill.on { background: #dcfce7; color: #15803d; } .pill.off { background: #e5e7eb; color: #475569; }
+    .ib { width: 34px; height: 34px; border-radius: 9px; border: none; cursor: pointer; background: #fee2e2; font-size: 15px; }
+    .ib:hover { background: #fecaca; }
+    .empty { text-align: center; color: #94a3b8; padding: 26px 10px; font-size: 14px; }
+
+    /* Announcement preview */
+    .bar-prev { background: #0f172a; color: #fff; text-align: center; padding: 10px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; margin-bottom: 16px; min-height: 40px; word-break: break-word; }
+    .bar-prev.dim { opacity: .45; }
+
+    /* Password strength */
+    .strength { height: 6px; background: #e5e7eb; border-radius: 99px; margin-top: 8px; overflow: hidden; }
+    .strength i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width .3s, background .3s; }
+    .strength-text { font-size: 12px; margin-top: 4px; font-weight: 700; min-height: 16px; }
+
+    /* Storage meter */
+    .meter { height: 12px; background: #e5e7eb; border-radius: 99px; overflow: hidden; margin: 8px 0 4px; }
+    .meter i { display: block; height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, #0284c7, #16a34a); transition: width .8s ease; }
+    .meter-t { font-size: 13px; color: #64748b; }
+    .chk { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin: 8px 0; }
+    .chk input { width: 17px; height: 17px; accent-color: #0284c7; cursor: pointer; }
+    .note { background: #fef3c7; color: #92400e; border-radius: 10px; padding: 10px 14px; font-size: 13px; line-height: 1.55; margin-bottom: 14px; }
+    hr.line { border: none; border-top: 1px dashed #e2e8f0; margin: 18px 0; }
+
+    .dz { border: 1px solid #fecaca; background: #fef2f2; }
+    .dz h2 { color: #b91c1c; }
+
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px; opacity: 0; transition: all .3s; pointer-events: none; z-index: 500; max-width: 92%; text-align: center; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .scrim { display: none; }
+
+    @media (max-width: 960px) {
+      .wrap { grid-template-columns: 1fr; }
+      .snav { position: static; display: flex; gap: 6px; overflow-x: auto; padding: 8px; }
+      .snav button { width: auto; white-space: nowrap; margin: 0; }
+      .add-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; z-index: 200; transform: translateX(-102%); transition: transform .3s; }
+      .side.open { transform: none; }
+      .scrim.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; }
+      .menu-btn { display: block; }
+      .main { padding: 16px 14px 40px; }
+    }
+    @media (max-width: 560px) { .two, .add-row { grid-template-columns: 1fr; } .topbar h1 { font-size: 22px; } .card { padding: 18px 14px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+
+<script>
+  /* Fakt admin j aa page joi shake */
+  (function () {
+    let ok = false;
+    try { ok = !!sessionStorage.getItem("adminSession"); } catch (e) {}
+    if (!ok) location.replace("admin-login.html?redirect=settings.html");
+  })();
+</script>
+
+<div class="layout">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="side" id="side">
+    <div class="brand">Shop <span>Smart AI</span><small>ADMIN PANEL</small></div>
+    <ul class="menu">
+      <li><a href="index.html">🏠 Admin Home</a></li>
+      <li><a href="dashboard.html">📊 Dashboard</a></li>
+      <li><a href="orders.html">📦 Orders</a></li>
+      <li><a href="products.html">🛍️ Products</a></li>
+      <li><a href="add-product.html">➕ Add Product</a></li>
+      <li><a href="settings.html" class="active">⚙️ Settings</a></li>
+      <li class="sep"></li>
+      <li><a href="../index.html" target="_blank" rel="noopener">🌐 Website Juo</a></li>
+      <li><button type="button" class="logout" id="logoutBtn">🚪 Logout</button></li>
+    </ul>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;gap:12px;align-items:center">
+        <button class="menu-btn" id="menuBtn" aria-label="Menu" type="button">☰</button>
+        <div>
+          <h1>⚙️ Settings</h1>
+          <p>Dukan, delivery, coupons, payment ane security ni settings</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <nav class="snav" id="snav" aria-label="Settings sections">
+        <button data-s="store" class="active" type="button">🏪 Store Details</button>
+        <button data-s="delivery" type="button">🚚 Delivery</button>
+        <button data-s="coupons" type="button">🎟 Coupons</button>
+        <button data-s="payments" type="button">💳 Payments</button>
+        <button data-s="announce" type="button">📣 Announcement</button>
+        <button data-s="security" type="button">🔐 Security</button>
+        <button data-s="backup" type="button">💾 Backup</button>
+        <button data-s="danger" class="danger" type="button">⚠️ Danger Zone</button>
+      </nav>
+
+      <div>
+        <!-- STORE -->
+        <section class="sec show" id="sec-store">
+          <div class="card">
+            <h2>🏪 Store Details</h2>
+            <p class="sub">Aa jaankari invoice ane contact ma vapray chhe.</p>
+            <div class="f"><label for="sName">Dukan nu naam</label><input type="text" id="sName" maxlength="40"><div class="err" id="sNameErr"></div></div>
+            <div class="two">
+              <div class="f"><label for="sEmail">Support Email</label><input type="email" id="sEmail" maxlength="60"><div class="err" id="sEmailErr"></div></div>
+              <div class="f"><label for="sPhone">Phone</label><input type="tel" id="sPhone" maxlength="20"><div class="err" id="sPhoneErr"></div></div>
+            </div>
+            <div class="two">
+              <div class="f"><label for="sWa">WhatsApp Number <small>(country code sathe)</small></label><input type="tel" id="sWa" maxlength="15" inputmode="numeric" placeholder="919876543210"><div class="err" id="sWaErr"></div></div>
+              <div class="f"><label for="sHours">Working Hours</label><input type="text" id="sHours" maxlength="50"></div>
+            </div>
+            <div class="f"><label for="sAddr">Address</label><textarea id="sAddr" maxlength="200"></textarea></div>
+            <div class="btn-row"><button class="btn green" id="saveStore" type="button">💾 Save Store Details</button></div>
+          </div>
+        </section>
+
+        <!-- DELIVERY -->
+        <section class="sec" id="sec-delivery">
+          <div class="card">
+            <h2>🚚 Delivery ane Return</h2>
+            <p class="sub">Delivery charge ane free delivery ni limit ahi thi badlo.</p>
+            <div class="prev" id="dPrev"></div>
+            <div class="two">
+              <div class="f"><label for="dFree">Free delivery limit (₹) <small>(aa ni upar FREE)</small></label><input type="number" id="dFree" min="0" max="100000" step="1"><div class="err" id="dFreeErr"></div><div class="hint">0 lakho to hamesha FREE delivery.</div></div>
+              <div class="f"><label for="dFee">Delivery charge (₹)</label><input type="number" id="dFee" min="0" max="1000" step="1"><div class="err" id="dFeeErr"></div></div>
+            </div>
+            <div class="two">
+              <div class="f"><label for="dDays">Delivery samay <small>(divas)</small></label><input type="text" id="dDays" maxlength="10" placeholder="3-5"><div class="err" id="dDaysErr"></div></div>
+              <div class="f"><label for="dRet">Return policy (divas)</label><input type="number" id="dRet" min="0" max="60" step="1"><div class="err" id="dRetErr"></div></div>
+            </div>
+            <div class="btn-row"><button class="btn green" id="saveDelivery" type="button">💾 Save Delivery Settings</button></div>
+          </div>
+        </section>
+
+        <!-- COUPONS -->
+        <section class="sec" id="sec-coupons">
+          <div class="card">
+            <h2>🎟 Coupons</h2>
+            <p class="sub">Checkout par customer aa codes vapri shake chhe. Add, on/off ane delete turant save thay chhe.</p>
+            <div class="add-row">
+              <div class="f"><label for="cCode">Code</label><input type="text" id="cCode" maxlength="12" placeholder="DIWALI20"></div>
+              <div class="f"><label for="cType">Prakar</label>
+                <select id="cType"><option value="percent">% Discount</option><option value="flat">₹ Flat Discount</option></select></div>
+              <div class="f"><label for="cVal" id="cValL">Discount (%)</label><input type="number" id="cVal" min="1" step="1" placeholder="10"></div>
+              <div class="f"><label for="cMin">Minimum order (₹)</label><input type="number" id="cMin" min="0" step="1" placeholder="0"></div>
+              <button class="btn blue" id="addCoupon" type="button">➕ Add</button>
+            </div>
+            <div class="err" id="cErr" style="color:#dc2626;font-size:13px;margin:-4px 0 12px"></div>
+            <div class="tbl-wrap" id="cList"></div>
+          </div>
+        </section>
+
+        <!-- PAYMENTS -->
+        <section class="sec" id="sec-payments">
+          <div class="card">
+            <h2>💳 Payment Methods</h2>
+            <p class="sub">Customer ne checkout par kya payment options batavva te pasand karo. Ochha ma ochhu ek chalu rakhvu padse.</p>
+            <div class="tg"><div class="t"><b>💵 Cash on Delivery</b><small>Product malya pachi paise</small></div><label class="sw"><input type="checkbox" id="pCod"><span></span></label></div>
+            <div class="tg"><div class="t"><b>📱 UPI</b><small>Google Pay, PhonePe, Paytm</small></div><label class="sw"><input type="checkbox" id="pUpi"><span></span></label></div>
+            <div class="tg"><div class="t"><b>💳 Credit / Debit Card</b><small>Visa, Mastercard, RuPay</small></div><label class="sw"><input type="checkbox" id="pCard"><span></span></label></div>
+            <div class="tg"><div class="t"><b>🏦 Net Banking</b><small>SBI, HDFC, ICICI vagere</small></div><label class="sw"><input type="checkbox" id="pNb"><span></span></label></div>
+            <div class="tg"><div class="t"><b>👛 Wallet</b><small>Paytm, PhonePe, Amazon Pay</small></div><label class="sw"><input type="checkbox" id="pWal"><span></span></label></div>
+            <div class="err" id="pErr" style="color:#dc2626;font-size:13px;margin:8px 0"></div>
+            <div class="btn-row"><button class="btn green" id="savePay" type="button">💾 Save Payment Settings</button></div>
+          </div>
+        </section>
+
+        <!-- ANNOUNCEMENT -->
+        <section class="sec" id="sec-announce">
+          <div class="card">
+            <h2>📣 Announcement Bar</h2>
+            <p class="sub">Home page upar ek message batavo (jem ke "Diwali Sale: 30% sudhi OFF").</p>
+            <div class="bar-prev dim" id="aPrev">Aa rite dekhase</div>
+            <div class="tg"><div class="t"><b>Announcement chalu karo</b><small>Home page ni upar batavo</small></div><label class="sw"><input type="checkbox" id="aOn"><span></span></label></div>
+            <div class="f" style="margin-top:12px"><label for="aText">Message <small>(<span id="aCount">0</span>/120)</small></label><input type="text" id="aText" maxlength="120" placeholder="🎉 Diwali Sale: coupon SMART10 vapro!"><div class="err" id="aTextErr"></div></div>
+            <div class="btn-row"><button class="btn green" id="saveAnn" type="button">💾 Save Announcement</button></div>
+          </div>
+        </section>
+
+        <!-- SECURITY -->
+        <section class="sec" id="sec-security">
+          <div class="card">
+            <h2>🔐 Admin Password Badlo</h2>
+            <p class="sub">Juno password verify thaya pachi navo password save thase. Password plain text ma save nathi thato.</p>
+            <div class="f"><label for="oldP">Juno Password</label><input type="password" id="oldP" autocomplete="current-password"><div class="err" id="oldPErr"></div></div>
+            <div class="f"><label for="newP">Navo Password <small>(minimum 8)</small></label><input type="password" id="newP" autocomplete="new-password"><div class="strength"><i id="strBar"></i></div><div class="strength-text" id="strText"></div><div class="err" id="newPErr"></div></div>
+            <div class="f"><label for="newP2">Navo Password Fari Lakho</label><input type="password" id="newP2" autocomplete="new-password"><div class="err" id="newP2Err"></div></div>
+            <label class="chk"><input type="checkbox" id="showP"> Password dekhado</label>
+            <div class="btn-row"><button class="btn blue" id="savePass" type="button">🔑 Password Badlo</button></div>
+            <hr class="line">
+            <p class="sub" style="margin-bottom:0">Admin username: <strong id="admUser">-</strong></p>
+          </div>
+        </section>
+
+        <!-- BACKUP -->
+        <section class="sec" id="sec-backup">
+          <div class="card">
+            <h2>💾 Backup ane Restore</h2>
+            <p class="sub">Badho data (orders, products, settings) ek file ma save karo, ane jarur pade tyare pachho lao.</p>
+            <strong style="font-size:14px">Browser storage vaparash</strong>
+            <div class="meter"><i id="meterFill"></i></div>
+            <div class="meter-t" id="meterText"></div>
+            <hr class="line">
+            <label class="chk"><input type="checkbox" id="incUsers"> Customers (login details) pan include karo</label>
+            <div class="note">⚠️ Customers ma tamara customers na email, mobile ane password hash hoy chhe. Aa file surakshit jagya e rakhjo, bijane na aapsho.</div>
+            <div class="btn-row">
+              <button class="btn green" id="exportBtn" type="button">⬇ Backup Download</button>
+              <button class="btn light" id="importBtn" type="button">⬆ Backup Restore</button>
+            </div>
+            <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+          </div>
+        </section>
+
+        <!-- DANGER -->
+        <section class="sec" id="sec-danger">
+          <div class="card dz">
+            <h2>⚠️ Danger Zone</h2>
+            <p class="sub">Aa data kayam mate delete thase ane pachho nahi aave. Pehela <strong>Backup</strong> lai lo. Admin account delete nathi thato.</p>
+            <label class="chk"><input type="checkbox" data-d="orders"> 📦 Badha Orders</label>
+            <label class="chk"><input type="checkbox" data-d="messages"> ✉️ Contact Messages</label>
+            <label class="chk"><input type="checkbox" data-d="users"> 👥 Customers (register thayela)</label>
+            <label class="chk"><input type="checkbox" data-d="custom"> 🛍️ Custom Products (add-product thi umerela)</label>
+            <label class="chk"><input type="checkbox" data-d="overrides"> ✏️ Product price / stock na badlav</label>
+            <label class="chk"><input type="checkbox" data-d="settings"> ⚙️ Settings (default ma pachha)</label>
+            <div class="f" style="margin-top:14px"><label for="delTxt">Confirm karva mate <strong>DELETE</strong> lakho</label><input type="text" id="delTxt" autocomplete="off" placeholder="DELETE"></div>
+            <div class="btn-row"><button class="btn red" id="delBtn" type="button" disabled>🗑 Pasand karela Data Delete Karo</button></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function showToast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2500);
+  }
+  const rupee = n => "₹" + Math.round(Number(n) || 0).toLocaleString("en-IN");
+  function setErr(inputId, errId, msg) {
+    $(errId).textContent = msg || "";
+    if (inputId) $(inputId).classList.toggle("error", !!msg);
+    return !msg;
+  }
+
+  /* =========================================================
+     SETTINGS DATA (key: storeSettings)
+     =========================================================
+     Baki pages (checkout, cart, index) aa key vanchi shake chhe. */
+  const KEY = "storeSettings";
+  const DEFAULTS = {
+    store: { name: "Shop Smart AI", email: "support@shopsmartai.com", phone: "+91 98765 43210", whatsapp: "919876543210", address: "", hours: "Mon - Sat, 9:00 AM - 8:00 PM" },
+    delivery: { freeAbove: 999, fee: 49, days: "3-5", returnDays: 7 },
+    payments: { cod: true, upi: true, card: true, netbanking: true, wallet: true },
+    coupons: [
+      { code: "SMART10", type: "percent", value: 10, min: 0, active: true },
+      { code: "SAVE100", type: "flat", value: 100, min: 1000, active: true },
+      { code: "FIRST50", type: "flat", value: 50, min: 0, active: true }
+    ],
+    announce: { on: false, text: "" }
+  };
+
+  const str = (v, d, max) => (typeof v === "string" ? v : d).slice(0, max);
+  const num = (v, d, lo, hi) => { const n = Number(v); return v === "" || v == null || isNaN(n) ? d : Math.min(hi, Math.max(lo, Math.round(n))); };
+
+  function normalize(s) {
+    s = s && typeof s === "object" ? s : {};
+    const st = s.store || {}, dl = s.delivery || {}, py = s.payments || {}, an = s.announce || {};
+    const out = {
+      store: {
+        name: str(st.name, DEFAULTS.store.name, 40), email: str(st.email, DEFAULTS.store.email, 60), phone: str(st.phone, DEFAULTS.store.phone, 20),
+        whatsapp: str(st.whatsapp, DEFAULTS.store.whatsapp, 15), address: str(st.address, "", 200), hours: str(st.hours, DEFAULTS.store.hours, 50)
+      },
+      delivery: {
+        freeAbove: num(dl.freeAbove, 999, 0, 100000), fee: num(dl.fee, 49, 0, 1000),
+        days: str(dl.days, "3-5", 10), returnDays: num(dl.returnDays, 7, 0, 60)
+      },
+      payments: {
+        cod: py.cod !== false, upi: py.upi !== false, card: py.card !== false, netbanking: py.netbanking !== false, wallet: py.wallet !== false
+      },
+      coupons: Array.isArray(s.coupons)
+        ? s.coupons.filter(c => c && /^[A-Z0-9]{3,12}$/.test(c.code) && (c.type === "percent" || c.type === "flat") && Number(c.value) > 0)
+            .slice(0, 20).map(c => ({ code: c.code, type: c.type, value: Math.round(Number(c.value)), min: Math.max(0, Math.round(Number(c.min) || 0)), active: c.active !== false }))
+        : JSON.parse(JSON.stringify(DEFAULTS.coupons)),
+      announce: { on: !!an.on, text: str(an.text, "", 120) }
+    };
+    if (!Object.values(out.payments).some(Boolean)) out.payments.cod = true;
+    return out;
+  }
+  function load() {
+    try { return normalize(JSON.parse(localStorage.getItem(KEY))); } catch (e) { return normalize(null); }
+  }
+  let S = load();
+  function commit(msg) {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); if (msg) showToast(msg); return true; }
+    catch (e) { showToast("Save na thayu (browser storage bharayu ke block chhe)"); return false; }
+  }
+
+  /* =========================================================
+     SECTIONS (tabs)
+     ========================================================= */
+  function openSec(name) {
+    if (!$("sec-" + name)) name = "store";
+    document.querySelectorAll(".sec").forEach(s => s.classList.toggle("show", s.id === "sec-" + name));
+    document.querySelectorAll("#snav button").forEach(b => b.classList.toggle("active", b.dataset.s === name));
+    try { history.replaceState(null, "", "#" + name); } catch (e) {}
+    if (name === "backup") renderMeter();
+  }
+  $("snav").addEventListener("click", e => { const b = e.target.closest("[data-s]"); if (b) openSec(b.dataset.s); });
+
+  /* =========================================================
+     STORE
+     ========================================================= */
+  function fillStore() {
+    const s = S.store;
+    $("sName").value = s.name; $("sEmail").value = s.email; $("sPhone").value = s.phone;
+    $("sWa").value = s.whatsapp; $("sHours").value = s.hours; $("sAddr").value = s.address;
+  }
+  $("sWa").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, ""); });
+  $("saveStore").onclick = () => {
+    const name = $("sName").value.trim(), email = $("sEmail").value.trim(), phone = $("sPhone").value.trim(), wa = $("sWa").value.trim();
+    const ok = [
+      setErr("sName", "sNameErr", name.length < 2 ? "Dukan nu naam lakho" : ""),
+      setErr("sEmail", "sEmailErr", !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "Sacho email lakho" : ""),
+      setErr("sPhone", "sPhoneErr", phone.replace(/\D/g, "").length < 8 ? "Sacho phone number lakho" : ""),
+      setErr("sWa", "sWaErr", wa && (wa.length < 10 || wa.length > 13) ? "10 thi 13 digit (country code sathe)" : "")
+    ];
+    if (ok.includes(false)) return;
+    S.store = { name, email, phone, whatsapp: wa, hours: $("sHours").value.trim(), address: $("sAddr").value.trim() };
+    commit("Store details save thaya ✔");
+  };
+
+  /* =========================================================
+     DELIVERY
+     ========================================================= */
+  function fillDelivery() {
+    const d = S.delivery;
+    $("dFree").value = d.freeAbove; $("dFee").value = d.fee; $("dDays").value = d.days; $("dRet").value = d.returnDays;
+    deliveryPrev();
+  }
+  function deliveryPrev() {
+    const f = Number($("dFree").value), fee = Number($("dFee").value);
+    if (isNaN(f) || isNaN(fee) || $("dFree").value === "" || $("dFee").value === "") { $("dPrev").textContent = "Free delivery limit ane charge lakho."; return; }
+    $("dPrev").textContent = f === 0 || fee === 0
+      ? "🎉 Badha order par delivery FREE."
+      : "🚚 " + rupee(f) + " ni upar na order par delivery FREE, nahitar " + rupee(fee) + " delivery charge.";
+  }
+  ["dFree", "dFee"].forEach(i => $(i).addEventListener("input", deliveryPrev));
+  $("saveDelivery").onclick = () => {
+    const free = $("dFree").value, fee = $("dFee").value, ret = $("dRet").value, days = $("dDays").value.trim();
+    const int = (v, lo, hi) => v !== "" && Number.isInteger(Number(v)) && Number(v) >= lo && Number(v) <= hi;
+    const ok = [
+      setErr("dFree", "dFreeErr", !int(free, 0, 100000) ? "0 thi 1,00,000 vachche purnank lakho" : ""),
+      setErr("dFee", "dFeeErr", !int(fee, 0, 1000) ? "0 thi 1,000 vachche purnank lakho" : ""),
+      setErr("dDays", "dDaysErr", !/^\d{1,2}(-\d{1,2})?$/.test(days) ? "Jem ke 3-5 ke 2" : ""),
+      setErr("dRet", "dRetErr", !int(ret, 0, 60) ? "0 thi 60 divas vachche lakho" : "")
+    ];
+    if (ok.includes(false)) return;
+    S.delivery = { freeAbove: Number(free), fee: Number(fee), days, returnDays: Number(ret) };
+    commit("Delivery settings save thai ✔");
+  };
+
+  /* =========================================================
+     COUPONS
+     ========================================================= */
+  function renderCoupons() {
+    if (!S.coupons.length) { $("cList").innerHTML = `<div class="empty">🎟 Haju koi coupon nathi. Upar thi umero.</div>`; return; }
+    $("cList").innerHTML = `<table><tr><th>Code</th><th>Discount</th><th>Minimum Order</th><th>Status</th><th></th></tr>
+      ${S.coupons.map((c, i) => `<tr>
+        <td><span class="code ${c.active ? "" : "off"}">${esc(c.code)}</span></td>
+        <td><strong>${c.type === "percent" ? c.value + "% OFF" : rupee(c.value) + " OFF"}</strong></td>
+        <td>${c.min ? rupee(c.min) + " ni upar" : "Koi minimum nahi"}</td>
+        <td><button class="pill ${c.active ? "on" : "off"}" data-tg="${i}" type="button">${c.active ? "✔ Chalu" : "⏸ Band"}</button></td>
+        <td><button class="ib" data-rm="${i}" aria-label="Delete" title="Delete" type="button">🗑</button></td></tr>`).join("")}</table>`;
+  }
+  $("cType").onchange = () => {
+    const p = $("cType").value === "percent";
+    $("cValL").textContent = p ? "Discount (%)" : "Discount (₹)";
+    $("cVal").placeholder = p ? "10" : "100";
+  };
+  $("addCoupon").onclick = () => {
+    const code = $("cCode").value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const type = $("cType").value, val = Number($("cVal").value), min = $("cMin").value === "" ? 0 : Number($("cMin").value);
+    let msg = "";
+    if (!/^[A-Z0-9]{3,12}$/.test(code)) msg = "Code 3 thi 12 akshar (A-Z, 0-9) no hovo joie";
+    else if (S.coupons.some(c => c.code === code)) msg = "Aa code pehela thi chhe";
+    else if (!Number.isInteger(val) || val < 1) msg = "Discount purnank (1 ke vadhu) lakho";
+    else if (type === "percent" && val > 90) msg = "Percent discount 90 thi vadhu na hoi shake";
+    else if (!Number.isInteger(min) || min < 0) msg = "Minimum order 0 ke vadhu purnank joie";
+    else if (type === "flat" && min && val >= min) msg = "Flat discount minimum order thi ochhu hovu joie";
+    else if (S.coupons.length >= 20) msg = "Maximum 20 coupons rakhi shakay";
+    $("cErr").textContent = msg;
+    if (msg) return;
+    S.coupons.push({ code, type, value: val, min, active: true });
+    if (commit("Coupon " + code + " umeryu ✔")) { $("cCode").value = ""; $("cVal").value = ""; $("cMin").value = ""; renderCoupons(); }
+    else S.coupons.pop();
+  };
+  $("cCode").addEventListener("input", e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); });
+  $("cList").addEventListener("click", e => {
+    const tg = e.target.closest("[data-tg]");
+    if (tg) { const c = S.coupons[Number(tg.dataset.tg)]; if (c) { c.active = !c.active; commit(c.code + (c.active ? " chalu" : " band")); renderCoupons(); } return; }
+    const rm = e.target.closest("[data-rm]");
+    if (rm) {
+      const c = S.coupons[Number(rm.dataset.rm)];
+      if (c && confirm("Coupon " + c.code + " delete karvo chhe?")) { S.coupons.splice(Number(rm.dataset.rm), 1); commit("Coupon delete thayo"); renderCoupons(); }
+    }
+  });
+
+  /* =========================================================
+     PAYMENTS
+     ========================================================= */
+  const PAY_IDS = { cod: "pCod", upi: "pUpi", card: "pCard", netbanking: "pNb", wallet: "pWal" };
+  function fillPay() { Object.keys(PAY_IDS).forEach(k => { $(PAY_IDS[k]).checked = !!S.payments[k]; }); }
+  $("savePay").onclick = () => {
+    const p = {}; Object.keys(PAY_IDS).forEach(k => { p[k] = $(PAY_IDS[k]).checked; });
+    if (!Object.values(p).some(Boolean)) { $("pErr").textContent = "Ochha ma ochhu ek payment method chalu rakho."; return; }
+    $("pErr").textContent = "";
+    S.payments = p; commit("Payment settings save thai ✔");
+  };
+
+  /* =========================================================
+     ANNOUNCEMENT
+     ========================================================= */
+  function fillAnn() { $("aOn").checked = S.announce.on; $("aText").value = S.announce.text; annPrev(); }
+  function annPrev() {
+    const t = $("aText").value.trim();
+    $("aCount").textContent = $("aText").value.length;
+    $("aPrev").textContent = t || "Aa rite dekhase";
+    $("aPrev").classList.toggle("dim", !$("aOn").checked || !t);
+  }
+  $("aText").addEventListener("input", annPrev); $("aOn").addEventListener("change", annPrev);
+  $("saveAnn").onclick = () => {
+    const text = $("aText").value.trim();
+    if (!setErr("aText", "aTextErr", $("aOn").checked && !text ? "Chalu karva mate message lakho" : "")) return;
+    S.announce = { on: $("aOn").checked, text };
+    commit("Announcement save thayu ✔");
+  };
+
+  /* =========================================================
+     SECURITY (admin-login.html jevo j salt + SHA-256)
+     ========================================================= */
+  async function hashPass(pass, salt) {
+    const text = salt + "::" + pass;
+    try {
+      if (window.crypto && crypto.subtle) {
+        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+      }
+    } catch (e) {}
+    return btoa(unescape(encodeURIComponent(text)));
+  }
+  function randomSalt() {
+    try { const a = new Uint8Array(16); crypto.getRandomValues(a); return Array.from(a).map(b => b.toString(16).padStart(2, "0")).join(""); }
+    catch (e) { return String(Date.now()) + Math.random().toString(16).slice(2); }
+  }
+  function getAccount() {
+    try { const a = JSON.parse(localStorage.getItem("adminAccount")); return a && a.user && a.salt && a.hash ? a : null; } catch (e) { return null; }
+  }
+  function strength(p) {
+    let s = [p.length >= 8, /[A-Z]/.test(p), /\d/.test(p), /[^A-Za-z0-9]/.test(p)].filter(Boolean).length;
+    if (p.length >= 12 && s >= 3) s = 4;
+    return p.length ? s : 0;
+  }
+  $("newP").addEventListener("input", () => {
+    const L = [{ w: "0%", c: "#e5e7eb", t: "" }, { w: "25%", c: "#dc2626", t: "Kamjor" }, { w: "50%", c: "#f59e0b", t: "Theek" },
+      { w: "75%", c: "#0284c7", t: "Saru" }, { w: "100%", c: "#16a34a", t: "Majboot 💪" }][strength($("newP").value)];
+    $("strBar").style.width = L.w; $("strBar").style.background = L.c;
+    $("strText").textContent = L.t ? "Password: " + L.t : ""; $("strText").style.color = L.c;
+  });
+  $("showP").onchange = e => { ["oldP", "newP", "newP2"].forEach(i => { $(i).type = e.target.checked ? "text" : "password"; }); };
+
+  $("savePass").onclick = async () => {
+    const acc = getAccount();
+    if (!acc) { showToast("Admin account malyu nahi. Pharithi login karo."); return; }
+    const o = $("oldP").value, n1 = $("newP").value, n2 = $("newP2").value;
+    const ok = [
+      setErr("oldP", "oldPErr", !o ? "Juno password lakho" : ""),
+      setErr("newP", "newPErr", n1.length < 8 ? "Minimum 8 characters joie" : (strength(n1) < 2 ? "Motu akshar ke ank umero" : (n1 === o ? "Navo password juna thi alag hovo joie" : ""))),
+      setErr("newP2", "newP2Err", n1 !== n2 ? "Password match nathi thato" : "")
+    ];
+    if (ok.includes(false)) return;
+
+    $("savePass").disabled = true;
+    if (await hashPass(o, acc.salt) !== acc.hash) {
+      $("savePass").disabled = false;
+      return setErr("oldP", "oldPErr", "Juno password khotu chhe");
+    }
+    const salt = randomSalt();
+    acc.salt = salt; acc.hash = await hashPass(n1, salt); acc.changedAt = new Date().toISOString();
+    try { localStorage.setItem("adminAccount", JSON.stringify(acc)); }
+    catch (e) { $("savePass").disabled = false; return showToast("Save na thayu (browser storage block chhe)"); }
+    $("savePass").disabled = false;
+    ["oldP", "newP", "newP2"].forEach(i => { $(i).value = ""; });
+    $("strBar").style.width = "0%"; $("strText").textContent = "";
+    showToast("Password safaltapurvak badlayo ✔");
+  };
+
+  /* =========================================================
+     BACKUP / RESTORE
+     ========================================================= */
+  const ARRAY_KEYS = ["orders", "users", "contactMessages", "customProducts", "wishlist"];
+  const OBJECT_KEYS = ["productOverrides", "storeSettings"];
+  const ALL_KEYS = ARRAY_KEYS.concat(OBJECT_KEYS);
+
+  function renderMeter() {
+    let bytes = 0;
+    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); bytes += (k.length + (localStorage.getItem(k) || "").length) * 2; } } catch (e) {}
+    const kb = bytes / 1024, pct = Math.min(100, kb / 5120 * 100);
+    $("meterFill").style.width = Math.max(2, pct) + "%";
+    $("meterFill").style.background = pct > 80 ? "#dc2626" : pct > 55 ? "#f59e0b" : "";
+    $("meterText").textContent = kb.toFixed(1) + " KB vaparayu · lagbhag 5 MB ma thi " + pct.toFixed(1) + "%";
+  }
+
+  $("exportBtn").onclick = () => {
+    const data = {};
+    ALL_KEYS.forEach(k => {
+      if (k === "users" && !$("incUsers").checked) return;
+      let v = null; try { v = localStorage.getItem(k); } catch (e) {}
+      if (v === null) return;
+      try { data[k] = JSON.parse(v); } catch (e) {}
+    });
+    if (!Object.keys(data).length) return showToast("Backup karva mate koi data nathi");
+    const blob = new Blob([JSON.stringify({ app: "shop-smart-ai", version: 1, date: new Date().toISOString(), data }, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "shop-smart-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    showToast("Backup download thayu ✔");
+  };
+
+  $("importBtn").onclick = () => $("importFile").click();
+  $("importFile").onchange = e => {
+    const file = e.target.files[0]; e.target.value = "";
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) return showToast("File bahu moti chhe (8 MB thi nani joie)");
+    const r = new FileReader();
+    r.onload = () => {
+      let obj;
+      try { obj = JSON.parse(r.result); } catch (err) { return showToast("Aa valid backup file nathi"); }
+      if (!obj || obj.app !== "shop-smart-ai" || !obj.data || typeof obj.data !== "object") return showToast("Aa Shop Smart AI ni backup file nathi");
+
+      const good = [];
+      Object.keys(obj.data).forEach(k => {
+        const v = obj.data[k];
+        if (ARRAY_KEYS.includes(k) && Array.isArray(v)) good.push(k);
+        else if (OBJECT_KEYS.includes(k) && v && typeof v === "object" && !Array.isArray(v)) good.push(k);
+      });
+      if (!good.length) return showToast("File ma koi sacho data malyo nahi");
+      if (!confirm("Aa file mathi " + good.length + " prakar no data restore thase ane atyar na e data upar lakhai jase:\n\n" + good.join(", ") + "\n\nAagal vadhvu chhe?")) return;
+      try {
+        good.forEach(k => localStorage.setItem(k, JSON.stringify(obj.data[k])));
+      } catch (err) { return showToast("Restore na thayu (storage bharayu ke block chhe)"); }
+      S = load(); fillAll(); renderMeter();
+      showToast("Restore thayu ✔ (" + good.length + " prakar)");
+    };
+    r.readAsText(file);
+  };
+
+  /* =========================================================
+     DANGER ZONE
+     ========================================================= */
+  const DEL_KEYS = {
+    orders: ["orders", "lastOrder", "pendingOrder"], messages: ["contactMessages"], users: ["users"],
+    custom: ["customProducts"], overrides: ["productOverrides"], settings: ["storeSettings"]
+  };
+  function delState() {
+    const any = [...document.querySelectorAll("[data-d]")].some(c => c.checked);
+    $("delBtn").disabled = !(any && $("delTxt").value === "DELETE");
+  }
+  document.querySelectorAll("[data-d]").forEach(c => c.addEventListener("change", delState));
+  $("delTxt").addEventListener("input", delState);
+  $("delBtn").onclick = () => {
+    const picked = [...document.querySelectorAll("[data-d]")].filter(c => c.checked).map(c => c.dataset.d);
+    if (!picked.length || $("delTxt").value !== "DELETE") return;
+    if (!confirm("Chhelli vaar puchhiye chhie: pasand karela data kayam mate delete karvo?")) return;
+    try { picked.forEach(p => DEL_KEYS[p].forEach(k => localStorage.removeItem(k))); }
+    catch (e) { return showToast("Delete na thayu"); }
+    document.querySelectorAll("[data-d]").forEach(c => { c.checked = false; });
+    $("delTxt").value = ""; delState();
+    S = load(); fillAll(); renderMeter();
+    showToast(picked.length + " prakar no data delete thayo");
+  };
+
+  /* =========================================================
+     START
+     ========================================================= */
+  function fillAll() { fillStore(); fillDelivery(); renderCoupons(); fillPay(); fillAnn(); }
+
+  const side = $("side"), scrim = $("scrim");
+  const toggleSide = open => { side.classList.toggle("open", open); scrim.classList.toggle("show", open); };
+  $("menuBtn").onclick = () => toggleSide(!side.classList.contains("open"));
+  scrim.onclick = () => toggleSide(false);
+  $("logoutBtn").onclick = () => {
+    if (!confirm("Admin logout karvu chhe?")) return;
+    try { sessionStorage.removeItem("adminSession"); } catch (e) {}
+    location.href = "admin-login.html";
+  };
+
+  (function () {
+    const a = getAccount(); $("admUser").textContent = a ? a.user : "-";
+    fillAll();
+    const h = (location.hash || "").replace("#", "");
+    if (h) openSec(h);
+  })();
+</script>
+</body>
+</html>

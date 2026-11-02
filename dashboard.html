@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Shop Smart AI</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: "Segoe UI", Arial, sans-serif; background: #f1f5f9; color: #1f2937; }
+    a { text-decoration: none; color: inherit; }
+    button, select, input { font-family: inherit; }
+
+    /* ================= LAYOUT ================= */
+    .layout { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+    .side {
+      background: linear-gradient(180deg, #0b1220, #0f172a 60%, #0c4a6e 160%); color: #cbd5e1;
+      padding: 22px 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column;
+    }
+    .brand { font-size: 21px; font-weight: 800; color: #38bdf8; padding: 4px 10px 18px; }
+    .brand span { color: #4ade80; }
+    .brand small { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-top: 2px; letter-spacing: 1px; }
+    .menu { list-style: none; flex: 1; }
+    .menu a, .menu button {
+      display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; margin-bottom: 4px;
+      border-radius: 12px; font-size: 15px; font-weight: 600; color: #cbd5e1; background: none; border: none; cursor: pointer; transition: background .2s, color .2s;
+    }
+    .menu a:hover, .menu button:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .menu a.active { background: linear-gradient(90deg, #0284c7, #0369a1); color: #fff; box-shadow: 0 6px 16px rgba(2,132,199,.4); }
+    .menu .sep { height: 1px; background: rgba(255,255,255,.1); margin: 12px 4px; }
+    .menu .logout { color: #fca5a5; }
+    .menu .logout:hover { background: rgba(220,38,38,.2); color: #fff; }
+    .admin-card { background: rgba(255,255,255,.07); border-radius: 14px; padding: 12px; display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+    .admin-card .av { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #16a34a); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; flex-shrink: 0; }
+    .admin-card b { display: block; font-size: 14px; color: #fff; word-break: break-all; }
+    .admin-card small { color: #64748b; font-size: 12px; }
+
+    .main { padding: 22px 24px 50px; min-width: 0; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .topbar h1 { font-size: 26px; }
+    .topbar p { color: #6b7280; font-size: 14px; margin-top: 2px; }
+    .top-right { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .menu-btn { display: none; background: #0f172a; color: #fff; border: none; border-radius: 10px; width: 42px; height: 42px; font-size: 20px; cursor: pointer; }
+
+    .seg { display: inline-flex; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px; }
+    .seg button { border: none; background: none; padding: 8px 16px; border-radius: 9px; font-weight: 700; font-size: 13px; color: #64748b; cursor: pointer; }
+    .seg button.active { background: #0284c7; color: #fff; }
+    .tbtn { height: 42px; padding: 0 16px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; font-weight: 700; font-size: 13px; cursor: pointer; color: #374151; transition: all .2s; }
+    .tbtn:hover { background: #f8fafc; border-color: #94a3b8; }
+    .tbtn.on { background: #fef3c7; border-color: #fbbf24; color: #92400e; }
+    .tbtn.green { background: #16a34a; border-color: #16a34a; color: #fff; }
+
+    .banner-demo { display: none; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; border-radius: 12px; padding: 11px 16px; font-size: 14px; font-weight: 600; margin-bottom: 18px; }
+    .banner-demo.show { display: block; }
+
+    /* ================= KPI ================= */
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+    .kpi { background: #fff; border-radius: 16px; padding: 18px; display: flex; gap: 14px; align-items: center; box-shadow: 0 2px 10px rgba(15,23,42,.06); transition: transform .2s, box-shadow .2s; animation: rise .5s ease both; }
+    .kpi:hover { transform: translateY(-4px); box-shadow: 0 12px 26px rgba(15,23,42,.12); }
+    @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    .kpi .ic { width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+    .ic.c1 { background: #dcfce7; } .ic.c2 { background: #e0f2fe; } .ic.c3 { background: #ede9fe; }
+    .ic.c4 { background: #fef3c7; } .ic.c5 { background: #fee2e2; } .ic.c6 { background: #ccfbf1; }
+    .kpi small { color: #64748b; font-size: 13px; font-weight: 600; }
+    .kpi strong { display: block; font-size: 26px; margin: 2px 0; font-variant-numeric: tabular-nums; }
+    .trend { font-size: 12px; font-weight: 700; }
+    .trend.up { color: #16a34a; } .trend.down { color: #dc2626; } .trend.flat { color: #94a3b8; }
+
+    /* ================= PANELS ================= */
+    .grid2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .grid2.even { grid-template-columns: 1fr 1fr; }
+    .panel { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(15,23,42,.06); min-width: 0; margin-bottom: 16px; }
+    .grid2 .panel { margin-bottom: 0; }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .panel-head h2 { font-size: 18px; }
+    .panel-head small { color: #64748b; font-size: 13px; }
+    .empty { text-align: center; color: #94a3b8; padding: 30px 10px; font-size: 14px; }
+    .empty b { display: block; font-size: 34px; margin-bottom: 6px; }
+
+    /* Bar chart (SVG) */
+    .chart { width: 100%; height: 240px; display: block; }
+    .chart .bar { fill: url(#barGrad); transition: opacity .2s; cursor: pointer; transform-origin: bottom; animation: grow .7s cubic-bezier(.2,.9,.3,1) both; transform-box: fill-box; }
+    @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+    .chart .bar:hover { opacity: .75; }
+    .chart text { font-size: 11px; fill: #64748b; font-family: "Segoe UI", Arial; }
+    .chart .grid-line { stroke: #e2e8f0; stroke-dasharray: 3 4; }
+    .tip { position: fixed; background: #0f172a; color: #fff; padding: 7px 12px; border-radius: 8px; font-size: 12px; pointer-events: none; z-index: 100; opacity: 0; transition: opacity .15s; white-space: nowrap; }
+    .tip.show { opacity: 1; }
+
+    /* Donut */
+    .donut-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    .donut { width: 160px; height: 160px; border-radius: 50%; position: relative; flex-shrink: 0; animation: spinIn .9s ease both; }
+    @keyframes spinIn { from { transform: rotate(-90deg) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+    .donut::after { content: ""; position: absolute; inset: 28px; background: #fff; border-radius: 50%; }
+    .donut .mid { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .donut .mid b { font-size: 26px; } .donut .mid small { color: #64748b; font-size: 12px; }
+    .legend { list-style: none; font-size: 14px; }
+    .legend li { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+    .legend i { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+    .legend b { margin-left: auto; padding-left: 14px; }
+
+    /* Rank bars */
+    .rank { list-style: none; }
+    .rank li { padding: 8px 0; }
+    .rank .r1 { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+    .rank .r1 span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rank .r1 em { font-style: normal; color: #64748b; font-weight: 600; white-space: nowrap; }
+    .rank .track { height: 8px; background: #eef2f7; border-radius: 99px; overflow: hidden; }
+    .rank .track i { display: block; height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, #0284c7, #16a34a); transition: width 1s cubic-bezier(.2,.8,.2,1); }
+
+    /* Tables */
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 640px; }
+    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; vertical-align: middle; }
+    th { background: #f8fafc; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+    tr:hover td { background: #fafcff; }
+    .oid { font-weight: 800; color: #0284c7; cursor: pointer; }
+    .oid:hover { text-decoration: underline; }
+    .st { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; border: 1px solid transparent; cursor: pointer; outline: none; }
+    .st.placed { background: #e0f2fe; color: #0369a1; } .st.shipped { background: #fef3c7; color: #b45309; }
+    .st.delivered { background: #dcfce7; color: #15803d; } .st.cancelled { background: #fee2e2; color: #b91c1c; }
+
+    .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .pill.out { background: #fee2e2; color: #b91c1c; } .pill.low { background: #fef3c7; color: #b45309; }
+
+    .list { list-style: none; max-height: 330px; overflow-y: auto; }
+    .list li { display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid #f1f5f9; }
+    .list li:last-child { border-bottom: none; }
+    .list .av { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #16a34a); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; }
+    .list .tx { flex: 1; min-width: 0; font-size: 14px; }
+    .list .tx b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .list .tx small { color: #64748b; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .list .msg-text { white-space: normal !important; margin-top: 3px; color: #475569 !important; line-height: 1.45; }
+    .x-btn { border: none; background: #fee2e2; color: #b91c1c; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-weight: 700; flex-shrink: 0; }
+    .x-btn:hover { background: #fecaca; }
+
+    /* Modal */
+    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 300; padding: 16px; }
+    .overlay.show { display: flex; animation: fade .2s ease; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .modal { background: #fff; border-radius: 18px; padding: 24px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; animation: pop .3s cubic-bezier(.2,.9,.3,1.2); }
+    @keyframes pop { from { opacity: 0; transform: scale(.92) translateY(14px); } to { opacity: 1; transform: none; } }
+    .modal h3 { font-size: 20px; margin-bottom: 4px; }
+    .modal .sub { color: #64748b; font-size: 13px; margin-bottom: 14px; }
+    .m-item { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+    .m-box { background: #f8fafc; border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 14px; line-height: 1.6; }
+    .m-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
+    .m-row.t { font-size: 18px; font-weight: 800; border-top: 2px dashed #e2e8f0; margin-top: 6px; padding-top: 10px; }
+    .m-close { width: 100%; height: 44px; margin-top: 16px; border: none; border-radius: 10px; background: #0f172a; color: #fff; font-weight: 700; cursor: pointer; }
+
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px; opacity: 0; transition: all .3s; pointer-events: none; z-index: 400; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .scrim { display: none; }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, 1fr); } .grid2, .grid2.even { grid-template-columns: 1fr; } .grid2 .panel { margin-bottom: 0; } .grid2 { gap: 16px; } }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; z-index: 200; transform: translateX(-102%); transition: transform .3s; }
+      .side.open { transform: none; }
+      .scrim.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; }
+      .menu-btn { display: block; }
+      .main { padding: 16px 14px 40px; }
+    }
+    @media (max-width: 520px) { .kpis { grid-template-columns: 1fr; } .topbar h1 { font-size: 22px; } .seg button { padding: 8px 10px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+
+<script>
+  /* Fakt admin j aa page joi shake */
+  (function () {
+    let ok = false;
+    try { ok = !!sessionStorage.getItem("adminSession"); } catch (e) {}
+    if (!ok) location.replace("admin-login.html?redirect=dashboard.html");
+  })();
+</script>
+
+<div class="layout">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="side" id="side">
+    <div class="brand">Shop <span>Smart AI</span><small>ADMIN PANEL</small></div>
+    <ul class="menu">
+      <li><a href="#overview" class="active" data-nav>📊 Dashboard</a></li>
+      <li><a href="#orders" data-nav>📦 Orders</a></li>
+      <li><a href="#stock" data-nav>⚠️ Stock Alert</a></li>
+      <li><a href="#customers" data-nav>👥 Customers</a></li>
+      <li><a href="#messages" data-nav>✉️ Messages</a></li>
+      <li class="sep"></li>
+      <li><a href="add-product.html">➕ Add Product</a></li>
+      <li><a href="index.html">🌐 Website Juo</a></li>
+      <li><button type="button" class="logout" id="logoutBtn">🚪 Logout</button></li>
+    </ul>
+    <div class="admin-card">
+      <div class="av" id="adminAv">A</div>
+      <div><b id="adminName">admin</b><small>Administrator</small></div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+    <div class="topbar" id="overview">
+      <div style="display:flex;gap:12px;align-items:center">
+        <button class="menu-btn" id="menuBtn" aria-label="Menu" type="button">☰</button>
+        <div>
+          <h1>Namaste, <span id="hiName">Admin</span> 👋</h1>
+          <p id="todayText"></p>
+        </div>
+      </div>
+      <div class="top-right">
+        <div class="seg" id="seg">
+          <button data-p="7" class="active" type="button">7 Divas</button>
+          <button data-p="30" type="button">30 Divas</button>
+          <button data-p="0" type="button">Badhu</button>
+        </div>
+        <button class="tbtn" id="demoBtn" type="button">🧪 Demo Data</button>
+        <button class="tbtn green" id="csvBtn" type="button">⬇ Orders CSV</button>
+      </div>
+    </div>
+
+    <div class="banner-demo" id="demoBanner">🧪 <strong>Demo mode chalu chhe:</strong> aa nakli data chhe (save nathi thatu). Sacho data jova mate "Demo Data" pharithi dabavo.</div>
+
+    <!-- KPI -->
+    <section class="kpis" id="kpis"></section>
+
+    <!-- Charts -->
+    <section class="grid2">
+      <div class="panel">
+        <div class="panel-head"><h2>💰 Kamaani (Revenue)</h2><small id="chartSub"></small></div>
+        <div id="chartBox"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>🧾 Order Status</h2><small id="donutSub"></small></div>
+        <div id="donutBox"></div>
+      </div>
+    </section>
+
+    <section class="grid2 even" style="margin-top:16px">
+      <div class="panel">
+        <div class="panel-head"><h2>🏆 Top Selling Products</h2><small>Quantity pramane</small></div>
+        <ul class="rank" id="topProducts"></ul>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>🗂 Category Pramane Vechan</h2><small>Revenue pramane</small></div>
+        <ul class="rank" id="catSales"></ul>
+      </div>
+    </section>
+
+    <!-- Orders -->
+    <section class="panel" id="orders" style="margin-top:16px">
+      <div class="panel-head"><h2>📦 Chhella Orders</h2><small id="ordersSub"></small></div>
+      <div class="tbl-wrap" id="ordersBox"></div>
+    </section>
+
+    <!-- Stock -->
+    <section class="panel" id="stock">
+      <div class="panel-head"><h2>⚠️ Stock Alert</h2><small>Ochhu stock ke khatam thayelu</small></div>
+      <div class="tbl-wrap" id="stockBox"></div>
+    </section>
+
+    <!-- Customers + Messages -->
+    <section class="grid2 even">
+      <div class="panel" id="customers">
+        <div class="panel-head"><h2>👥 Customers</h2><small id="custSub"></small></div>
+        <ul class="list" id="custList"></ul>
+      </div>
+      <div class="panel" id="messages">
+        <div class="panel-head"><h2>✉️ Contact Messages</h2><small id="msgSub"></small></div>
+        <ul class="list" id="msgList"></ul>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Order details -->
+<div class="overlay" id="modalBg">
+  <div class="modal" id="modalBody"></div>
+</div>
+
+<div class="tip" id="tip"></div>
+<div id="toast"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const rupee = n => "₹" + Math.round(Number(n) || 0).toLocaleString("en-IN");
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function showToast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2300);
+  }
+
+  /* =========================================================
+     PRODUCTS (products.html jevi j list, fakt stock mate)
+     ========================================================= */
+  const PRODUCTS = [
+    [1,"Wireless Bluetooth Headphones","Electronics",1499,25],[2,"Smart Watch Series X","Wearables",2999,12],
+    [3,"Running Sports Shoes","Fashion",1999,40],[4,"Portable Power Bank 20000mAh","Accessories",1299,0],
+    [5,"Mirrorless Digital Camera","Electronics",8999,6],[6,"Leather Casual Backpack","Accessories",1199,33],
+    [7,"Ceramic Table Lamp","Home",1099,18],[8,"Fitness Smart Band","Wearables",1499,52],
+    [9,"Mechanical Gaming Keyboard","Electronics",2499,21],[10,"Portable Bluetooth Speaker","Electronics",3499,15],
+    [11,"Men's Cotton Casual Shirt","Men's Wear",1199,45],[12,"Men's Slim Fit Stretch Jeans","Men's Wear",1499,38],
+    [13,"Men's Printed Round Neck T-Shirt","Men's Wear",1099,60],[14,"Men's Winter Hoodie","Men's Wear",1799,22],
+    [15,"Women's Cotton Kurti","Women's Wear",1299,50],[16,"Women's Floral Maxi Dress","Women's Wear",1899,28],
+    [17,"Women's Printed Silk Saree","Women's Wear",2499,14],[18,"Women's High-Waist Jeans","Women's Wear",1599,35],
+    [19,"Men's Formal Leather Shoes","Footwear",1999,26],[20,"Women's Fashion Sandals","Footwear",1199,41],
+    [21,"Refurbished Laptop 14\" Core i5 8GB / 256GB SSD","Laptops",9999,9],[22,"Refurbished Laptop 14\" Core i3 4GB / 128GB SSD","Laptops",7499,12],
+    [23,"Smartphone 4GB / 64GB 6.5\" Display","Mobiles",6999,60],[24,"Smartphone 6GB / 128GB 5000mAh","Mobiles",8999,44],
+    [25,"5G Smartphone 8GB / 128GB 50MP","Mobiles",9999,4],[26,"True Wireless Earbuds","Electronics",1299,80],
+    [27,"8-inch Android Tablet 3GB / 32GB","Electronics",6999,17]
+  ].map(a => ({ id: a[0], name: a[1], category: a[2], price: a[3], stock: a[4] }));
+
+  /* add-product.html na products */
+  try {
+    (JSON.parse(localStorage.getItem("customProducts")) || []).forEach(p => {
+      if (p && p.id && p.name && !PRODUCTS.some(x => x.id === p.id))
+        PRODUCTS.push({ id: p.id, name: p.name, category: p.category || "General", price: Number(p.price) || 0, stock: Number(p.stock) || 0 });
+    });
+  } catch (e) {}
+  const prodById = id => PRODUCTS.find(p => p.id === Number(id));
+
+  /* =========================================================
+     DATA (asli ke demo)
+     ========================================================= */
+  const state = { period: 7, demo: false };
+  let DEMO = null;
+
+  function readList(key) {
+    try { const l = JSON.parse(localStorage.getItem(key)); return Array.isArray(l) ? l : []; } catch (e) { return []; }
+  }
+  function getOrders()   { return state.demo ? DEMO.orders   : readList("orders").filter(o => o && o.id); }
+  function getUsers()    { return state.demo ? DEMO.users    : readList("users").filter(u => u && u.email); }
+  function getMessages() { return state.demo ? DEMO.messages : readList("contactMessages").filter(m => m && m.id); }
+  function saveOrders(list) { if (!state.demo) { try { localStorage.setItem("orders", JSON.stringify(list)); } catch (e) {} } }
+  function saveMessages(list) { if (!state.demo) { try { localStorage.setItem("contactMessages", JSON.stringify(list)); } catch (e) {} } }
+
+  function orderTotal(o) {
+    if (Number(o.total) > 0) return Number(o.total);
+    return (o.items || []).reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+  }
+  const statusOf = o => ["placed", "shipped", "delivered", "cancelled"].includes(o.status) ? o.status : "placed";
+  const timeOf = o => { const t = new Date(o.date).getTime(); return isNaN(t) ? 0 : t; };
+
+  function makeDemo() {
+    const names = ["Rahul Patel", "Priya Shah", "Amit Mehta", "Neha Joshi", "Karan Desai", "Pooja Trivedi", "Vishal Rana", "Hetal Parmar"];
+    const stat = ["placed", "shipped", "delivered", "delivered", "delivered", "cancelled"];
+    const pays = ["Cash on Delivery", "UPI", "Credit / Debit Card", "Online Payment"];
+    const rnd = n => Math.floor(Math.random() * n);
+    const orders = [];
+    for (let i = 0; i < 26; i++) {
+      const items = [];
+      for (let k = 0, n = 1 + rnd(3); k < n; k++) {
+        const p = PRODUCTS[rnd(PRODUCTS.length)];
+        items.push({ id: p.id, name: p.name, price: p.price, qty: 1 + rnd(2) });
+      }
+      const d = new Date(Date.now() - rnd(30) * 86400000 - rnd(80000000));
+      const nm = names[rnd(names.length)];
+      orders.push({
+        id: "SS" + (30000000 + i * 137), date: d.toISOString(), status: stat[rnd(stat.length)], payment: pays[rnd(pays.length)],
+        items, total: items.reduce((s, x) => s + x.price * x.qty, 0),
+        address: { name: nm, phone: "98" + String(10000000 + rnd(89999999)), email: nm.split(" ")[0].toLowerCase() + "@example.com", address: (10 + rnd(90)) + ", Demo Society, Main Road", city: "Rajkot", pin: "360001", state: "Gujarat" }
+      });
+    }
+    const users = names.map((n, i) => ({ name: n, email: n.split(" ")[0].toLowerCase() + "@example.com", phone: "98" + String(20000000 + i * 1111111), createdAt: new Date(Date.now() - (i + 1) * 3 * 86400000).toISOString() }));
+    const messages = [
+      { id: "MSG1", date: new Date(Date.now() - 3600000).toISOString(), name: "Rahul Patel", email: "rahul@example.com", subject: "Order Status", message: "Maro order haju nathi aavyo, kripa kari ne tapas karo." },
+      { id: "MSG2", date: new Date(Date.now() - 86400000).toISOString(), name: "Priya Shah", email: "priya@example.com", subject: "Return / Refund", message: "Shirt nu size nanu padyu, exchange karvu chhe." }
+    ];
+    return { orders, users, messages };
+  }
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
+  const COLORS = { placed: "#0284c7", shipped: "#f59e0b", delivered: "#16a34a", cancelled: "#ef4444" };
+  const LABEL = { placed: "Placed", shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled" };
+
+  function inPeriod(o, start, end) { const t = timeOf(o); return t >= start && t < end; }
+  function periodRange() {
+    const end = Date.now() + 1000;
+    if (!state.period) return { start: 0, end, prevStart: null, prevEnd: null };
+    const span = state.period * 86400000;
+    return { start: end - span, end, prevStart: end - 2 * span, prevEnd: end - span };
+  }
+  const revOf = list => list.filter(o => statusOf(o) !== "cancelled").reduce((s, o) => s + orderTotal(o), 0);
+
+  function trendHTML(cur, prev) {
+    if (prev == null) return `<span class="trend flat">Badha samay nu</span>`;
+    if (!prev && !cur) return `<span class="trend flat">— koi pherphar nahi</span>`;
+    if (!prev) return `<span class="trend up">▲ Navu</span>`;
+    const pct = Math.round((cur - prev) / prev * 100);
+    if (pct === 0) return `<span class="trend flat">— sarkhu</span>`;
+    return `<span class="trend ${pct > 0 ? "up" : "down"}">${pct > 0 ? "▲" : "▼"} ${Math.abs(pct)}% (agla ${state.period} divas karta)</span>`;
+  }
+
+  function renderKPIs(all) {
+    const r = periodRange();
+    const cur = all.filter(o => inPeriod(o, r.start, r.end));
+    const prev = r.prevStart == null ? null : all.filter(o => inPeriod(o, r.prevStart, r.prevEnd));
+    const users = getUsers();
+    const pending = all.filter(o => statusOf(o) === "placed").length;
+    const msgs = getMessages().length;
+    const lowCount = PRODUCTS.filter(p => p.stock <= 5).length;
+
+    const cards = [
+      { ic: "💰", c: "c1", t: "Kul Kamaani", v: rupee(revOf(cur)), tr: trendHTML(revOf(cur), prev ? revOf(prev) : null) },
+      { ic: "📦", c: "c2", t: "Kul Orders", v: cur.length, tr: trendHTML(cur.length, prev ? prev.length : null) },
+      { ic: "⏳", c: "c4", t: "Pending Orders", v: pending, tr: `<span class="trend ${pending ? "down" : "up"}">${pending ? "Ship karva baki" : "Badhu pati gayu ✔"}</span>` },
+      { ic: "👥", c: "c3", t: "Customers", v: users.length, tr: `<span class="trend flat">Register thayela</span>` },
+      { ic: "🛍️", c: "c6", t: "Products", v: PRODUCTS.length, tr: `<span class="trend ${lowCount ? "down" : "up"}">${lowCount ? lowCount + " ma stock ochhu" : "Stock saru chhe"}</span>` },
+      { ic: "✉️", c: "c5", t: "Messages", v: msgs, tr: `<span class="trend flat">Contact form na</span>` }
+    ];
+    $("kpis").innerHTML = cards.map((k, i) => `
+      <div class="kpi" style="animation-delay:${i * 60}ms">
+        <div class="ic ${k.c}">${k.ic}</div>
+        <div><small>${k.t}</small><strong>${k.v}</strong>${k.tr}</div>
+      </div>`).join("");
+  }
+
+  /* ---------- Revenue bar chart (SVG) ---------- */
+  function renderChart(all) {
+    const days = state.period === 7 ? 7 : 30;
+    $("chartSub").textContent = "Chhella " + days + " divas";
+    const buckets = [];
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      buckets.push({ d, start: d.getTime(), end: d.getTime() + 86400000, rev: 0, n: 0 });
+    }
+    all.forEach(o => {
+      if (statusOf(o) === "cancelled") return;
+      const b = buckets.find(x => timeOf(o) >= x.start && timeOf(o) < x.end);
+      if (b) { b.rev += orderTotal(o); b.n++; }
+    });
+    const max = Math.max(...buckets.map(b => b.rev));
+    if (!max) { $("chartBox").innerHTML = `<div class="empty"><b>📈</b>Aa samay ma koi kamaani nathi.</div>`; return; }
+
+    const W = 700, H = 240, pl = 48, pb = 28, pt = 12, pr = 8;
+    const cw = W - pl - pr, ch = H - pb - pt;
+    const step = niceStep(max / 4), top = step * 4;
+    const bw = cw / days, bar = Math.max(4, bw * 0.62);
+    let svg = `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Kamaani chart">
+      <defs><linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#16a34a"/></linearGradient></defs>`;
+    for (let g = 0; g <= 4; g++) {
+      const y = pt + ch - (g / 4) * ch;
+      svg += `<line class="grid-line" x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}"/><text x="${pl - 6}" y="${y + 4}" text-anchor="end">${shortRupee(step * g)}</text>`;
+    }
+    buckets.forEach((b, i) => {
+      const h = Math.max(b.rev ? 3 : 0, (b.rev / top) * ch);
+      const x = pl + i * bw + (bw - bar) / 2, y = pt + ch - h;
+      const label = b.d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+      if (b.rev) svg += `<rect class="bar" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bar.toFixed(1)}" height="${h.toFixed(1)}" rx="4" style="animation-delay:${i * 25}ms" data-tip="${label}: ${rupee(b.rev)} (${b.n} order)"/>`;
+      if (days === 7 || i % 5 === 0 || i === days - 1) svg += `<text x="${(x + bar / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle">${label}</text>`;
+    });
+    $("chartBox").innerHTML = svg + "</svg>";
+  }
+  function niceStep(v) {
+    if (v <= 0) return 1;
+    const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+  }
+  function shortRupee(n) { return n >= 100000 ? "₹" + (n / 100000).toFixed(1).replace(".0", "") + "L" : n >= 1000 ? "₹" + (n / 1000).toFixed(n % 1000 ? 1 : 0).replace(".0", "") + "k" : "₹" + n; }
+
+  /* Chart tooltip */
+  const tip = $("tip");
+  document.addEventListener("mousemove", e => {
+    const t = e.target.closest && e.target.closest("[data-tip]");
+    if (!t) return tip.classList.remove("show");
+    tip.textContent = t.dataset.tip; tip.classList.add("show");
+    tip.style.left = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8) + "px";
+    tip.style.top = (e.clientY - 38) + "px";
+  });
+
+  /* ---------- Donut ---------- */
+  function renderDonut(inP) {
+    const counts = { placed: 0, shipped: 0, delivered: 0, cancelled: 0 };
+    inP.forEach(o => counts[statusOf(o)]++);
+    const total = inP.length;
+    $("donutSub").textContent = total + " order";
+    if (!total) { $("donutBox").innerHTML = `<div class="empty"><b>🧾</b>Haju koi order nathi.</div>`; return; }
+    let acc = 0;
+    const segs = Object.keys(counts).filter(k => counts[k]).map(k => {
+      const from = acc; acc += counts[k] / total * 100;
+      return `${COLORS[k]} ${from.toFixed(2)}% ${acc.toFixed(2)}%`;
+    });
+    $("donutBox").innerHTML = `
+      <div class="donut-wrap">
+        <div class="donut" style="background:conic-gradient(${segs.join(",")})"><div class="mid"><b>${total}</b><small>Orders</small></div></div>
+        <ul class="legend">${Object.keys(counts).map(k => `<li><i style="background:${COLORS[k]}"></i>${LABEL[k]}<b>${counts[k]}</b></li>`).join("")}</ul>
+      </div>`;
+  }
+
+  /* ---------- Rank bars (top products, categories) ---------- */
+  function rankHTML(rows, fmt) {
+    if (!rows.length) return `<li class="empty"><b>📭</b>Haju data nathi.</li>`;
+    const max = Math.max(...rows.map(r => r.value));
+    return rows.map(r => `
+      <li><div class="r1"><span title="${esc(r.label)}">${esc(r.label)}</span><em>${fmt(r)}</em></div>
+      <div class="track"><i data-w="${max ? Math.max(4, r.value / max * 100) : 0}"></i></div></li>`).join("");
+  }
+  function animateBars() {
+    requestAnimationFrame(() => setTimeout(() => document.querySelectorAll(".track i").forEach(i => { i.style.width = i.dataset.w + "%"; }), 80));
+  }
+  function renderRanks(inP) {
+    const prod = {}, cat = {};
+    inP.filter(o => statusOf(o) !== "cancelled").forEach(o => (o.items || []).forEach(i => {
+      const qty = Number(i.qty) || 1, rev = (Number(i.price) || 0) * qty;
+      const p = prodById(i.id);
+      const pk = p ? p.name : String(i.name || "Product").replace(/\s*\(.*\)\s*$/, "");
+      prod[pk] = prod[pk] || { label: pk, value: 0, rev: 0 }; prod[pk].value += qty; prod[pk].rev += rev;
+      const ck = p ? p.category : "Other";
+      cat[ck] = cat[ck] || { label: ck, value: 0 }; cat[ck].value += rev;
+    }));
+    $("topProducts").innerHTML = rankHTML(Object.values(prod).sort((a, b) => b.value - a.value).slice(0, 5), r => r.value + " pcs · " + rupee(r.rev));
+    $("catSales").innerHTML = rankHTML(Object.values(cat).sort((a, b) => b.value - a.value).slice(0, 6), r => rupee(r.value));
+    animateBars();
+  }
+
+  /* ---------- Orders table ---------- */
+  function renderOrders(all) {
+    const list = [...all].sort((a, b) => timeOf(b) - timeOf(a)).slice(0, 10);
+    $("ordersSub").textContent = all.length + " kul orders";
+    if (!list.length) { $("ordersBox").innerHTML = `<div class="empty"><b>📭</b>Haju koi order nathi. Test mate <strong>🧪 Demo Data</strong> dabavo.</div>`; return; }
+    $("ordersBox").innerHTML = `<table>
+      <tr><th>Order</th><th>Customer</th><th>Date</th><th>Payment</th><th>Total</th><th>Status</th></tr>
+      ${list.map(o => {
+        const st = statusOf(o), a = o.address || {};
+        const date = timeOf(o) ? new Date(o.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "-";
+        return `<tr>
+          <td><span class="oid" data-view="${esc(o.id)}">#${esc(String(o.id).replace("#", ""))}</span></td>
+          <td>${esc(a.name || "Guest")}<br><small style="color:#64748b">${esc(a.phone || "")}</small></td>
+          <td>${date}</td><td>${esc(o.payment || "-")}</td>
+          <td><strong>${rupee(orderTotal(o))}</strong></td>
+          <td><select class="st ${st}" data-oid="${esc(o.id)}" aria-label="Status">
+            ${Object.keys(LABEL).map(k => `<option value="${k}" ${k === st ? "selected" : ""}>${LABEL[k]}</option>`).join("")}</select></td>
+        </tr>`;
+      }).join("")}</table>`;
+  }
+
+  $("ordersBox").addEventListener("change", e => {
+    const s = e.target.closest("select[data-oid]"); if (!s) return;
+    const list = getOrders();
+    const o = list.find(x => String(x.id) === s.dataset.oid);
+    if (!o) return;
+    o.status = s.value;
+    saveOrders(list);
+    s.className = "st " + s.value;
+    showToast("Order #" + String(o.id).replace("#", "") + " → " + LABEL[s.value]);
+    refreshAll(true);
+  });
+  $("ordersBox").addEventListener("click", e => {
+    const v = e.target.closest("[data-view]"); if (v) openOrder(v.dataset.view);
+  });
+
+  function openOrder(id) {
+    const o = getOrders().find(x => String(x.id) === String(id)); if (!o) return;
+    const a = o.address || {}, st = statusOf(o);
+    const sub = (o.items || []).reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
+    $("modalBody").innerHTML = `
+      <h3>Order #${esc(String(o.id).replace("#", ""))}</h3>
+      <p class="sub">${timeOf(o) ? new Date(o.date).toLocaleString("en-IN") : ""} · <span class="st ${st}" style="cursor:default">${LABEL[st]}</span></p>
+      ${(o.items || []).map(i => `<div class="m-item"><span>${esc(i.name || "Product")} × ${Number(i.qty) || 1}</span><strong>${rupee((Number(i.price) || 0) * (Number(i.qty) || 1))}</strong></div>`).join("") || "<p class='sub'>Items ni details nathi.</p>"}
+      <div class="m-box">
+        <div class="m-row"><span>Subtotal</span><span>${rupee(sub)}</span></div>
+        ${Number(o.discount) ? `<div class="m-row"><span>Discount ${o.coupon ? "(" + esc(o.coupon) + ")" : ""}</span><span>-${rupee(o.discount)}</span></div>` : ""}
+        <div class="m-row"><span>Delivery</span><span>${Number(o.delivery) ? rupee(o.delivery) : "FREE"}</span></div>
+        <div class="m-row t"><span>Total</span><span>${rupee(orderTotal(o))}</span></div>
+      </div>
+      <div class="m-box"><strong>📍 Delivery Address</strong><br>${esc(a.name || "-")} · ${esc(a.phone || "")}<br>${esc(a.address || "")}<br>${esc(a.city || "")} ${esc(a.pin || "")}, ${esc(a.state || "")}<br>✉️ ${esc(a.email || "-")}</div>
+      <div class="m-box"><strong>💳 Payment:</strong> ${esc(o.payment || "-")}${o.transactionId ? "<br>🔖 " + esc(o.transactionId) : ""}${o.note ? "<br>📝 " + esc(o.note) : ""}</div>
+      <button class="m-close" type="button" id="mClose">Band Karo</button>`;
+    $("modalBg").classList.add("show");
+    $("mClose").onclick = closeModal;
+  }
+  function closeModal() { $("modalBg").classList.remove("show"); }
+  $("modalBg").addEventListener("click", e => { if (e.target === $("modalBg")) closeModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+  /* ---------- Stock ---------- */
+  function renderStock() {
+    const list = PRODUCTS.filter(p => p.stock <= 5).sort((a, b) => a.stock - b.stock);
+    if (!list.length) { $("stockBox").innerHTML = `<div class="empty"><b>✅</b>Badha products nu stock saru chhe.</div>`; return; }
+    $("stockBox").innerHTML = `<table style="min-width:520px">
+      <tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th></tr>
+      ${list.map(p => `<tr><td><strong>${esc(p.name)}</strong></td><td>${esc(p.category)}</td><td>${rupee(p.price)}</td>
+        <td>${p.stock <= 0 ? '<span class="pill out">Out of Stock</span>' : '<span class="pill low">Fakt ' + p.stock + ' bachya</span>'}</td></tr>`).join("")}</table>`;
+  }
+
+  /* ---------- Customers ---------- */
+  function renderCustomers(all) {
+    const users = [...getUsers()].sort((a, b) => (new Date(b.createdAt).getTime() || 0) - (new Date(a.createdAt).getTime() || 0));
+    $("custSub").textContent = users.length + " kul";
+    if (!users.length) { $("custList").innerHTML = `<li class="empty" style="display:block"><b>👥</b>Haju koi customer register nathi thayo.</li>`; return; }
+    $("custList").innerHTML = users.slice(0, 20).map(u => {
+      const n = all.filter(o => o.address && o.address.email === u.email).length;
+      const joined = u.createdAt && !isNaN(new Date(u.createdAt)) ? new Date(u.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }) : "";
+      return `<li><div class="av">${esc((u.name || "U").trim()[0] || "U").toUpperCase()}</div>
+        <div class="tx"><b>${esc(u.name || "User")}</b><small>${esc(u.email)}${u.phone ? " · " + esc(u.phone) : ""}</small></div>
+        <small style="color:#64748b;text-align:right;font-size:12px">${n} order${joined ? "<br>" + joined : ""}</small></li>`;
+    }).join("");
+  }
+
+  /* ---------- Messages ---------- */
+  function renderMessages() {
+    const msgs = [...getMessages()].sort((a, b) => timeOf(b) - timeOf(a));
+    $("msgSub").textContent = msgs.length + " kul";
+    if (!msgs.length) { $("msgList").innerHTML = `<li class="empty" style="display:block"><b>✉️</b>Koi message nathi.</li>`; return; }
+    $("msgList").innerHTML = msgs.slice(0, 15).map(m => `
+      <li><div class="av">${esc((m.name || "?").trim()[0] || "?").toUpperCase()}</div>
+        <div class="tx"><b>${esc(m.name || "Guest")} · ${esc(m.subject || "")}</b>
+          <small>${esc(m.email || "")}${m.phone ? " · " + esc(m.phone) : ""}</small>
+          <small class="msg-text">${esc(m.message || "")}</small></div>
+        <button class="x-btn" data-del="${esc(m.id)}" title="Delete" aria-label="Delete" type="button">✕</button></li>`).join("");
+  }
+  $("msgList").addEventListener("click", e => {
+    const b = e.target.closest("[data-del]"); if (!b) return;
+    if (!confirm("Aa message delete karvo chhe?")) return;
+    const left = getMessages().filter(m => String(m.id) !== b.dataset.del);
+    if (state.demo) DEMO.messages = left; else saveMessages(left);
+    renderMessages(); renderKPIs(getOrders());
+    showToast("Message delete thayo");
+  });
+
+  /* =========================================================
+     CSV EXPORT
+     ========================================================= */
+  $("csvBtn").onclick = () => {
+    const all = getOrders();
+    if (!all.length) return showToast("Export karva mate koi order nathi");
+    const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""').replace(/^([=+\-@])/, "'$1") + '"';
+    const rows = [["Order ID", "Date", "Customer", "Phone", "Email", "City", "Items", "Payment", "Status", "Total"]];
+    all.forEach(o => {
+      const a = o.address || {};
+      rows.push([o.id, timeOf(o) ? new Date(o.date).toLocaleString("en-IN") : "", a.name, a.phone, a.email, a.city,
+        (o.items || []).map(i => (i.name || "") + " x" + (Number(i.qty) || 1)).join("; "), o.payment, statusOf(o), orderTotal(o)]);
+    });
+    const blob = new Blob(["\ufeff" + rows.map(r => r.map(q).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "shop-smart-orders.csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    showToast("CSV download thai ✔");
+  };
+
+  /* =========================================================
+     CONTROLS
+     ========================================================= */
+  function refreshAll(keepScroll) {
+    const all = getOrders();
+    const r = periodRange();
+    const inP = all.filter(o => inPeriod(o, r.start, r.end));
+    renderKPIs(all);
+    renderChart(all);
+    renderDonut(inP);
+    renderRanks(inP);
+    renderOrders(all);
+    renderStock();
+    renderCustomers(all);
+    renderMessages();
+  }
+
+  $("seg").addEventListener("click", e => {
+    const b = e.target.closest("button[data-p]"); if (!b) return;
+    state.period = Number(b.dataset.p);
+    document.querySelectorAll("#seg button").forEach(x => x.classList.toggle("active", x === b));
+    refreshAll();
+  });
+
+  $("demoBtn").onclick = () => {
+    state.demo = !state.demo;
+    if (state.demo) DEMO = makeDemo();
+    $("demoBtn").classList.toggle("on", state.demo);
+    $("demoBtn").textContent = state.demo ? "🧪 Demo Band Karo" : "🧪 Demo Data";
+    $("demoBanner").classList.toggle("show", state.demo);
+    refreshAll();
+  };
+
+  /* Sidebar (mobile) + active link */
+  const side = $("side"), scrim = $("scrim");
+  const toggleSide = open => { side.classList.toggle("open", open); scrim.classList.toggle("show", open); };
+  $("menuBtn").onclick = () => toggleSide(!side.classList.contains("open"));
+  scrim.onclick = () => toggleSide(false);
+  document.querySelectorAll("[data-nav]").forEach(a => a.addEventListener("click", () => {
+    document.querySelectorAll("[data-nav]").forEach(x => x.classList.toggle("active", x === a));
+    toggleSide(false);
+  }));
+
+  /* Logout */
+  $("logoutBtn").onclick = () => {
+    if (!confirm("Admin logout karvu chhe?")) return;
+    try { sessionStorage.removeItem("adminSession"); } catch (e) {}
+    location.href = "admin-login.html";
+  };
+
+  /* Admin naam + aaj ni tarikh */
+  (function () {
+    let name = "admin";
+    try { const s = JSON.parse(sessionStorage.getItem("adminSession")); if (s && s.user) name = s.user; } catch (e) {}
+    $("adminName").textContent = name;
+    $("adminAv").textContent = name[0].toUpperCase();
+    $("hiName").textContent = name;
+    $("todayText").textContent = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  })();
+
+  /* Biji tab ma order badlay to ahi update thay */
+  window.addEventListener("storage", e => { if (!state.demo && ["orders", "users", "contactMessages", "customProducts"].includes(e.key)) refreshAll(); });
+
+  refreshAll();
+</script>
+</body>
+</html>

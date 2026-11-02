@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare Products | Shop Smart AI</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    header {
+      background: rgba(255,255,255,.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 22px; font-weight: 800; color: #0284c7; }
+    .logo span { color: #16a34a; }
+    nav { display: flex; align-items: center; gap: 22px; }
+    nav a { color: #374151; font-weight: 500; }
+    nav a:hover, nav a.active { color: #0284c7; }
+    .cart-badge {
+      background: #16a34a; color: #fff; border-radius: 999px;
+      padding: 1px 8px; font-size: 12px; margin-left: 4px;
+    }
+    .menu-btn { display: none; background: none; border: none; font-size: 26px; cursor: pointer; }
+
+    /* Banner */
+    .banner {
+      background: linear-gradient(135deg, #0284c7, #0369a1 60%, #16a34a 150%);
+      color: #fff; text-align: center; padding: 44px 20px 56px;
+    }
+    .banner h1 { font-size: 34px; margin-bottom: 8px; }
+    .banner p { opacity: .92; font-size: 16px; }
+
+    .container { max-width: 1100px; margin: -30px auto 40px; padding: 0 20px; }
+
+    /* Selector panel */
+    .panel {
+      background: #fff; border-radius: 16px; padding: 22px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.08); margin-bottom: 22px;
+    }
+    .panel h2 { font-size: 18px; margin-bottom: 14px; }
+    .selectors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .sel label { display: block; font-size: 13px; font-weight: 700; color: #6b7280; margin-bottom: 6px; }
+    .sel select {
+      width: 100%; height: 48px; padding: 0 12px; border: 1px solid #d1d5db; border-radius: 10px;
+      font-size: 15px; background: #fff; outline: none; cursor: pointer;
+    }
+    .sel select:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2,132,199,.15); }
+
+    .panel-foot {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px; margin-top: 16px;
+    }
+    .switch { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .switch input { width: 18px; height: 18px; cursor: pointer; }
+    .btn-small {
+      padding: 9px 18px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff;
+      font-weight: 600; font-size: 14px; cursor: pointer; color: #374151;
+    }
+    .btn-small:hover { background: #f3f4f6; }
+
+    /* Table */
+    .table-wrap {
+      background: #fff; border-radius: 16px; overflow-x: auto;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 640px; }
+    th, td { padding: 16px 18px; text-align: center; border-bottom: 1px solid #f1f2f6; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    td.label, th.label {
+      text-align: left; font-weight: 700; color: #4b5563; background: #f9fafb;
+      width: 170px; position: sticky; left: 0; z-index: 2; border-right: 1px solid #eef0f4;
+    }
+    td { min-width: 200px; }
+
+    .col-head { position: relative; }
+    .col-head img {
+      width: 150px; height: 150px; object-fit: contain; background: #f4f6fa;
+      border-radius: 12px; margin-bottom: 10px;
+    }
+    .col-head h3 { font-size: 16px; line-height: 1.3; }
+    .remove {
+      position: absolute; top: -6px; right: 0; width: 28px; height: 28px; border-radius: 50%;
+      border: none; background: #fee2e2; color: #dc2626; font-size: 16px; cursor: pointer; font-weight: 700;
+    }
+    .remove:hover { background: #fecaca; }
+
+    .price-val { font-size: 22px; font-weight: 800; }
+    .old { color: #9ca3af; text-decoration: line-through; font-size: 14px; margin-left: 6px; font-weight: 400; }
+    .stars { color: #f59e0b; letter-spacing: 1px; }
+    .in { color: #16a34a; font-weight: 700; }
+    .out { color: #dc2626; font-weight: 700; }
+
+    .best { background: #f0fdf4; }
+    .best-tag {
+      display: inline-block; background: #16a34a; color: #fff; font-size: 11px; font-weight: 700;
+      padding: 3px 9px; border-radius: 999px; margin-top: 6px;
+    }
+
+    .btn {
+      padding: 11px 20px; border: none; border-radius: 8px; color: #fff; font-weight: 700;
+      font-size: 14px; cursor: pointer; transition: opacity .2s, transform .1s; display: inline-block;
+    }
+    .btn:hover { opacity: .9; }
+    .btn:active { transform: scale(.97); }
+    .btn:disabled { background: #9ca3af !important; cursor: not-allowed; }
+    .btn-blue { background: #0284c7; }
+    .btn-green { background: #16a34a; }
+    .btn-stack { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+
+    /* Empty state */
+    .empty {
+      background: #fff; border-radius: 16px; padding: 60px 20px; text-align: center;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+    .empty .icon { font-size: 60px; margin-bottom: 10px; }
+    .empty h2 { margin-bottom: 8px; }
+    .empty p { color: #6b7280; margin-bottom: 18px; }
+
+    .summary {
+      margin-top: 18px; background: #ecfdf5; color: #047857; border-radius: 12px;
+      padding: 14px 18px; font-weight: 600; line-height: 1.6;
+    }
+
+    /* Footer */
+    footer { background: #0f172a; color: #cbd5e1; margin-top: 50px; padding: 40px 24px 20px; }
+    .foot-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 28px; }
+    footer h4 { color: #fff; margin-bottom: 12px; }
+    footer a { display: block; margin-bottom: 8px; font-size: 14px; color: #94a3b8; }
+    footer a:hover { color: #fff; }
+    footer .about { font-size: 14px; line-height: 1.6; color: #94a3b8; }
+    .copy { text-align: center; border-top: 1px solid #1e293b; margin-top: 28px; padding-top: 16px; font-size: 13px; color: #64748b; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px;
+      opacity: 0; transition: all .3s; pointer-events: none; z-index: 200;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      .selectors { grid-template-columns: 1fr; }
+      .foot-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .menu-btn { display: block; }
+      nav {
+        position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column;
+        align-items: flex-start; padding: 0 24px; gap: 0; max-height: 0; overflow: hidden;
+        transition: max-height .3s; border-bottom: 1px solid #e5e7eb;
+      }
+      nav.open { max-height: 340px; padding: 10px 24px 16px; }
+      nav a { padding: 10px 0; width: 100%; }
+      .banner h1 { font-size: 27px; }
+      td.label, th.label { width: 110px; font-size: 13px; padding: 12px 10px; }
+      td { min-width: 160px; padding: 12px 10px; }
+      .col-head img { width: 110px; height: 110px; }
+    }
+    @media (max-width: 480px) {
+      .foot-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="index.html">Shop <span>Smart AI</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    <nav id="nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="compare.html" class="active">Compare</a>
+      <a href="my-order.html">My Orders</a>
+      <a href="contact.html">Contact</a>
+      <a href="cart.html">Cart<span class="cart-badge" id="cartCount">0</span></a>
+      <a href="login.html" id="loginLink">Login</a>
+    </nav>
+  </header>
+
+  <section class="banner">
+    <h1>Compare Products</h1>
+    <p>3 products sudhi sarkhavo ane sauthi saru pasand karo.</p>
+  </section>
+
+  <main class="container">
+
+    <section class="panel">
+      <h2>Products pasand karo</h2>
+      <div class="selectors" id="selectors"></div>
+      <div class="panel-foot">
+        <label class="switch">
+          <input type="checkbox" id="diffOnly"> Fakt farak (differences) batavo
+        </label>
+        <button class="btn-small" id="clearBtn" type="button">Badhu clear karo</button>
+      </div>
+    </section>
+
+    <div id="result"></div>
+  </main>
+
+  <footer>
+    <div class="foot-grid">
+      <div>
+        <h4>Shop Smart AI</h4>
+        <p class="about">Smart online shopping platform. Best products, best prices ane fast delivery, badhu ek j jagya e.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="cart.html">Cart</a>
+      </div>
+      <div>
+        <h4>Account</h4>
+        <a href="login.html">Login / Register</a>
+        <a href="my-order.html">My Orders</a>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <a href="contact.html">Contact Us</a>
+        <a href="#">Returns</a>
+        <a href="#">Help Center</a>
+      </div>
+    </div>
+    <div class="copy">© 2026 Shop Smart AI. All rights reserved.</div>
+  </footer>
+
+  <div id="toast"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const rupee = n => "₹" + Number(n).toLocaleString("en-IN");
+    const placeholder = "data:image/svg+xml;utf8," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><rect width='100%' height='100%' fill='#f4f6fa'/>" +
+      "<text x='50%' y='50%' font-size='14' fill='#9ca3af' text-anchor='middle' font-family='Arial'>Product</text></svg>");
+
+    /* ---------- Product data (products.html na data sathe match karo) ---------- */
+    const PRODUCTS = [
+      { id: 1, name: "Wireless Bluetooth Headphones", category: "Electronics", brand: "SoundMax",
+        price: 1499, oldPrice: 2999, rating: 4.5, reviews: 1280, stock: 25, warranty: "1 Year", battery: "30 Hours",
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500" },
+      { id: 2, name: "Smart Watch Series X", category: "Wearables", brand: "TechFit",
+        price: 2999, oldPrice: 5999, rating: 4.3, reviews: 860, stock: 12, warranty: "1 Year", battery: "7 Days",
+        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500" },
+      { id: 3, name: "Running Sports Shoes", category: "Fashion", brand: "SprintX",
+        price: 1999, oldPrice: 3499, rating: 4.4, reviews: 540, stock: 40, warranty: "6 Months", battery: "N/A",
+        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500" },
+      { id: 4, name: "Portable Power Bank 20000mAh", category: "Accessories", brand: "ChargePro",
+        price: 1299, oldPrice: 1999, rating: 4.6, reviews: 2100, stock: 0, warranty: "1 Year", battery: "20000 mAh",
+        image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=500" }
+    ];
+
+    const MAX = 3;
+    let selected = [];
+
+    const byId = id => PRODUCTS.find(p => p.id === id);
+
+    /* ---------- Starting selection (error vagar) ----------
+       1) URL ?ids=1,2,3   2) localStorage "compareList"   3) default pehla 2 products */
+    function initSelected() {
+      let ids = (new URLSearchParams(location.search).get("ids") || "")
+        .split(",").map(Number).filter(Boolean);
+
+      if (!ids.length) {
+        try { ids = JSON.parse(localStorage.getItem("compareList")) || []; } catch (e) { ids = []; }
+      }
+
+      ids = [...new Set(ids.map(Number))].filter(id => byId(id)).slice(0, MAX);
+      if (ids.length < 2) ids = PRODUCTS.slice(0, 2).map(p => p.id);
+      selected = ids;
+    }
+
+    function saveSelected() {
+      try { localStorage.setItem("compareList", JSON.stringify(selected)); } catch (e) {}
+      try {
+        const url = selected.length ? "?ids=" + selected.join(",") : location.pathname;
+        history.replaceState(null, "", url);
+      } catch (e) {}
+    }
+
+    /* ---------- Selectors ---------- */
+    function renderSelectors() {
+      let html = "";
+      for (let i = 0; i < MAX; i++) {
+        const current = selected[i] || "";
+        const opts = PRODUCTS.map(p => {
+          const takenElsewhere = selected.includes(p.id) && p.id !== current;
+          return `<option value="${p.id}" ${p.id === current ? "selected" : ""} ${takenElsewhere ? "disabled" : ""}>${p.name}</option>`;
+        }).join("");
+        html += `
+          <div class="sel">
+            <label for="sel${i}">Product ${i + 1}${i >= 2 ? " (optional)" : ""}</label>
+            <select id="sel${i}" data-index="${i}">
+              <option value="">-- Pasand karo --</option>${opts}
+            </select>
+          </div>`;
+      }
+      $("selectors").innerHTML = html;
+
+      document.querySelectorAll(".sel select").forEach(sel => {
+        sel.addEventListener("change", () => {
+          const i = Number(sel.dataset.index);
+          const val = Number(sel.value);
+          const list = [...selected];
+          if (val) list[i] = val; else list.splice(i, 1);
+          selected = list.filter(Boolean);
+          saveSelected();
+          renderAll();
+        });
+      });
+    }
+
+    /* ---------- Table ---------- */
+    function stars(r) {
+      const full = Math.round(r);
+      return "★".repeat(full) + "☆".repeat(5 - full);
+    }
+
+    function renderTable() {
+      const items = selected.map(byId).filter(Boolean);
+      const box = $("result");
+
+      if (items.length < 2) {
+        box.innerHTML = `
+          <div class="empty">
+            <div class="icon">⚖️</div>
+            <h2>${items.length === 0 ? "Koi product pasand nathi karyo" : "Fakt 1 product pasand karyo chhe"}</h2>
+            <p>Sarkhamani karva mate upar thi minimum 2 products pasand karo.</p>
+            <a class="btn btn-blue" href="products.html">Products juo</a>
+          </div>`;
+        return;
+      }
+
+      const diffOnly = $("diffOnly").checked;
+
+      /* Best value kyu chhe te jaanva */
+      const minPrice = Math.min(...items.map(p => p.price));
+      const maxRating = Math.max(...items.map(p => p.rating));
+      const maxDiscount = Math.max(...items.map(p => Math.round((1 - p.price / p.oldPrice) * 100)));
+
+      /* Row definitions: compare = farak check karva, best = best cell highlight karva */
+      const rows = [
+        { label: "Price", compare: p => p.price,
+          best: p => p.price === minPrice,
+          cell: p => `<span class="price-val">${rupee(p.price)}</span><span class="old">${rupee(p.oldPrice)}</span>`,
+          tag: "Lowest Price" },
+        { label: "Discount", compare: p => Math.round((1 - p.price / p.oldPrice) * 100),
+          best: p => Math.round((1 - p.price / p.oldPrice) * 100) === maxDiscount,
+          cell: p => `<strong>${Math.round((1 - p.price / p.oldPrice) * 100)}% OFF</strong>`,
+          tag: "Best Discount" },
+        { label: "Rating", compare: p => p.rating,
+          best: p => p.rating === maxRating,
+          cell: p => `<span class="stars">${stars(p.rating)}</span><br><small>${p.rating} (${p.reviews} reviews)</small>`,
+          tag: "Top Rated" },
+        { label: "Category", compare: p => p.category, cell: p => p.category },
+        { label: "Brand", compare: p => p.brand, cell: p => p.brand },
+        { label: "Warranty", compare: p => p.warranty, cell: p => p.warranty },
+        { label: "Battery", compare: p => p.battery, cell: p => p.battery },
+        { label: "Availability", compare: p => p.stock > 0,
+          cell: p => p.stock > 0 ? `<span class="in">✔ In Stock</span>` : `<span class="out">✖ Out of Stock</span>` }
+      ];
+
+      let html = `<div class="table-wrap"><table>`;
+
+      /* Header row: image + name + remove */
+      html += `<tr><th class="label">Product</th>` + items.map(p => `
+        <th class="col-head">
+          <button class="remove" onclick="removeItem(${p.id})" aria-label="Remove" title="Remove">×</button>
+          <a href="product-details.html?id=${p.id}">
+            <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='${placeholder}'">
+            <h3>${p.name}</h3>
+          </a>
+        </th>`).join("") + `</tr>`;
+
+      /* Data rows */
+      rows.forEach(r => {
+        const vals = items.map(p => String(r.compare(p)));
+        const same = vals.every(v => v === vals[0]);
+        if (diffOnly && same) return;
+
+        html += `<tr><td class="label">${r.label}</td>` + items.map(p => {
+          const isBest = r.best && !same && r.best(p);
+          return `<td class="${isBest ? "best" : ""}">${r.cell(p)}${isBest ? `<br><span class="best-tag">${r.tag}</span>` : ""}</td>`;
+        }).join("") + `</tr>`;
+      });
+
+      /* Action row */
+      html += `<tr><td class="label">Action</td>` + items.map(p => `
+        <td>
+          <div class="btn-stack">
+            <button class="btn btn-blue" onclick="addToCart(${p.id})" ${p.stock > 0 ? "" : "disabled"}>Add To Cart</button>
+            <a class="btn btn-green" href="product-details.html?id=${p.id}">View Details</a>
+          </div>
+        </td>`).join("") + `</tr>`;
+
+      html += `</table></div>`;
+
+      /* Smart summary */
+      const cheapest = items.find(p => p.price === minPrice);
+      const topRated = items.find(p => p.rating === maxRating);
+      html += `
+        <div class="summary">
+          💡 Sauthi sasto: <strong>${cheapest.name}</strong> (${rupee(cheapest.price)}).
+          Sauthi vadhu rating: <strong>${topRated.name}</strong> (${topRated.rating} ★).
+        </div>`;
+
+      box.innerHTML = html;
+    }
+
+    function renderAll() {
+      renderSelectors();
+      renderTable();
+    }
+
+    function removeItem(id) {
+      selected = selected.filter(x => x !== id);
+      saveSelected();
+      renderAll();
+      showToast("Product hatavyo");
+    }
+
+    $("clearBtn").onclick = () => {
+      selected = [];
+      saveSelected();
+      renderAll();
+    };
+    $("diffOnly").onchange = renderTable;
+
+    /* ---------- Cart ---------- */
+    function getCart() {
+      try { return JSON.parse(localStorage.getItem("cart")) || []; } catch (e) { return []; }
+    }
+    function updateCartCount() {
+      $("cartCount").textContent = getCart().reduce((s, i) => s + (Number(i.qty) || 0), 0);
+    }
+    function addToCart(id) {
+      const p = byId(id);
+      if (!p || p.stock <= 0) return;
+      const cart = getCart();
+      const item = cart.find(i => i.id === id);
+      if (item) item.qty += 1;
+      else cart.push({ id: p.id, name: p.name, price: p.price, image: p.image, qty: 1 });
+      try { localStorage.setItem("cart", JSON.stringify(cart)); } catch (e) {}
+      updateCartCount();
+      showToast("Cart ma add thai gayu ✔");
+    }
+
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    /* ---------- Login link & menu ---------- */
+    function updateLoginLink() {
+      try {
+        const u = JSON.parse(localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser") || "null");
+        if (u && u.name) {
+          $("loginLink").textContent = "Hi, " + u.name.split(" ")[0];
+          $("loginLink").href = "my-order.html";
+        }
+      } catch (e) {}
+    }
+    $("menuBtn").onclick = () => $("nav").classList.toggle("open");
+
+    /* ---------- Start ---------- */
+    initSelected();
+    saveSelected();
+    renderAll();
+    updateCartCount();
+    updateLoginLink();
+  </script>
+</body>
+</html>
